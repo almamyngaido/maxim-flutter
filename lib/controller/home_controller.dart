@@ -42,11 +42,12 @@ class HomeController extends GetxController {
           'Content-Type': 'application/json',
         },
       );
-
+    
       print('Response from /me: ${response.body}'); // Debug
 
       if (response.statusCode == 200) {
         final userData = jsonDecode(response.body);
+        await storage.write('userData',userData);
         userName.value = userData['prenom']?.isNotEmpty == true
             ? userData['prenom']
             : userData['nom'] ?? 'Guest';
