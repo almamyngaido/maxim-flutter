@@ -1,7 +1,11 @@
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'dart:io';
 
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dart';
@@ -9,6 +13,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dar
 class PropertyDataManager extends GetxService {
   // Central data storage
   final RxMap<String, dynamic> _propertyData = <String, dynamic>{}.obs;
+  final storage = GetStorage();
 
   // Individual section data observables
   final RxBool isDataComplete = false.obs;
@@ -43,6 +48,49 @@ class PropertyDataManager extends GetxService {
         'isComplete': false,
       }
     };
+  }
+
+  Future<String> _getCurrentUserId() async {
+    try {
+      String? token = storage.read('authToken');
+
+      if (token == null || token.isEmpty) {
+        throw Exception('No authentication token found');
+      }
+
+      final response = await http.get(
+        Uri.parse('${AppString.apiBaseUrl}/me'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print(
+          'Getting current user ID - Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final userData = jsonDecode(response.body);
+        final userId = userData['id']?.toString();
+
+        if (userId == null || userId.isEmpty) {
+          throw Exception('User ID not found in response');
+        }
+
+        print('Current user ID: $userId');
+        return userId;
+      } else {
+        throw Exception(
+            'Failed to fetch user: ${response.statusCode} ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Error getting current user ID: $e');
+
+      // Fallback to a temporary ID if API fails
+      final fallbackId = 'user-${DateTime.now().millisecondsSinceEpoch}';
+      print('Using fallback user ID: $fallbackId');
+      return fallbackId;
+    }
   }
 
   // ===========================================
@@ -243,8 +291,11 @@ class PropertyDataManager extends GetxService {
 
   /// Prepare data for LoopBack API submission
   /// Prepare data for LoopBack API submission - FIXED to match your model structure
-  Map<String, dynamic> prepareForApi() {
+  Future<Map<String, dynamic>> prepareForApi() async {
     final data = getAllData();
+
+    // Get the current user ID dynamically
+    final userId = await _getCurrentUserId();
 
     return {
       // Basic property information (matches your model)
@@ -276,14 +327,11 @@ class PropertyDataManager extends GetxService {
       'pieces': data['rooms']
               ?.map((room) => {
                     'type': room['type'],
-                    'nom': room['nom'] ?? '', // FIXED: string instead of null
+                    'nom': room['nom'] ?? '',
                     'surface': room['surface'],
-                    'orientation': room['orientation'] ??
-                        '', // FIXED: string instead of null
-                    'niveau':
-                        room['niveau'] ?? 0, // FIXED: number instead of null
-                    'description': room['description'] ??
-                        '', // FIXED: string instead of null
+                    'orientation': room['orientation'] ?? '',
+                    'niveau': room['niveau'] ?? 0,
+                    'description': room['description'] ?? '',
                     'avecBalcon': room['avecBalcon'] ?? false,
                     'avecTerrasse': room['avecTerrasse'] ?? false,
                     'avecDressing': room['avecDressing'] ?? false,
@@ -328,12 +376,8 @@ class PropertyDataManager extends GetxService {
       // FIXED: Proper date format for LoopBack
       'datePublication': DateTime.now().toUtc().toIso8601String(),
 
-      // REMOVED: These fields cause "additional properties" error
-      // 'dateCreation': data['metadata']['createdAt'],
-      // 'derniereModification': data['metadata']['lastUpdated'],
-
-      // User ID - you'll need to get this from your auth system
-      'utilisateurId': _getCurrentUserId(),
+      // DYNAMIC: User ID fetched from API
+      'utilisateurId': userId,
     };
   }
 
@@ -379,7 +423,7 @@ class PropertyDataManager extends GetxService {
 
       // Submit property with images using the API service
       final result = await apiService.submitPropertyWithImages(
-        propertyData: apiData,
+        propertyData: await apiData,
         imageFiles: imageFiles,
       );
 
@@ -453,27 +497,21 @@ class PropertyDataManager extends GetxService {
   }
 
   /// Get current user ID (implement based on your auth system)
-  String _getCurrentUserId() {
-    // TODO: Implement based on your authentication system
-    // For now return a placeholder
-    return 'user-${DateTime.now().millisecondsSinceEpoch}';
-  }
 
   Future<bool> saveAsDraft() async {
     // Update status to draft before submitting
     if (_propertyData['basicInfo'] != null) {
       _propertyData['basicInfo']['statut'] = 'brouillon';
     }
-
     return await submitProperty();
   }
 
+  // UPDATED: Publish property - now async
   Future<bool> publishProperty() async {
     // Update status to published before submitting
     if (_propertyData['basicInfo'] != null) {
       _propertyData['basicInfo']['statut'] = 'à vendre';
     }
-
     return await submitProperty();
   }
 
