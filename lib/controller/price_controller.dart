@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'dart:async';
+import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
 
 class PricingController extends GetxController {
   // Controllers for all pricing fields
+  late final PropertyDataManager _dataManager;
+
   final TextEditingController haiController = TextEditingController();
   final TextEditingController honorairePourcentageController =
       TextEditingController();
@@ -46,8 +50,11 @@ class PricingController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _dataManager = Get.find<PropertyDataManager>();
+
     // Initialize input listeners
     _initializeListeners();
+    _loadExistingData();
 
     // Add listeners for automatic calculations
     haiController.addListener(_calculateNetVendeur);
@@ -58,34 +65,78 @@ class PricingController extends GetxController {
   void _initializeListeners() {
     haiController.addListener(() {
       haiHasInput.value = haiController.text.isNotEmpty;
-      haiText.value = haiController.text; // Update reactive text
+      haiText.value = haiController.text;
+      _saveDataToManagerDebounced(); // AJOUTEZ cette ligne
     });
+
     honorairePourcentageController.addListener(() {
       honorairePourcentageHasInput.value =
           honorairePourcentageController.text.isNotEmpty;
+      _saveDataToManagerDebounced(); // AJOUTEZ cette ligne
     });
+
     honoraireEurosController.addListener(() {
       honoraireEurosHasInput.value = honoraireEurosController.text.isNotEmpty;
-      honoraireEurosText.value =
-          honoraireEurosController.text; // Update reactive text
+      honoraireEurosText.value = honoraireEurosController.text;
+      _saveDataToManagerDebounced(); // AJOUTEZ cette ligne
     });
+
     chargesAcheteurVendeurController.addListener(() {
       chargesAcheteurVendeurHasInput.value =
           chargesAcheteurVendeurController.text.isNotEmpty;
+      _saveDataToManagerDebounced(); // AJOUTEZ cette ligne
     });
+
     netVendeurController.addListener(() {
       netVendeurHasInput.value = netVendeurController.text.isNotEmpty;
-      netVendeurText.value = netVendeurController.text; // Update reactive text
+      netVendeurText.value = netVendeurController.text;
+      _saveDataToManagerDebounced(); // AJOUTEZ cette ligne
     });
+
     chargesAnnuellesCoproprieteController.addListener(() {
       chargesAnnuellesCoproprieteHasInput.value =
           chargesAnnuellesCoproprieteController.text.isNotEmpty;
+      _saveDataToManagerDebounced(); // AJOUTEZ cette ligne
     });
   }
 
   // Update charges type
   void updateChargesType(String? value) {
     selectedChargesType.value = value ?? '';
+    _saveDataToManagerDebounced(); // AJOUTEZ cette ligne
+  }
+
+  void _loadExistingData() {
+    final existingData =
+        _dataManager.getSectionData<Map<String, dynamic>>('pricing');
+
+    if (existingData != null) {
+      haiController.text = existingData['hai']?.toString() ?? '';
+      honorairePourcentageController.text =
+          existingData['honorairePourcentage']?.toString() ?? '';
+      honoraireEurosController.text =
+          existingData['honoraireEuros']?.toString() ?? '';
+      netVendeurController.text = existingData['netVendeur']?.toString() ?? '';
+      chargesAnnuellesCoproprieteController.text =
+          existingData['chargesAnnuellesCopropriete']?.toString() ?? '';
+      selectedChargesType.value = existingData['chargesAcheteurVendeur'] ?? '';
+
+      print('📋 Loaded existing pricing data');
+    }
+  }
+
+  Timer? _saveTimer;
+  void _saveDataToManagerDebounced() {
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 500), () {
+      _saveDataToManager();
+    });
+  }
+
+  void _saveDataToManager() {
+    final pricingData = getPricingData();
+    _dataManager.updatePricing(pricingData);
+    print('💰 Pricing saved: $pricingData');
   }
 
   // Auto-calculate net vendeur based on HAI and fees
@@ -233,7 +284,13 @@ class PricingController extends GetxController {
 
   @override
   void onClose() {
-    // Dispose all controllers and focus nodes
+    // AJOUTEZ ces lignes au début :
+    _saveTimer?.cancel();
+    if (validatePricing()) {
+      _saveDataToManager();
+    }
+
+    // Votre code existant :
     haiController.dispose();
     honorairePourcentageController.dispose();
     honoraireEurosController.dispose();

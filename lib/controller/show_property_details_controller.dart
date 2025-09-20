@@ -1,140 +1,318 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart' as http;
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/model/bien_immo_model.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/services/propretyDetails_service.dart';
 
 class ShowPropertyDetailsController extends GetxController {
+  final storage = GetStorage();
+
+  // UI State
   RxBool isExpanded = false.obs;
   RxInt selectAgent = 0.obs;
   RxBool isChecked = false.obs;
   RxInt selectProperty = 0.obs;
   RxBool isVisitExpanded = false.obs;
   String truncatedText = AppString.aboutPropertyString.substring(0, 200);
+
+  // Focus and Input States
   RxBool hasFullNameFocus = false.obs;
   RxBool hasFullNameInput = false.obs;
   RxBool hasPhoneNumberFocus = true.obs;
   RxBool hasPhoneNumberInput = true.obs;
   RxBool hasEmailFocus = false.obs;
   RxBool hasEmailInput = false.obs;
+
+  // Focus Nodes
   FocusNode focusNode = FocusNode();
   FocusNode phoneNumberFocusNode = FocusNode();
   FocusNode emailFocusNode = FocusNode();
+
+  // Text Controllers
   TextEditingController fullNameController =
       TextEditingController(text: AppString.francisZieme);
   TextEditingController mobileNumberController =
       TextEditingController(text: AppString.francisZiemeNumber);
   TextEditingController emailController =
       TextEditingController(text: AppString.francisZiemeEmail);
-  // ... other existing properties ...
 
-  // ADD THIS NEW PROPERTY:
-  RxList<bool> isSimilarPropertyLiked = <bool>[].obs;
+  // Property Data
+  RxMap<String, dynamic> propertyData = <String, dynamic>{}.obs;
+  RxBool isLoadingProperty = false.obs;
+  RxBool hasError = false.obs;
+  RxString errorMessage = ''.obs;
 
+  // Scroll Controller
   ScrollController scrollController = ScrollController();
   RxDouble selectedOffset = 0.0.obs;
   RxBool showBottomProperty = false.obs;
-  Rx<BienImmo?> bienImmo = Rx<BienImmo?>(null);
-  RxBool isLoadingProperty = false.obs;
+
+  // Similar Properties
+  RxList<bool> isSimilarPropertyLiked = <bool>[].obs;
+
   @override
   void onInit() {
     super.onInit();
-    loadBienImmoData(
-        '687cc1ac757e4a2f285208ef'); // Replace with actual property ID
 
-    // scrollController.addListener(() {
-    //   if(scrollController.offset == 700) {
-    //     selectedOffset.value =  scrollController.offset;
-    //   }
-    // });
+    // Get property ID from navigation arguments
+    final String? propertyId = Get.arguments as String?;
 
+    if (propertyId != null && propertyId.isNotEmpty) {
+      loadPropertyData(propertyId);
+    } else {
+      hasError.value = true;
+      errorMessage.value = 'ID de propriété manquant';
+    }
+
+    // Setup focus listeners
+    _setupFocusListeners();
+
+    // Setup text controller listeners
+    _setupTextControllerListeners();
+  }
+
+  void _setupFocusListeners() {
     focusNode.addListener(() {
       hasFullNameFocus.value = focusNode.hasFocus;
     });
+
     phoneNumberFocusNode.addListener(() {
       hasPhoneNumberFocus.value = phoneNumberFocusNode.hasFocus;
     });
+
     emailFocusNode.addListener(() {
       hasEmailFocus.value = emailFocusNode.hasFocus;
     });
+  }
+
+  void _setupTextControllerListeners() {
     fullNameController.addListener(() {
       hasFullNameInput.value = fullNameController.text.isNotEmpty;
     });
+
     mobileNumberController.addListener(() {
       hasPhoneNumberInput.value = mobileNumberController.text.isNotEmpty;
     });
+
     emailController.addListener(() {
       hasEmailInput.value = emailController.text.isNotEmpty;
     });
   }
 
-  Future<void> loadBienImmoData(String propertyId) async {
+  /// Load property data from API
+  Future<void> loadPropertyData(String propertyId) async {
     try {
       isLoadingProperty.value = true;
+      hasError.value = false;
+      errorMessage.value = '';
 
-      // Fetch from API
-      BienImmo? property = await BienImmoService.getBienImmoById(propertyId);
+      String? token = storage.read('authToken');
 
-      if (property != null) {
-        bienImmo.value = property;
+      final response = await http.get(
+        Uri.parse('${AppString.apiBaseUrl}/bien-immos/$propertyId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('Property Details API Response Status: ${response.statusCode}');
+      print('Property Details API Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        propertyData.value = data;
+
+        print('✅ Property data loaded successfully');
       } else {
-        // Fallback to mock data if API fails
-        createMockData();
+        throw Exception(
+            'Échec du chargement de la propriété: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error loading property: $e');
-      // Fallback to mock data
-      createMockData();
+      print('❌ Error loading property data: $e');
+      hasError.value = true;
+      errorMessage.value = e.toString();
     } finally {
       isLoadingProperty.value = false;
     }
   }
 
-  // Fallback mock data method
-  void createMockData() {
-    bienImmo.value = BienImmo(
-      id: 'mock-id',
-      numeroRue: "123",
-      rue: "Avenue Example",
-      codePostal: "75008",
-      ville: "Paris",
-      departement: "Île-de-France",
-      typeBien: "Villa",
-      nombrePieces: 5,
-      chambres: 4,
-      cuisine: 1,
-      salleDeBain: 2,
-      salleDEau: 1,
-      sejour: 1,
-      surfaceHabitable: 200.0,
-      surfaceTerrain: 500.0,
-      surfaceLoiCarrez: 195.0,
-      nombreNiveaux: 2,
-      anneeConstruction: 2010,
-      balcon: true,
-      jardin: true,
-      terrasse: true,
-      piscine: true,
-      dpe: "C",
-      ges: "B",
-      prixHAI: 2500000.0,
-      honorairePourcentage: 5.0,
-      honoraireEuros: 125000.0,
-      netVendeur: 2375000.0,
-      chargesAnnuellesCopropriete: 3000.0,
-      titre: "Villa de luxe à Paris",
-      description:
-          "Une magnifique villa moderne avec piscine et jardin, située dans un quartier prestigieux de Paris.",
-      listeImages: [
-        Assets.images.property3.path,
-      ],
-      datePublication: DateTime.now().toIso8601String(),
-      statut: "Actif",
-      utilisateurId: "user123",
-    );
+  /// Helper methods to extract property information
+  String get propertyTitle {
+    try {
+      if (propertyData['description'] != null &&
+          propertyData['description']['titre'] != null &&
+          propertyData['description']['titre'].toString().isNotEmpty) {
+        return propertyData['description']['titre'].toString();
+      }
+
+      String type = propertyData['typeBien']?.toString() ?? 'Bien immobilier';
+      int rooms = propertyData['nombrePiecesTotal']?.toInt() ?? 0;
+
+      if (rooms > 0) {
+        return '$type ${rooms}P';
+      }
+
+      return type;
+    } catch (e) {
+      return 'Bien immobilier';
+    }
   }
 
+  String get propertyAddress {
+    try {
+      if (propertyData['localisation'] == null) {
+        return 'Adresse non spécifiée';
+      }
+
+      Map<String, dynamic> localisation = propertyData['localisation'];
+      List<String> addressParts = [];
+
+      if (localisation['rue'] != null &&
+          localisation['rue'].toString().isNotEmpty) {
+        addressParts.add(localisation['rue'].toString());
+      }
+
+      if (localisation['ville'] != null &&
+          localisation['ville'].toString().isNotEmpty) {
+        addressParts.add(localisation['ville'].toString());
+      }
+
+      if (localisation['codePostal'] != null &&
+          localisation['codePostal'].toString().isNotEmpty) {
+        addressParts.add(localisation['codePostal'].toString());
+      }
+
+      return addressParts.isNotEmpty
+          ? addressParts.join(', ')
+          : 'Adresse non spécifiée';
+    } catch (e) {
+      return 'Adresse non spécifiée';
+    }
+  }
+
+  String get propertyPrice {
+    try {
+      if (propertyData['prix'] != null && propertyData['prix']['hai'] != null) {
+        double price = propertyData['prix']['hai'].toDouble();
+
+        if (price >= 1000000) {
+          return '${(price / 1000000).toStringAsFixed(1)}M €';
+        } else if (price >= 1000) {
+          return '${(price / 1000).toStringAsFixed(0)}K €';
+        } else {
+          return '${price.toStringAsFixed(0)} €';
+        }
+      }
+
+      return 'Prix sur demande';
+    } catch (e) {
+      return 'Prix sur demande';
+    }
+  }
+
+  String get propertyType {
+    return propertyData['typeBien']?.toString() ?? 'Non spécifié';
+  }
+
+  int get numberOfRooms {
+    return propertyData['nombrePiecesTotal']?.toInt() ?? 0;
+  }
+
+  String get propertyStatus {
+    return propertyData['statut']?.toString() ?? 'Non spécifié';
+  }
+
+  String get propertyDescription {
+    try {
+      if (propertyData['description'] != null &&
+          propertyData['description']['annonce'] != null &&
+          propertyData['description']['annonce'].toString().isNotEmpty) {
+        return propertyData['description']['annonce'].toString();
+      }
+      return AppString.aboutPropertyString; // Fallback to default description
+    } catch (e) {
+      return AppString.aboutPropertyString;
+    }
+  }
+
+  Map<String, dynamic> get surfaces {
+    try {
+      return propertyData['surfaces'] ?? {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> get characteristics {
+    try {
+      return propertyData['caracteristiques'] ?? {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> get heating {
+    try {
+      return propertyData['chauffageClim'] ?? {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> get energy {
+    try {
+      return propertyData['energie'] ?? {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> get building {
+    try {
+      return propertyData['batiment'] ?? {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> get energyDiagnostics {
+    try {
+      return propertyData['diagnosticsEnergie'] ?? {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  List<dynamic> get pieces {
+    try {
+      return propertyData['pieces'] ?? [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  List<String> get propertyImages {
+    try {
+      if (propertyData['listeImages'] != null &&
+          propertyData['listeImages'] is List &&
+          (propertyData['listeImages'] as List).isNotEmpty) {
+        return (propertyData['listeImages'] as List).cast<String>();
+      }
+      return [Assets.images.property3.path]; // Fallback image
+    } catch (e) {
+      return [Assets.images.property3.path];
+    }
+  }
+
+  String get primaryImage {
+    final images = propertyImages;
+    return images.isNotEmpty ? images.first : Assets.images.property3.path;
+  }
+
+  /// UI interaction methods
   void toggleVisitExpansion() {
     isVisitExpanded.value = !isVisitExpanded.value;
   }
@@ -151,6 +329,15 @@ class ShowPropertyDetailsController extends GetxController {
     selectProperty.value = index;
   }
 
+  /// Refresh property data
+  Future<void> refreshPropertyData() async {
+    final String? propertyId = Get.arguments as String?;
+    if (propertyId != null && propertyId.isNotEmpty) {
+      await loadPropertyData(propertyId);
+    }
+  }
+
+  // Static data for UI elements (keeping existing static lists)
   RxList<String> searchPropertyImageList = [
     Assets.images.bath.path,
     Assets.images.bed.path,
@@ -178,32 +365,6 @@ class ShowPropertyDetailsController extends GetxController {
     AppString.poojaRoomAvailable,
     AppString.semiFurnishedText,
     AppString.balconies1,
-  ].obs;
-
-  RxList<String> propertyDetailsTitleList = [
-    AppString.layout,
-    AppString.ownerShip,
-    AppString.superArea,
-    AppString.overlooking,
-    AppString.widthOfFacingRoad,
-    AppString.flooring,
-    AppString.waterSource,
-    AppString.furnishing,
-    AppString.facing,
-    AppString.propertyId,
-  ].obs;
-
-  RxList<String> propertyDetailsSubTitleList = [
-    AppString.bhk3PoojaRoom,
-    AppString.freehold,
-    AppString.square785,
-    AppString.parkMainRoad,
-    AppString.feet60,
-    AppString.vitrified,
-    AppString.municipalCorporation,
-    AppString.semiFurnished,
-    AppString.west,
-    AppString.propertyIdNumber,
   ].obs;
 
   RxList<String> furnishingDetailsImageList = [
@@ -236,65 +397,9 @@ class ShowPropertyDetailsController extends GetxController {
     AppString.rainWaterHarvesting,
   ].obs;
 
-  RxList<String> dayList = [
-    AppString.mondayText,
-    AppString.tuesdayText,
-    AppString.wednesdayText,
-    AppString.thursdayText,
-    AppString.fridayText,
-    AppString.saturdayText,
-    AppString.sundayText,
-  ].obs;
-
-  RxList<String> timingList = [
-    AppString.timing1012,
-    AppString.timing1012,
-    AppString.timing1012,
-    AppString.timing1012,
-    AppString.timing1012,
-    AppString.timing1012,
-    AppString.close,
-  ].obs;
-
   RxList<String> realEstateList = [
     AppString.yes,
     AppString.no,
-  ].obs;
-
-  RxList<String> reviewDateList = [
-    AppString.november13,
-    AppString.december13,
-    AppString.may22,
-  ].obs;
-
-  RxList<String> reviewRatingImageList = [
-    Assets.images.rating4.path,
-    Assets.images.rating3.path,
-    Assets.images.rating5.path,
-  ].obs;
-
-  RxList<String> reviewProfileList = [
-    Assets.images.dh.path,
-    Assets.images.da.path,
-    Assets.images.mm.path,
-  ].obs;
-
-  RxList<String> reviewProfileNameList = [
-    AppString.dorothyHowe,
-    AppString.douglasAnderson,
-    AppString.mamieMonahan,
-  ].obs;
-
-  RxList<String> reviewTypeList = [
-    AppString.buyer,
-    AppString.seller,
-    AppString.seller,
-  ].obs;
-
-  RxList<String> reviewDescriptionList = [
-    AppString.dorothyHoweString,
-    AppString.douglasAndersonString,
-    AppString.mamieMonahanString,
   ].obs;
 
   RxList<String> searchImageList = [
@@ -353,16 +458,15 @@ class ShowPropertyDetailsController extends GetxController {
     AppString.articles,
   ].obs;
 
-  // Add this method before the dispose() method
-
   @override
   void dispose() {
     super.dispose();
     focusNode.dispose();
     phoneNumberFocusNode.dispose();
     emailFocusNode.dispose();
-    fullNameController.clear();
-    mobileNumberController.clear();
-    emailController.clear();
+    fullNameController.dispose();
+    mobileNumberController.dispose();
+    emailController.dispose();
+    scrollController.dispose();
   }
 }

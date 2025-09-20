@@ -4,7 +4,8 @@ import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_view.dart'; // ADD THIS IMPORT
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
       home: SplashView(),
       getPages: AppRoutes.pages,
 
-      // ADD THIS: Connect the InitialBinding to register services
+      // Connect the InitialBinding to register services
       initialBinding: InitialBinding(),
 
       // Add localization support
@@ -37,16 +38,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Move InitialBinding class here from main.dart
+// Updated InitialBinding class
 class InitialBinding extends Bindings {
   @override
   void dependencies() {
     // This will be called when the app starts
-    print('Registering PropertyDataManager service...');
+    print('🏠 Registering PropertyDataManager service...');
 
     // Register PropertyDataManager as a service (singleton)
     Get.put<PropertyDataManager>(PropertyDataManager(), permanent: true);
 
-    print('PropertyDataManager registered successfully');
+    print('✅ PropertyDataManager registered successfully');
+
+    // ADD THIS: Register ApiService as a service (singleton)
+    print('📡 Registering ApiService...');
+    Get.put<ApiService>(ApiService(), permanent: true);
+    print('✅ ApiService registered successfully');
   }
 }

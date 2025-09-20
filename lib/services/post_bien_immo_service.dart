@@ -1,11 +1,19 @@
+import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart' as http;
+import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'dart:io';
+
+import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dart';
 
 class PropertyDataManager extends GetxService {
   // Central data storage
   final RxMap<String, dynamic> _propertyData = <String, dynamic>{}.obs;
+  final storage = GetStorage();
 
   // Individual section data observables
   final RxBool isDataComplete = false.obs;
@@ -40,6 +48,49 @@ class PropertyDataManager extends GetxService {
         'isComplete': false,
       }
     };
+  }
+
+  Future<String> _getCurrentUserId() async {
+    try {
+      String? token = storage.read('authToken');
+
+      if (token == null || token.isEmpty) {
+        throw Exception('No authentication token found');
+      }
+
+      final response = await http.get(
+        Uri.parse('${AppString.apiBaseUrl}/me'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print(
+          'Getting current user ID - Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final userData = jsonDecode(response.body);
+        final userId = userData['id']?.toString();
+
+        if (userId == null || userId.isEmpty) {
+          throw Exception('User ID not found in response');
+        }
+
+        print('Current user ID: $userId');
+        return userId;
+      } else {
+        throw Exception(
+            'Failed to fetch user: ${response.statusCode} ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Error getting current user ID: $e');
+
+      // Fallback to a temporary ID if API fails
+      final fallbackId = 'user-${DateTime.now().millisecondsSinceEpoch}';
+      print('Using fallback user ID: $fallbackId');
+      return fallbackId;
+    }
   }
 
   // ===========================================
@@ -239,51 +290,94 @@ class PropertyDataManager extends GetxService {
   // ===========================================
 
   /// Prepare data for LoopBack API submission
-  Map<String, dynamic> prepareForApi() {
+  /// Prepare data for LoopBack API submission - FIXED to match your model structure
+  Future<Map<String, dynamic>> prepareForApi() async {
     final data = getAllData();
 
+    // Get the current user ID dynamically
+    final userId = await _getCurrentUserId();
+
     return {
-      // Basic property information
+      // Basic property information (matches your model)
       'typeBien': data['basicInfo']?['typeBien'],
       'nombrePiecesTotal': data['basicInfo']?['nombrePiecesTotal'],
       'nombreNiveaux': data['basicInfo']?['nombreNiveaux'],
       'statut': data['basicInfo']?['statut'] ?? 'brouillon',
 
-      // Location information
-      'localisation': data['location'],
+      // Location information - matches Localisation model
+      'localisation': {
+        'numero': data['location']?['numero'],
+        'rue': data['location']?['rue'],
+        'complement': data['location']?['complement'],
+        'boite': data['location']?['boite'],
+        'codePostal': data['location']?['codePostal'],
+        'ville': data['location']?['ville'],
+        'departement': data['location']?['departement'],
+      },
 
-      // Surfaces
-      'surfaces': data['surfaces'],
+      // Surfaces as SurfacesPrincipales object
+      'surfaces': {
+        'habitable': data['surfaces']?['habitable'],
+        'terrain': data['surfaces']?['terrain'],
+        'habitableCarrez': data['surfaces']?['habitableCarrez'],
+        'garage': data['surfaces']?['garage'],
+      },
 
-      // Room details
-      'pieces': data['rooms'] ?? [],
+      // FIXED: Room details with proper null handling
+      'pieces': data['rooms']
+              ?.map((room) => {
+                    'type': room['type'],
+                    'nom': room['nom'] ?? '',
+                    'surface': room['surface'],
+                    'orientation': room['orientation'] ?? '',
+                    'niveau': room['niveau'] ?? 0,
+                    'description': room['description'] ?? '',
+                    'avecBalcon': room['avecBalcon'] ?? false,
+                    'avecTerrasse': room['avecTerrasse'] ?? false,
+                    'avecDressing': room['avecDressing'] ?? false,
+                    'avecSalleDeBainPrivee':
+                        room['avecSalleDeBainPrivee'] ?? false,
+                  })
+              .toList() ??
+          [],
 
-      // Characteristics/Features
-      'caracteristiques': data['features'],
+      // Features as Caracteristiques object
+      'caracteristiques': data['features'] ?? {},
 
-      // Technical details
-      'detailsTechniques': data['technicalDetails'],
+      // Technical details - separate objects
+      'chauffageClim': data['technicalDetails']?['chauffageClim'] ?? {},
+      'energie': data['technicalDetails']?['energie'] ?? {},
+      'batiment': data['technicalDetails']?['batiment'] ?? {},
+      'orientation': data['technicalDetails']?['orientation'] ?? {},
 
       // Energy diagnostics
-      'diagnosticsEnergie': data['energyDiagnostics'],
+      'diagnosticsEnergie': data['energyDiagnostics'] ?? {},
 
-      // Pricing
-      'prix': data['pricing'],
+      // Pricing as Prix object
+      'prix': {
+        'hai': data['pricing']?['hai'],
+        'honorairePourcentage': data['pricing']?['honorairePourcentage'],
+        'honoraireEuros': data['pricing']?['honoraireEuros'],
+        'chargesAcheteurVendeur': data['pricing']?['chargesAcheteurVendeur'],
+        'netVendeur': data['pricing']?['netVendeur'],
+        'chargesAnnuellesCopropriete': data['pricing']
+            ?['chargesAnnuellesCopropriete'],
+      },
 
-      // Description and title
-      'titre': data['description']?['titre'],
-      'description': data['description']?['annonce'],
+      // Description with proper structure
+      'description': {
+        'titre': data['description']?['titre'],
+        'annonce': data['description']?['annonce'],
+      },
 
       // Images (will be populated after upload)
       'listeImages': [],
 
-      // Metadata
-      'datePublication': DateTime.now().toIso8601String(),
-      'dateCreation': data['metadata']['createdAt'],
-      'derniereModification': data['metadata']['lastUpdated'],
+      // FIXED: Proper date format for LoopBack
+      'datePublication': DateTime.now().toUtc().toIso8601String(),
 
-      // User ID (you'll need to get this from your auth system)
-      'utilisateurId': _getCurrentUserId(),
+      // DYNAMIC: User ID fetched from API
+      'utilisateurId': userId,
     };
   }
 
@@ -305,6 +399,9 @@ class PropertyDataManager extends GetxService {
         'Données incomplètes',
         errors.join('\n'),
         duration: const Duration(seconds: 5),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
       );
       return false;
     }
@@ -312,31 +409,65 @@ class PropertyDataManager extends GetxService {
     isSubmitting.value = true;
 
     try {
-      // Prepare data for API
+      // Get the API service
+      final apiService = Get.find<ApiService>();
+
+      // Prepare data for API using your existing method
       final apiData = prepareForApi();
-      print('🚀 Ready to submit to API: $apiData');
 
-      // TODO: Step 2 will implement actual API calls
-      // 1. Upload images first
-      // 2. Submit property data with image URLs
+      // Get image files using your existing method
+      final imageFiles = getImageFiles();
 
-      // Simulate API call for now
-      await Future.delayed(const Duration(seconds: 2));
+      print('🚀 Submitting property with ${imageFiles.length} images');
+      print('📋 Property data: $apiData');
 
-      Get.snackbar(
-        'Succès',
-        'Propriété soumise avec succès! (Mode simulation)',
-        backgroundColor: const Color(0xFF4CAF50),
-        colorText: const Color(0xFFFFFFFF),
+      // Submit property with images using the API service
+      final result = await apiService.submitPropertyWithImages(
+        propertyData: await apiData,
+        imageFiles: imageFiles,
       );
 
-      return true;
+      if (result != null && result['id'] != null) {
+        // Success! Property created
+        final propertyId = result['id'];
+
+        // Store the property ID for future reference
+        _propertyData['metadata']['submittedPropertyId'] = propertyId;
+        _propertyData['metadata']['submissionDate'] =
+            DateTime.now().toIso8601String();
+        _propertyData['metadata']['status'] = 'submitted';
+
+        Get.snackbar(
+          'Succès',
+          'Propriété créée avec succès!\nID: $propertyId',
+          backgroundColor: const Color(0xFF4CAF50),
+          colorText: const Color(0xFFFFFFFF),
+          duration: const Duration(seconds: 5),
+          snackPosition: SnackPosition.TOP,
+        );
+
+        print('🎉 Property submitted successfully with ID: $propertyId');
+        return true;
+      } else {
+        throw Exception('API returned null result');
+      }
     } catch (e) {
+      print('💥 Submission failed: $e');
+
+      String userMessage = 'Erreur lors de la soumission';
+      if (e is ApiException) {
+        userMessage = e.userMessage;
+      } else {
+        userMessage = 'Erreur de connexion: $e';
+      }
+
       Get.snackbar(
         'Erreur',
-        'Erreur lors de la soumission: $e',
+        userMessage,
         backgroundColor: const Color(0xFFF44336),
         colorText: const Color(0xFFFFFFFF),
+        duration: const Duration(seconds: 5),
+        snackPosition: SnackPosition.TOP,
       );
       return false;
     } finally {
@@ -366,10 +497,22 @@ class PropertyDataManager extends GetxService {
   }
 
   /// Get current user ID (implement based on your auth system)
-  String _getCurrentUserId() {
-    // TODO: Implement based on your authentication system
-    // For now return a placeholder
-    return 'user-${DateTime.now().millisecondsSinceEpoch}';
+
+  Future<bool> saveAsDraft() async {
+    // Update status to draft before submitting
+    if (_propertyData['basicInfo'] != null) {
+      _propertyData['basicInfo']['statut'] = 'brouillon';
+    }
+    return await submitProperty();
+  }
+
+  // UPDATED: Publish property - now async
+  Future<bool> publishProperty() async {
+    // Update status to published before submitting
+    if (_propertyData['basicInfo'] != null) {
+      _propertyData['basicInfo']['statut'] = 'à vendre';
+    }
+    return await submitProperty();
   }
 
   /// Debug method to print all data

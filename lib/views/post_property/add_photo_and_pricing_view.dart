@@ -72,11 +72,10 @@ class AddPhotoAndPricingView extends StatelessWidget {
               onTap: addPhotoAndPricingController.pickImages,
               child: DottedBorder(
                 options: RectDottedBorderOptions(
-                  strokeCap: StrokeCap.round,
-                  dashPattern: [10, 5],
-                  strokeWidth: 1,
-                  padding: EdgeInsets.all(AppSize.appSize5)
-                ),
+                    strokeCap: StrokeCap.round,
+                    dashPattern: [10, 5],
+                    strokeWidth: 1,
+                    padding: EdgeInsets.all(AppSize.appSize5)),
                 child: Container(
                   height: AppSize.appSize137,
                   width: MediaQuery.of(context).size.width,
@@ -87,50 +86,54 @@ class AddPhotoAndPricingView extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: images.isEmpty
                       ? Center(
-                    child: Text(
-                      AppString.addAtleast5Photos,
-                      style: AppStyle.heading5Regular(color: AppColor.primaryColor),
-                    ),
-                  )
-                      : GridView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: images.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 5,
-                      mainAxisSpacing: 4,
-                      crossAxisSpacing: 4,
-                    ),
-                    itemBuilder: (context, index) {
-                      return Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: Image.file(
-                              File(images[index].path),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                            ),
+                          child: Text(
+                            AppString.addAtleast5Photos,
+                            style: AppStyle.heading5Regular(
+                                color: AppColor.primaryColor),
                           ),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: () => addPhotoAndPricingController.removeImage(index),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
+                        )
+                      : GridView.builder(
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: images.length,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 5,
+                            mainAxisSpacing: 4,
+                            crossAxisSpacing: 4,
+                          ),
+                          itemBuilder: (context, index) {
+                            return Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.file(
+                                    File(images[index].path),
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
                                 ),
-                                padding: const EdgeInsets.all(2),
-                                child: Icon(Icons.close, size: 14, color: Colors.red),
-                              ),
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                  ),
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: GestureDetector(
+                                    onTap: () => addPhotoAndPricingController
+                                        .removeImage(index),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      padding: const EdgeInsets.all(2),
+                                      child: Icon(Icons.close,
+                                          size: 14, color: Colors.red),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            );
+                          },
+                        ),
                 ),
               ),
             );

@@ -1,13 +1,16 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/common/common_button.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/controller/bottom_bar_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/imgDescription.controller.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/controller/price_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
 
 class PhotosDescriptionView extends StatelessWidget {
   PhotosDescriptionView({super.key});
@@ -201,6 +204,7 @@ class PhotosDescriptionView extends StatelessWidget {
       ],
     );
   }
+// Dans imgDescription_view.dart, remplacez la méthode buildImageItem par ceci :
 
   Widget buildImageItem(File imageFile, int index) {
     return Container(
@@ -212,13 +216,59 @@ class PhotosDescriptionView extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(AppSize.appSize8),
-            child: Image.file(
-              imageFile,
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-            ),
+            child: kIsWeb
+                ? // Pour Flutter Web - utiliser Image.network avec l'URL blob
+                Image.network(
+                    imageFile.path, // Le path est déjà une URL blob sur web
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Erreur chargement image Web: $error');
+                      return Container(
+                        color: AppColor.descriptionColor.withOpacity(0.3),
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColor.descriptionColor,
+                        ),
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: AppColor.descriptionColor.withOpacity(0.1),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColor.primaryColor,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : // Pour les plateformes mobiles - utiliser Image.file
+                Image.file(
+                    imageFile,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Erreur chargement image Mobile: $error');
+                      return Container(
+                        color: AppColor.descriptionColor.withOpacity(0.3),
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColor.descriptionColor,
+                        ),
+                      );
+                    },
+                  ),
           ),
+
+          // Bouton de suppression
           Positioned(
             top: AppSize.appSize4,
             right: AppSize.appSize4,
@@ -238,6 +288,8 @@ class PhotosDescriptionView extends StatelessWidget {
               ),
             ),
           ),
+
+          // Badge "Principale" pour la première image
           if (index == 0)
             Positioned(
               bottom: AppSize.appSize4,
@@ -478,68 +530,133 @@ class PhotosDescriptionView extends StatelessWidget {
 
   Future<void> _createBienImmo() async {
     try {
-      // Get all the data from previous steps (you'll need to pass this data somehow)
-      // For now, I'll show the structure you need to send to your API
+      // Récupérer le gestionnaire de données central
+      final PropertyDataManager? dataManager = Get.find<PropertyDataManager>();
+      if (dataManager == null) {
+        throw Exception('PropertyDataManager non trouvé');
+      }
 
-      final bienImmoData = {
-        // From location step (you'll need to implement this)
-        'localisation': {
-          'numero': '123',
-          'rue': 'Rue de la Paix',
-          'codePostal': '75001',
-          'ville': 'Paris',
-          'departement': 'Paris',
-        },
+      // Sauvegarder les données de description et images dans le gestionnaire
+      final descriptionData = controller.getDescriptionData();
+      final imageFiles = controller.getSelectedImageFiles();
 
-        // From property details step (you'll need to implement this)
-        'typeBien': 'appartement',
-        'nombrePiecesTotal': 4,
+      // Vérifier que les méthodes retournent des valeurs valides
+      if (descriptionData.isEmpty) {
+        throw Exception('Données de description manquantes');
+      }
 
-        // From surfaces step (you'll need to implement this)
-        'surfaces': {
-          'habitable': 85.5,
-          'terrain': null,
-        },
+      print('📝 Description data: $descriptionData');
+      print('📷 Image files: ${imageFiles.length}');
 
-        // From pricing step - get from PricingController
-        'prix': Get.find<PricingController>().getPricingData(),
+      // Mettre à jour le gestionnaire avec les dernières données
+      dataManager.updateDescriptionAndImages(descriptionData, imageFiles);
 
-        // From current step
-        'description': controller.getDescriptionData(),
-        'listeImages': controller.getImagePaths(),
-
-        // Required fields
-        'datePublication': DateTime.now().toIso8601String(),
-        'statut': 'brouillon',
-        'utilisateurId': 'user-id-here', // You'll need to get this from auth
-      };
-
-      print('Creating BienImmo with data: $bienImmoData');
-
-      // TODO: Send to your LoopBack API
-      // final response = await ApiService.post('/bien-immos', bienImmoData);
-
-      // For now, show success message
-      Get.snackbar(
-        'Succès',
-        'Votre annonce a été créée avec succès!',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: AppColor.whiteColor,
-        duration: const Duration(seconds: 3),
+      // Afficher un indicateur de chargement
+      Get.dialog(
+        WillPopScope(
+          onWillPop: () async => false,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColor.whiteColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: AppColor.primaryColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Publication en cours...',
+                    style: AppStyle.heading6Medium(color: AppColor.textColor),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Veuillez patienter',
+                    style: AppStyle.heading7Regular(
+                        color: AppColor.descriptionColor),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        barrierDismissible: false,
       );
 
-      // Navigate to property list or detail page
-      Get.offAllNamed('/properties'); // Update with your actual route
+      // Utiliser le système existant pour soumettre la propriété
+      print('🚀 Submitting property using PropertyDataManager...');
+      final success = await dataManager.submitProperty();
+
+      // Fermer le dialog de chargement - avec vérification
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+
+      // Dans imgDescription_view.dart, modifiez la partie navigation de _createBienImmo() :
+
+      if (success) {
+        print('✅ Property submitted successfully!');
+
+        // Attendre un peu pour que les snackbars se ferment
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // NOUVELLE REDIRECTION : Naviguer vers l'onglet ActivityView (index 1)
+        try {
+          // Méthode 1: Naviguer vers BottomBarView avec l'index 1 (ActivityView)
+          Get.offAllNamed(AppRoutes.bottomBarView,
+              arguments: {'initialIndex': 1});
+
+          // Alternative si la route ci-dessus ne fonctionne pas:
+          // Get.offAll(() => BottomBarView(initialIndex: 1));
+        } catch (navError) {
+          print('⚠️ Navigation error: $navError');
+
+          // Fallback: Si la navigation échoue, essayer d'autres options
+          try {
+            // Option 2: Aller à la page d'accueil et naviguer vers l'onglet 1
+            Get.offAllNamed('/');
+
+            // Puis naviguer vers l'onglet ActivityView
+            Future.delayed(const Duration(milliseconds: 200), () {
+              final bottomBarController = Get.find<BottomBarController>();
+              bottomBarController.updateIndex(1);
+            });
+          } catch (fallbackError) {
+            print('⚠️ Fallback navigation error: $fallbackError');
+            // Dernier recours: juste fermer la page actuelle
+            Get.back();
+          }
+        }
+      } else {
+        print('❌ Property submission failed');
+      }
     } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        'Impossible de créer l\'annonce: $e',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: AppColor.whiteColor,
-        duration: const Duration(seconds: 3),
-      );
+      print('💥 Exception in _createBienImmo: $e');
+
+      // Fermer le dialog de chargement si ouvert
+      if (Get.isDialogOpen == true) {
+        try {
+          Get.back();
+        } catch (closeError) {
+          print('⚠️ Could not close dialog: $closeError');
+        }
+      }
+
+      // Afficher l'erreur à l'utilisateur
+      try {
+        Get.snackbar(
+          'Erreur',
+          'Une erreur s\'est produite: ${e.toString()}',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: AppColor.whiteColor,
+          duration: const Duration(seconds: 5),
+        );
+      } catch (snackError) {
+        print('⚠️ Could not show error snackbar: $snackError');
+      }
     }
   }
 }
