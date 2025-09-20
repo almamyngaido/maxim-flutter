@@ -8,6 +8,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/price_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
 
 class PricingView extends StatelessWidget {
   PricingView({super.key});
@@ -507,12 +508,15 @@ class PricingView extends StatelessWidget {
         onPressed: () {
           final error = pricingController.getValidationError();
           if (error == null) {
-            // Data is valid, navigate to next page
+            // AJOUT: Sauvegarde explicite des données de prix
             final pricingData = pricingController.getPricingData();
-            print('Pricing Data: $pricingData'); // Debug log
+            final dataManager = Get.find<PropertyDataManager>();
+            dataManager.updatePricing(pricingData);
+
+            print('💰 Prix sauvegardés avant navigation: $pricingData');
 
             // Navigate to next page (Description & Images)
-            Get.toNamed(AppRoutes.imgdesc); // You'll need to add this route
+            Get.toNamed(AppRoutes.imgdesc);
           } else {
             Get.snackbar(
               'Erreur de validation',

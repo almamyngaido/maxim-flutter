@@ -4,7 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/app.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/auth.service.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
-// ADD THIS IMPORT - adjust the path to match your project structure
+import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dart'; // ADD THIS IMPORT
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,9 +18,15 @@ void main() async {
 
 class DependencyInjection {
   static void init() {
+    // Existing services
     Get.lazyPut<AuthService>(() => AuthService(), fenix: true);
 
-    // ADD: Register PropertyDataManager here as well
+    // Register PropertyDataManager here as well
     Get.put<PropertyDataManager>(PropertyDataManager(), permanent: true);
+
+    // ADD THIS: Register ApiService
+    Get.put<ApiService>(ApiService(), permanent: true);
+
+    print('🚀 All services initialized in DependencyInjection');
   }
 }
