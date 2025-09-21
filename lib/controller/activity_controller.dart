@@ -389,18 +389,40 @@ class ActivityController extends GetxController {
 
   String _getPropertyId(Map<String, dynamic> property) {
     try {
+      print('🔍 DEBUG: ActivityController extracting property ID');
+      print('🔍 DEBUG: Property keys: ${property.keys}');
+
+      String propertyId = '';
+
       // Handle MongoDB ObjectId format: { "$oid": "..." }
-      if (property['_id'] is Map) {
-        return property['_id']['\$oid']?.toString() ?? '';
+      if (property['_id'] is Map && property['_id']['\$oid'] != null) {
+        propertyId = property['_id']['\$oid'].toString();
+        print('✅ DEBUG: Found MongoDB ObjectId: $propertyId');
       }
       // Handle direct string format
-      return property['_id']?.toString() ?? property['id']?.toString() ?? '';
+      else if (property['_id'] != null) {
+        propertyId = property['_id'].toString();
+        print('✅ DEBUG: Found direct _id: $propertyId');
+      }
+      // Fallback to 'id' field
+      else if (property['id'] != null) {
+        propertyId = property['id'].toString();
+        print('✅ DEBUG: Found id field: $propertyId');
+      } else {
+        print('❌ DEBUG: No ID found in property data');
+        // Print all keys to help debug
+        property.forEach((key, value) {
+          print(
+              '🔍 DEBUG: Available field $key: ${value.runtimeType} = $value');
+        });
+      }
+
+      return propertyId;
     } catch (e) {
-      print('Error getting property ID: $e');
+      print('❌ DEBUG: Error getting property ID: $e');
       return '';
     }
   }
-
   // PUBLIC METHODS FOR VIEW ACCESS
 
   /// Public method to get property ID from property data

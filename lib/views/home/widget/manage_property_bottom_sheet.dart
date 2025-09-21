@@ -7,12 +7,21 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 
-/// Updated manage property bottom sheet that accepts property data
 managePropertyBottomSheet(
   BuildContext context, {
   Map<String, dynamic>? property,
 }) {
-  // Extract property information with fallbacks for backward compatibility
+  print('🚀 DEBUG: managePropertyBottomSheet called');
+  print('🔍 DEBUG: Property parameter is null: ${property == null}');
+
+  if (property != null) {
+    print('🔍 DEBUG: Property data keys: ${property.keys}');
+    print('🔍 DEBUG: Full property data: $property');
+  } else {
+    print('❌ DEBUG: No property data provided to bottom sheet!');
+  }
+
+  // Extract property information with debugging
   String propertyId = property != null ? _getPropertyId(property) : '';
   String propertyTitle =
       property != null ? _getPropertyTitle(property) : AppString.sellFlat;
@@ -24,6 +33,12 @@ managePropertyBottomSheet(
       : Assets.images.property1.path;
   String propertyPrice =
       property != null ? _getPropertyPrice(property) : AppString.rupees50Lakh;
+
+  print('📋 DEBUG: Extracted values:');
+  print('   Property ID: "$propertyId"');
+  print('   Property Title: "$propertyTitle"');
+  print('   Property Address: "$propertyAddress"');
+  print('   Property Price: "$propertyPrice"');
 
   showModalBottomSheet(
     backgroundColor: Colors.transparent,
@@ -61,7 +76,7 @@ managePropertyBottomSheet(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  AppString.manageProperty,
+                  "AppString.manageProperty",
                   style: AppStyle.heading4Medium(color: AppColor.textColor),
                 ),
                 GestureDetector(
@@ -122,19 +137,34 @@ managePropertyBottomSheet(
             // Action Buttons
             Column(
               children: [
-                // Preview Button
+                // Preview Button with Enhanced Debugging
                 GestureDetector(
                   onTap: () {
+                    print('🔍 DEBUG: Preview button tapped');
+                    print('🔍 DEBUG: Property ID value: "$propertyId"');
+                    print(
+                        '🔍 DEBUG: Property ID is empty: ${propertyId.isEmpty}');
+
                     Get.back();
+
                     if (propertyId.isNotEmpty) {
-                      // Navigate to property details with the property ID
+                      print(
+                          '✅ DEBUG: Navigating to property details with ID: "$propertyId"');
                       Get.toNamed(
                         AppRoutes.showPropertyDetailsView,
                         arguments: propertyId,
                       );
                     } else {
-                      // Fallback for backward compatibility
-                      Get.toNamed(AppRoutes.showPropertyDetailsView);
+                      print('❌ DEBUG: Cannot navigate - property ID is empty');
+                      print('🔍 DEBUG: Showing error message to user');
+
+                      Get.snackbar(
+                        'Erreur',
+                        'ID de propriété manquant. Données reçues: ${property?.keys}',
+                        backgroundColor: AppColor.negativeColor,
+                        colorText: AppColor.whiteColor,
+                        duration: Duration(seconds: 5),
+                      );
                     }
                   },
                   child: Container(
@@ -165,19 +195,30 @@ managePropertyBottomSheet(
                 ).paddingOnly(
                     top: AppSize.appSize15, bottom: AppSize.appSize15),
 
-                // Edit Details Button
+                // Edit Details Button with Enhanced Debugging
                 GestureDetector(
                   onTap: () {
+                    print('🔍 DEBUG: Edit button tapped');
+                    print('🔍 DEBUG: Property ID value: "$propertyId"');
+
                     Get.back();
+
                     if (propertyId.isNotEmpty) {
-                      // Navigate to edit property with property ID
+                      print(
+                          '✅ DEBUG: Navigating to edit property with ID: "$propertyId"');
                       Get.toNamed(
                         AppRoutes.editPropertyView,
                         arguments: propertyId,
                       );
                     } else {
-                      // Fallback for backward compatibility
-                      Get.toNamed(AppRoutes.editPropertyView);
+                      print(
+                          '❌ DEBUG: Cannot navigate to edit - property ID is empty');
+                      Get.snackbar(
+                        'Erreur',
+                        'ID de propriété manquant pour l\'édition',
+                        backgroundColor: AppColor.negativeColor,
+                        colorText: AppColor.whiteColor,
+                      );
                     }
                   },
                   child: Container(
@@ -208,12 +249,17 @@ managePropertyBottomSheet(
                 ).paddingOnly(
                     top: AppSize.appSize15, bottom: AppSize.appSize15),
 
-                // Delete Property Button
+                // Delete Property Button with Enhanced Debugging
                 GestureDetector(
                   onTap: () {
+                    print('🔍 DEBUG: Delete button tapped');
+                    print('🔍 DEBUG: Property ID value: "$propertyId"');
+
                     Get.back();
+
                     if (propertyId.isNotEmpty) {
-                      // Navigate to delete listing with property data
+                      print(
+                          '✅ DEBUG: Navigating to delete listing with property data');
                       Get.toNamed(
                         AppRoutes.deleteListingView,
                         arguments: {
@@ -224,8 +270,14 @@ managePropertyBottomSheet(
                         },
                       );
                     } else {
-                      // Fallback for backward compatibility
-                      Get.toNamed(AppRoutes.deleteListingView);
+                      print(
+                          '❌ DEBUG: Cannot navigate to delete - property ID is empty');
+                      Get.snackbar(
+                        'Erreur',
+                        'ID de propriété manquant pour la suppression',
+                        backgroundColor: AppColor.negativeColor,
+                        colorText: AppColor.whiteColor,
+                      );
                     }
                   },
                   child: Container(
@@ -257,17 +309,52 @@ managePropertyBottomSheet(
   );
 }
 
-/// Helper functions to extract property data
 String _getPropertyId(Map<String, dynamic> property) {
   try {
+    print('🔍 DEBUG: _getPropertyId called');
+    print('🔍 DEBUG: Property parameter keys: ${property.keys}');
+    print('🔍 DEBUG: Property _id field type: ${property['_id']?.runtimeType}');
+    print('🔍 DEBUG: Property _id value: ${property['_id']}');
+
+    String propertyId = '';
+
     // Handle MongoDB ObjectId format: { "$oid": "..." }
     if (property['_id'] is Map) {
-      return property['_id']['\$oid']?.toString() ?? '';
+      print('🔍 DEBUG: _id is Map type');
+      Map<String, dynamic> idMap = property['_id'] as Map<String, dynamic>;
+      print('🔍 DEBUG: _id Map contents: $idMap');
+      print('🔍 DEBUG: _id Map keys: ${idMap.keys}');
+
+      if (idMap['\$oid'] != null) {
+        propertyId = idMap['\$oid'].toString();
+        print('✅ DEBUG: Found MongoDB ObjectId: "$propertyId"');
+      } else {
+        print('❌ DEBUG: _id is Map but no \$oid field found');
+        print('🔍 DEBUG: Available keys in _id Map: ${idMap.keys}');
+      }
     }
     // Handle direct string format
-    return property['_id']?.toString() ?? property['id']?.toString() ?? '';
+    else if (property['_id'] != null) {
+      propertyId = property['_id'].toString();
+      print('✅ DEBUG: Found direct _id: "$propertyId"');
+    }
+    // Fallback to 'id' field
+    else if (property['id'] != null) {
+      propertyId = property['id'].toString();
+      print('✅ DEBUG: Found id field: "$propertyId"');
+    } else {
+      print('❌ DEBUG: No ID field found in property data');
+      print('🔍 DEBUG: All available fields:');
+      property.forEach((key, value) {
+        print('   "$key": ${value.runtimeType} = $value');
+      });
+    }
+
+    print('📤 DEBUG: _getPropertyId returning: "$propertyId"');
+    return propertyId;
   } catch (e) {
-    print('Error getting property ID: $e');
+    print('❌ DEBUG: Exception in _getPropertyId: $e');
+    print('❌ DEBUG: Property data that caused error: $property');
     return '';
   }
 }
