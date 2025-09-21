@@ -13,14 +13,15 @@ class HomeController extends GetxController {
   RxInt selectProperty = 0.obs;
   RxInt selectCountry = 0.obs;
   RxList<bool> isTrendPropertyLiked = <bool>[].obs;
-  // RxString userName = 'Francis'.obs; // Default/fallback value
-  // If using GetStorage: final storage = GetStorage();
+  String? userId;
   RxString userName = 'Guest'.obs;
   final storage = GetStorage();
+
   @override
   void onInit() {
     super.onInit();
     fetchCurrentUser();
+    _loadUserData();
   }
 
   Future<void> fetchCurrentUser() async {
@@ -47,7 +48,8 @@ class HomeController extends GetxController {
 
       if (response.statusCode == 200) {
         final userData = jsonDecode(response.body);
-        await storage.write('userData',userData);
+        await storage.write('userData', userData);
+        userId = userData['id']?.toString();
         userName.value = userData['prenom']?.isNotEmpty == true
             ? userData['prenom']
             : userData['nom'] ?? 'Guest';
@@ -73,6 +75,28 @@ class HomeController extends GetxController {
 
   void updateCountry(int index) {
     selectCountry.value = index;
+  }
+
+
+  // Charger les données utilisateur depuis le storage
+  void _loadUserData() {
+    try {
+      final userData = storage.read('userData');
+      if (userData != null) {
+        userId = userData['id']?.toString();
+        print('User ID loaded: $userId');
+      }
+    } catch (e) {
+      print("Erreur chargement userData: $e");
+    }
+  }
+
+  // Toggle du like pour les propriétés
+  void toggleLike(int index) {
+    if (index < isTrendPropertyLiked.length) {
+      isTrendPropertyLiked[index] = !isTrendPropertyLiked[index];
+      print("Property $index liked: ${isTrendPropertyLiked[index]}");
+    }
   }
 
   RxList<String> propertyOptionList = [

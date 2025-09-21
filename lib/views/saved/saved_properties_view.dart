@@ -20,10 +20,19 @@ class SavedPropertiesView extends StatelessWidget {
   Widget build(BuildContext context) {
     savedPropertiesController.isSimilarPropertyLiked.value = List<bool>.generate(
         savedPropertiesController.searchImageList.length, (index) => false);
-    return Scaffold(
-      backgroundColor: AppColor.whiteColor,
-      appBar: buildAppBar(),
-      body: buildSavedPropertyList(),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        backgroundColor: AppColor.whiteColor,
+        appBar: buildAppBar(),
+        body: TabBarView(
+          children: [
+            buildFavoritesList(),
+            buildSimilarList(),
+            buildSoldList(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -48,128 +57,198 @@ class SavedPropertiesView extends StatelessWidget {
         AppString.savedProperties,
         style: AppStyle.heading4Medium(color: AppColor.textColor),
       ),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(AppSize.appSize40),
-        child: SizedBox(
-          height: AppSize.appSize40,
-          child: Row(
-            children: List.generate(savedPropertiesController.savedPropertyList.length, (index) {
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    savedPropertiesController.updateSavedProperty(index);
-                  },
-                  child: Obx(() => Container(
-                    height: AppSize.appSize25,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: savedPropertiesController.selectSavedProperty.value == index
-                              ? AppColor.primaryColor
-                              : AppColor.borderColor,
-                          width: AppSize.appSize1,
-                        ),
-                        right: BorderSide(
-                          color: index == AppSize.size2
-                              ? Colors.transparent
-                              : AppColor.borderColor,
-                          width: AppSize.appSize1,
-                        ),
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        savedPropertiesController.savedPropertyList[index],
-                        style: AppStyle.heading5Medium(
-                          color: savedPropertiesController.selectSavedProperty.value == index
-                              ? AppColor.primaryColor
-                              : AppColor.textColor,
-                        ),
-                      ),
-                    ),
-                  )),
-                ),
-              );
-            }),
-          ).paddingOnly(
-            top: AppSize.appSize10,
-            left: AppSize.appSize16, right: AppSize.appSize16,
-          ),
-        ),
+      bottom: const TabBar(
+        indicatorColor: AppColor.primaryColor,
+        labelColor: AppColor.primaryColor,
+        unselectedLabelColor: AppColor.textColor,
+        tabs: [
+          Tab(text: "Mes Favoris"),
+          Tab(text: "Similaires"),
+          Tab(text: "Vendus"),
+        ],
       ),
     );
   }
 
-  Widget buildSavedPropertyList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.only(
-        bottom: AppSize.appSize20, top: AppSize.appSize10,
-      ),
-      physics: const ClampingScrollPhysics(),
-      itemCount: savedPropertiesController.searchImageList.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Get.toNamed(AppRoutes.propertyDetailsView);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppSize.appSize10),
-            margin: const EdgeInsets.only(bottom: AppSize.appSize16),
-            decoration: BoxDecoration(
-              color: AppColor.secondaryColor,
-              borderRadius: BorderRadius.circular(AppSize.appSize12),
+  Widget buildFavoritesList() {
+    return buildPropertyList(savedPropertiesController.searchImageList,
+                           savedPropertiesController.searchTitleList,
+                           savedPropertiesController.searchAddressList,
+                           savedPropertiesController.searchRupeesList,
+                           showFavoriteIcon: true);
+  }
+
+  Widget buildSimilarList() {
+    return buildPropertyList(savedPropertiesController.searchImageList,
+                           savedPropertiesController.searchTitleList,
+                           savedPropertiesController.searchAddressList,
+                           savedPropertiesController.searchRupeesList);
+  }
+
+  Widget buildSoldList() {
+    return buildPropertyList(savedPropertiesController.searchImageList,
+                           savedPropertiesController.searchTitleList,
+                           savedPropertiesController.searchAddressList,
+                           savedPropertiesController.searchRupeesList,
+                           isSold: true);
+  }
+
+  Widget buildPropertyList(List<String> images, List<String> titles,
+                          List<String> addresses, List<String> prices,
+                          {bool showFavoriteIcon = false, bool isSold = false}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isDesktop = constraints.maxWidth > 800;
+
+        if (isDesktop) {
+          // Affichage en grille pour ordinateur
+          return Padding(
+            padding: const EdgeInsets.only(
+              bottom: AppSize.appSize20,
+              top: AppSize.appSize10,
+              left: AppSize.appSize16,
+              right: AppSize.appSize16,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: AppSize.appSize16,
+                mainAxisSpacing: AppSize.appSize16,
+                childAspectRatio: 1.2,
+              ),
+              itemCount: images.length,
+              itemBuilder: (context, index) {
+                return buildPropertyCard(
+                  context, index, images, titles, addresses, prices,
+                  showFavoriteIcon: showFavoriteIcon,
+                  isSold: isSold,
+                  isDesktop: true,
+                );
+              },
+            ),
+          );
+        } else {
+          // Affichage en liste pour mobile
+          return ListView.builder(
+            shrinkWrap: true,
+            padding: const EdgeInsets.only(
+              bottom: AppSize.appSize20, top: AppSize.appSize10,
+              left: AppSize.appSize16, right: AppSize.appSize16,
+            ),
+            physics: const ClampingScrollPhysics(),
+            itemCount: images.length,
+            itemBuilder: (context, index) {
+              return buildPropertyCard(
+                context, index, images, titles, addresses, prices,
+                showFavoriteIcon: showFavoriteIcon,
+                isSold: isSold,
+                isDesktop: false,
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget buildPropertyCard(BuildContext context, int index, List<String> images,
+                          List<String> titles, List<String> addresses, List<String> prices,
+                          {bool showFavoriteIcon = false, bool isSold = false, bool isDesktop = false}) {
+    return GestureDetector(
+      onTap: () {
+        Get.toNamed(AppRoutes.propertyDetailsView);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(AppSize.appSize10),
+        margin: isDesktop ? EdgeInsets.zero : const EdgeInsets.only(bottom: AppSize.appSize16),
+        decoration: BoxDecoration(
+          color: isSold ? AppColor.descriptionColor.withValues(alpha: 0.1) : AppColor.secondaryColor,
+          borderRadius: BorderRadius.circular(AppSize.appSize12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
                 Stack(
                   children: [
-                    Image.asset(
-                      savedPropertiesController.searchImageList[index],
-                    ),
-                    Positioned(
-                      right: AppSize.appSize6,
-                      top: AppSize.appSize6,
-                      child: GestureDetector(
-                        onTap: () {
-                          savedPropertiesController.isSimilarPropertyLiked[index] =
-                          !savedPropertiesController.isSimilarPropertyLiked[index];
-                        },
-                        child: Container(
-                          width: AppSize.appSize32,
-                          height: AppSize.appSize32,
-                          decoration: BoxDecoration(
-                            color: AppColor.whiteColor.withValues(alpha:AppSize.appSizePoint50),
-                            borderRadius: BorderRadius.circular(AppSize.appSize6),
-                          ),
-                          child: Center(
-                            child: Obx(() => Image.asset(
-                              savedPropertiesController.isSimilarPropertyLiked[index]
-                                  ? Assets.images.save.path
-                                  : Assets.images.saved.path,
-                              width: AppSize.appSize24,
-                            )),
-                          ),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSize.appSize12),
+                      child: ColorFiltered(
+                        colorFilter: isSold
+                          ? const ColorFilter.mode(Colors.grey, BlendMode.saturation)
+                          : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                        child: Image.asset(
+                          images[index],
+                          height: isDesktop ? AppSize.appSize130 : AppSize.appSize200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
+                    if (isSold)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(AppSize.appSize12),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              "VENDU",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (showFavoriteIcon)
+                      Positioned(
+                        right: AppSize.appSize6,
+                        top: AppSize.appSize6,
+                        child: GestureDetector(
+                          onTap: () {
+                            savedPropertiesController.isSimilarPropertyLiked[index] =
+                            !savedPropertiesController.isSimilarPropertyLiked[index];
+                          },
+                          child: Container(
+                            width: AppSize.appSize32,
+                            height: AppSize.appSize32,
+                            decoration: BoxDecoration(
+                              color: AppColor.whiteColor.withValues(alpha:AppSize.appSizePoint50),
+                              borderRadius: BorderRadius.circular(AppSize.appSize6),
+                            ),
+                            child: Center(
+                              child: Obx(() => Icon(
+                                savedPropertiesController.isSimilarPropertyLiked[index]
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: AppColor.primaryColor,
+                                size: AppSize.appSize24,
+                              )),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppString.completedProjects,
+                      isSold ? "Projet Vendu" : AppString.completedProjects,
                       style: AppStyle.heading6Regular(color: AppColor.primaryColor),
                     ),
                     Text(
-                      savedPropertiesController.searchTitleList[index],
+                      titles[index],
                       style: AppStyle.heading5SemiBold(color: AppColor.textColor),
                     ).paddingOnly(top: AppSize.appSize6),
                     Text(
-                      savedPropertiesController.searchAddressList[index],
+                      addresses[index],
                       style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
                     ).paddingOnly(top: AppSize.appSize6),
                   ],
@@ -178,7 +257,7 @@ class SavedPropertiesView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      savedPropertiesController.searchRupeesList[index],
+                      prices[index],
                       style: AppStyle.heading5Medium(color: AppColor.primaryColor),
                     ),
                     Row(
@@ -200,7 +279,7 @@ class SavedPropertiesView extends StatelessWidget {
                   height: AppSize.appSize0,
                 ).paddingOnly(top: AppSize.appSize16, bottom: AppSize.appSize16),
                 Row(
-                  children: List.generate(savedPropertiesController.searchPropertyTitleList.length, (index) {
+                  children: List.generate(savedPropertiesController.searchPropertyTitleList.length, (propertyIndex) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: AppSize.appSize6, horizontal: AppSize.appSize14,
@@ -216,12 +295,12 @@ class SavedPropertiesView extends StatelessWidget {
                       child: Row(
                         children: [
                           Image.asset(
-                            savedPropertiesController.searchPropertyImageList[index],
+                            savedPropertiesController.searchPropertyImageList[propertyIndex],
                             width: AppSize.appSize18,
                             height: AppSize.appSize18,
                           ).paddingOnly(right: AppSize.appSize6),
                           Text(
-                            savedPropertiesController.searchPropertyTitleList[index],
+                            savedPropertiesController.searchPropertyTitleList[propertyIndex],
                             style: AppStyle.heading5Medium(color: AppColor.textColor),
                           ),
                         ],
@@ -265,39 +344,69 @@ class SavedPropertiesView extends StatelessWidget {
                     ],
                   ).paddingOnly(top: AppSize.appSize10),
                 ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: AppSize.appSize35,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      savedPropertiesController.launchDialer();
-                    },
-                    style: ButtonStyle(
-                      elevation: const WidgetStatePropertyAll(AppSize.appSize0),
-                      shape: WidgetStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppSize.appSize12),
-                          side: const BorderSide(
-                              color: AppColor.primaryColor,
-                              width: AppSize.appSizePoint7
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: AppSize.appSize35,
+                        child: ElevatedButton(
+                          onPressed: isSold ? null : () {
+                            Get.toNamed(AppRoutes.propertyDetailsView);
+                          },
+                          style: ButtonStyle(
+                            elevation: const WidgetStatePropertyAll(AppSize.appSize0),
+                            shape: WidgetStatePropertyAll(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(AppSize.appSize12),
+                                side: const BorderSide(
+                                    color: AppColor.primaryColor,
+                                    width: AppSize.appSizePoint7
+                                ),
+                              ),
+                            ),
+                            backgroundColor: WidgetStateColor.transparent,
+                          ),
+                          child: Text(
+                            "Voir Détails",
+                            style: AppStyle.heading6Regular(color: AppColor.primaryColor),
                           ),
                         ),
                       ),
-                      backgroundColor: WidgetStateColor.transparent,
                     ),
-                    child: Text(
-                      AppString.getCallbackButton,
-                      style: AppStyle.heading6Regular(color: AppColor.primaryColor),
-                    ),
-                  ),
-                ).paddingOnly(top: AppSize.appSize26),
+                    const SizedBox(width: AppSize.appSize10),
+                    if (!isSold)
+                      Expanded(
+                        child: SizedBox(
+                          height: AppSize.appSize35,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              savedPropertiesController.launchDialer();
+                            },
+                            style: ButtonStyle(
+                              elevation: const WidgetStatePropertyAll(AppSize.appSize0),
+                              shape: WidgetStatePropertyAll(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(AppSize.appSize12),
+                                  side: const BorderSide(
+                                      color: AppColor.primaryColor,
+                                      width: AppSize.appSizePoint7
+                                  ),
+                                ),
+                              ),
+                              backgroundColor: WidgetStateColor.transparent,
+                            ),
+                            child: Text(
+                              AppString.getCallbackButton,
+                              style: AppStyle.heading6Regular(color: AppColor.primaryColor),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ).paddingOnly(top: isDesktop ? AppSize.appSize16 : AppSize.appSize26),
               ],
             ),
           ),
         );
-      },
-    ).paddingOnly(
-      left: AppSize.appSize16, right: AppSize.appSize16,
-    );
   }
 }

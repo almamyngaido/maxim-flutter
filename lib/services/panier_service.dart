@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'panier.dart';
+import '../model/panier_model.dart';
 
 class PanierService {
   final String baseUrl = "http://localhost:3000"; 
