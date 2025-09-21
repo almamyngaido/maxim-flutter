@@ -1506,10 +1506,10 @@ class $AssetsImagesGen {
       const AssetGenImage('assets/images/response5.png');
 
   /// File path: assets/images/save.png
-  AssetGenImage get save => const AssetGenImage('assets/images/save.png');
+  AssetGenImage get save => const AssetGenImage('assets/images/cartimmo.png');
 
   /// File path: assets/images/saved.png
-  AssetGenImage get saved => const AssetGenImage('assets/images/saved.png');
+  AssetGenImage get saved => const AssetGenImage('assets/images/cartsaved.png');
 
   /// File path: assets/images/savedProperty1.png
   AssetGenImage get savedProperty1 =>

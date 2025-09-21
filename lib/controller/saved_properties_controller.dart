@@ -6,14 +6,18 @@ import 'package:url_launcher/url_launcher.dart';
 class SavedPropertiesController extends GetxController {
   RxInt selectSavedProperty = 0.obs;
 
+ 
   RxList<bool> isSimilarPropertyLiked = <bool>[].obs;
 
   void updateSavedProperty(int index) {
     selectSavedProperty.value = index;
+    print('fdfgsf g gd hf fhhf  ');
+    
   }
 
   void launchDialer() async {
     final Uri phoneNumber = Uri(scheme: 'tel', path: '9995958748');
+       print('fdfgsf g gd hf fhhf 222 ');
     if (await canLaunchUrl(phoneNumber)) {
       await launchUrl(phoneNumber);
     } else {

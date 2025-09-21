@@ -672,13 +672,16 @@ class HomeView extends StatelessWidget {
                                         BorderRadius.circular(AppSize.appSize6),
                                   ),
                                   child: Center(
-                                    child: Obx(() => Image.asset(
-                                          homeController
-                                                  .isTrendPropertyLiked[index]
-                                              ? Assets.images.saved.path
-                                              : Assets.images.save.path,
-                                          width: AppSize.appSize24,
-                                        )),
+                                    child:Obx(() {
+                                      if(homeController.isTrendPropertyLiked[index]){
+                                        return const SizedBox.shrink();
+                                      }else{
+                                        return Image.asset(Assets.images.save.path, // afficher l'image si false
+        width: AppSize.appSize24
+      );
+                                      }
+                                    })
+                                
                                   ),
                                 ),
                               ),
