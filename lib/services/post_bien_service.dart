@@ -6,8 +6,9 @@ import 'package:flutter/foundation.dart'; // Ajouté pour kIsWeb
 
 class ApiService extends GetxService {
   // Base URL for your LoopBack API
+  //static const String baseUrl ='http://localhost:3000'; // Change to your server URL
   static const String baseUrl =
-      'http://localhost:3000'; // Change to your server URL
+      'http://192.168.1.3:3000'; // Change to your server URL
 
   // Default headers
   Map<String, String> get headers => {

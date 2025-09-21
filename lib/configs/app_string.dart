@@ -5,7 +5,9 @@ class AppString {
   static const String prenom = "Prénom";
   static const String motDePasse = "Créer un Mot de Passe ";
   static const String tel = "Numéro Téléphone";
-  static const String apiBaseUrl = 'http://localhost:3000';
+  //static const String apiBaseUrl = 'http://localhost:3000';
+  static const String apiBaseUrl = 'http://192.168.1.3:3000';
+
   static const String onboardTitle1 = "Bienvenue sur Maxiim ";
   static const String onboardTitle2 =
       "Partagez vos biens, développez vos opportunités";
@@ -69,7 +71,7 @@ class AppString {
   static const String westernMumbai = "Western Mumbai";
   static const String nepal = "Nepal";
   static const String exploreNew = "+ Explore New";
-  static const String recommendedProject = "Suggestions";
+  static const String recommendedProject = "Tous les Proprietés";
   static const String rupees4Cr = "₹ 0 - 4 Cr";
   static const String priceOnRequest = "₹ Price on Request";
   static const String residentialApart = "3 BHK Flat Residential Apart...";

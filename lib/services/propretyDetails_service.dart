@@ -4,8 +4,9 @@ import 'package:luxury_real_estate_flutter_ui_kit/model/bien_immo_model.dart';
 
 class BienImmoService {
   // Replace with your actual API base URL
+  //static const String baseUrl ='http://localhost:3000'; // or your actual API URL
   static const String baseUrl =
-      'http://localhost:3000'; // or your actual API URL
+      'http://192.168.1.3:3000'; // Change to your server URL
 
   // Fetch a single property by ID
   static Future<BienImmo?> getBienImmoById(String id) async {
