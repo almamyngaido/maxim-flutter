@@ -10,7 +10,6 @@ import 'package:luxury_real_estate_flutter_ui_kit/controller/home_controller.dar
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 //import 'package:luxury_real_estate_flutter_ui_kit/views/home/widget/explore_city_bottom_sheet.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/views/home/widget/manage_property_bottom_sheet.dart';
 
 class HomeView extends StatelessWidget {
   HomeView({super.key});
@@ -250,13 +249,13 @@ class HomeView extends StatelessWidget {
                         IntrinsicWidth(
                           child: GestureDetector(
                             onTap: () {
-                              managePropertyBottomSheet(context);
+                              Get.toNamed(AppRoutes.activityView);
                             },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  AppString.manageProperty,
+                                  AppString.VoirListe,
                                   style: AppStyle.heading5Medium(
                                       color: AppColor.whiteColor),
                                 ),

@@ -5,7 +5,6 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/activity_controller.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/controller/bottom_bar_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/activity/widgets/listings_states_bottom_sheet.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/activity/widgets/sort_by_listing_bottom_sheet.dart';
@@ -328,9 +327,16 @@ class ActivityView extends StatelessWidget {
                         style: AppStyle.heading5Regular(
                             color: AppColor.descriptionColor),
                       ),
+                      // FIXED: Pass property data to bottom sheet
                       GestureDetector(
                         onTap: () {
-                          managePropertyBottomSheet(context);
+                          print(
+                              '🔍 DEBUG: Manage property tapped for index: $index (delete mode)');
+                          print('🔍 DEBUG: Property data: $property');
+
+                          // ✅ FIXED: Pass the property data to the bottom sheet
+                          managePropertyBottomSheet(context,
+                              property: property);
                         },
                         child: Text(
                           AppString.manageProperty,
@@ -418,9 +424,16 @@ class ActivityView extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        // FIXED: Pass property data to bottom sheet
                         GestureDetector(
                           onTap: () {
-                            managePropertyBottomSheet(context);
+                            print(
+                                '🔍 DEBUG: Manage property tapped for index: $index');
+                            print('🔍 DEBUG: Property data: $property');
+
+                            // ✅ FIXED: Pass the property data to the bottom sheet
+                            managePropertyBottomSheet(context,
+                                property: property);
                           },
                           child: Text(
                             AppString.manageProperty,
@@ -587,12 +600,12 @@ class ActivityView extends StatelessWidget {
         child: GestureDetector(
           onTap: () {
             if (activityController.deleteShowing.value == true) {
+              // If in delete mode, just exit delete mode
               activityController.deleteShowing.value = false;
               activityController.selectListing.value = AppSize.size0;
             } else {
-              BottomBarController bottomBarController =
-                  Get.put(BottomBarController());
-              bottomBarController.pageController.jumpToPage(AppSize.size0);
+              // Navigate back to the previous screen (HomeView)
+              Get.back();
             }
           },
           child: Image.asset(

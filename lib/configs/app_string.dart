@@ -64,6 +64,8 @@ class AppString {
   static const String sellFlat = "Sell 3BHK Flat / Apartment";
   static const String northBombaySociety = "North Bombay Society";
   static const String manageProperty = "Gérer ses biens";
+  static const String VoirListe = "Voir ma Liste";
+
   static const String westernMumbai = "Western Mumbai";
   static const String nepal = "Nepal";
   static const String exploreNew = "+ Explore New";
