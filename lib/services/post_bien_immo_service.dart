@@ -306,7 +306,9 @@ class PropertyDataManager extends GetxService {
 
       // Location information - matches Localisation model
       'localisation': {
-        'numero': data['location']?['numero'],
+        'numero': data['location']?['numero'] != null
+            ? int.tryParse(data['location']['numero'].toString()) ?? 0
+            : 0,
         'rue': data['location']?['rue'],
         'complement': data['location']?['complement'],
         'boite': data['location']?['boite'],

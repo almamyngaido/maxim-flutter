@@ -4,14 +4,23 @@ import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/bien_immo_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/propretyDetails_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'favoris_controller.dart';
 
 class PropertyListController extends GetxController {
   TextEditingController searchController = TextEditingController();
-  RxList<bool> isPropertyLiked = <bool>[].obs;
   RxList<BienImmo> properties = <BienImmo>[].obs;
   RxBool isLoading = false.obs;
   RxString errorMessage = ''.obs;
 
+  // Instance du controller des favoris
+  late final FavorisController _favorisController;
+
+  @override
+  void onReady() {
+    super.onReady();
+    // Initialiser le controller des favoris
+    _favorisController = Get.find<FavorisController>();
+  }
   @override
   void onInit() {
     super.onInit();
@@ -27,8 +36,6 @@ class PropertyListController extends GetxController {
 
       if (fetchedProperties.isNotEmpty) {
         properties.value = fetchedProperties;
-        isPropertyLiked.value =
-            List<bool>.generate(fetchedProperties.length, (index) => false);
         print('Loaded ${fetchedProperties.length} properties');
       } else {
         errorMessage.value = 'Aucune propriété trouvée';
@@ -69,13 +76,18 @@ class PropertyListController extends GetxController {
     }).toList();
 
     properties.value = filteredProperties;
-    isPropertyLiked.value =
-        List<bool>.generate(filteredProperties.length, (index) => false);
   }
 
-  void togglePropertyLike(int index) {
-    if (index < isPropertyLiked.length) {
-      isPropertyLiked[index] = !isPropertyLiked[index];
+  /// Vérifier si une propriété est en favori
+  bool isPropertyLiked(String propertyId) {
+    if (!Get.isRegistered<FavorisController>()) return false;
+    return _favorisController.estEnFavori(propertyId);
+  }
+
+  /// Toggle favori pour une propriété
+  Future<void> togglePropertyLike(String propertyId) async {
+    if (Get.isRegistered<FavorisController>()) {
+      await _favorisController.toggleFavori(propertyId);
     }
   }
 
@@ -87,6 +99,20 @@ class PropertyListController extends GetxController {
       throw 'Could not launch $phoneNumber';
     }
   }
+  /// Ajouter un bien aux favoris
+  Future<void> ajouterBienAuxFavoris(String bienImmoId) async {
+    if (Get.isRegistered<FavorisController>()) {
+      await _favorisController.ajouterAuxFavoris(bienImmoId);
+    }
+  }
+
+  /// Retirer un bien des favoris
+  Future<void> retirerBienDesFavoris(String bienImmoId) async {
+    if (Get.isRegistered<FavorisController>()) {
+      await _favorisController.retirerDesFavoris(bienImmoId);
+    }
+  }
+
 
   // Helper methods for getting display data
   String getPropertyImage(BienImmo property) {

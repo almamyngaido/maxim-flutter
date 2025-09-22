@@ -2,22 +2,27 @@ import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/panier_service.dart';
+import '../model/ajouter_bien_response.dart';
+
 
 class SavedPropertiesController extends GetxController {
   RxInt selectSavedProperty = 0.obs;
+    final PanierService _panierService = PanierService();
+ var lastResponse = Rxn<AjouterBienResponse>();
+  var isLoading = false.obs;
+  var errorMessage = RxnString();
 
  
   RxList<bool> isSimilarPropertyLiked = <bool>[].obs;
 
   void updateSavedProperty(int index) {
     selectSavedProperty.value = index;
-    print('fdfgsf g gd hf fhhf  ');
     
   }
 
   void launchDialer() async {
     final Uri phoneNumber = Uri(scheme: 'tel', path: '9995958748');
-       print('fdfgsf g gd hf fhhf 222 ');
     if (await canLaunchUrl(phoneNumber)) {
       await launchUrl(phoneNumber);
     } else {
@@ -25,6 +30,9 @@ class SavedPropertiesController extends GetxController {
     }
   }
 
+
+   /// Méthode pour ajouter un bien
+ 
   RxList<String> savedPropertyList = [
     AppString.properties3,
     AppString.project,

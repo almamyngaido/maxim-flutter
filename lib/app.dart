@@ -5,6 +5,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/favoris_service.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_view.dart'; // ADD THIS IMPORT
 
 class MyApp extends StatelessWidget {
@@ -54,5 +55,10 @@ class InitialBinding extends Bindings {
     print('📡 Registering ApiService...');
     Get.put<ApiService>(ApiService(), permanent: true);
     print('✅ ApiService registered successfully');
+
+    // Register FavorisService as a service (singleton)
+    print('❤️ Registering FavorisService...');
+    Get.put<FavorisService>(FavorisService(), permanent: true);
+    print('✅ FavorisService registered successfully');
   }
 }

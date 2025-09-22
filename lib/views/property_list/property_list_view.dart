@@ -331,7 +331,7 @@ class PropertyListView extends StatelessWidget {
                                 child: GestureDetector(
                                   onTap: () {
                                     propertyListController
-                                        .togglePropertyLike(index);
+                                        .togglePropertyLike(property.id!);
                                   },
                                   child: Container(
                                     width: AppSize.appSize32,
@@ -345,7 +345,7 @@ class PropertyListView extends StatelessWidget {
                                     child: Center(
                                       child: Obx(() => Image.asset(
                                             propertyListController
-                                                    .isPropertyLiked[index]
+                                                    .isPropertyLiked(property.id!) 
                                                 ? Assets.images.saved.path
                                                 : Assets.images.save.path,
                                             width: AppSize.appSize24,

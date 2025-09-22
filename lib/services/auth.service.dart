@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 
 class AuthService extends GetxService {
   // Replace with your actual API base URL
-  // static const String baseUrl = 'http://127.0.0.1:3000'; // Update this!
-  static const String baseUrl = 'http://192.168.1.3:3000'; // Update this!
+  static const String baseUrl = 'http://127.0.0.1:3000'; // Update this!
+  // static const String baseUrl = 'http://192.168.1.3:3000'; // Update this!
 
   static const String apiUrl = '$baseUrl';
 

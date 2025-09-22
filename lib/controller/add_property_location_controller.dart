@@ -94,7 +94,7 @@ class AddPropertyDetailsController extends GetxController {
 
     if (existingData != null) {
       // Populate fields with existing data
-      numeroController.text = existingData['numero'] ?? '';
+      numeroController.text = existingData['numero']?.toString() ?? '';
       rueController.text = existingData['rue'] ?? '';
       complementController.text = existingData['complement'] ?? '';
       boiteController.text = existingData['boite'] ?? '';

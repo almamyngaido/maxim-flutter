@@ -196,7 +196,7 @@ class BienImmo {
     return BienImmo(
       id: json['id'],
       // Location from nested localisation object
-      numeroRue: localisation['numero'] ?? '',
+      numeroRue: localisation['numero']?.toString() ?? '',
       rue: localisation['rue'] ?? '',
       codePostal: localisation['codePostal'] ?? '',
       ville: localisation['ville'] ?? '',

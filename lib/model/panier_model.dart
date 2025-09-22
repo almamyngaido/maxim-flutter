@@ -1,28 +1,22 @@
-class Panier {
-  // Basic info
-  String? id;
-  List<Map<String, dynamic>> bienImmos;
-  // Relations
-  String utilisateurId;
+class PanierModel {
+  final String? id;
+  final String utilisateurId;
 
-  Panier({
+  PanierModel({
     this.id,
-    required this.bienImmos,
     required this.utilisateurId,
   });
 
-  factory Panier.fromJson(Map<String, dynamic> json) {
-    return Panier(
-      id: json['id'],
-      bienImmos: List<Map<String, dynamic>>.from(json['bienImmos'] ?? []),
-      utilisateurId: json['utilisateurId'],
+  factory PanierModel.fromJson(Map<String, dynamic> json) {
+    return PanierModel(
+      id: json['id'] as String?,
+      utilisateurId: json['utilisateurId'] as String? ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'bienImmos': bienImmos,
+      if (id != null) 'id': id,
       'utilisateurId': utilisateurId,
     };
   }

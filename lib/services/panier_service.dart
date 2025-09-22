@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../model/panier_model.dart';
+import '../model/ajouter_bien_response.dart';
 
 class PanierService {
   final String baseUrl = "http://localhost:3000"; 
@@ -17,6 +18,30 @@ class PanierService {
       return Panier.fromJson(jsonDecode(response.body));
     } else {
       throw Exception("Erreur création panier: ${response.body}");
+    }
+  }
+
+
+ Future<AjouterBienResponse> ajouterBienAuPanier({
+    required String utilisateurId,
+    required String bienImmoId,
+    String? statutDemande,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/paniers/ajouter-bien'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'utilisateurId': utilisateurId,
+        'bienImmoId': bienImmoId,
+        if (statutDemande != null) 'statutDemande': statutDemande,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return AjouterBienResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception(
+          "Erreur ajout bien au panier: ${response.statusCode} → ${response.body}");
     }
   }
 
