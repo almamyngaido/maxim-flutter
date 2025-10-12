@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:async';
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/user_utils.dart';
 
 class PricingController extends GetxController {
   // Controllers for all pricing fields
   late final PropertyDataManager _dataManager;
-
+  Map<String, dynamic>? userData;
   final TextEditingController haiController = TextEditingController();
   final TextEditingController honorairePourcentageController =
       TextEditingController();
@@ -49,8 +50,11 @@ class PricingController extends GetxController {
 
   @override
   void onInit() {
+
     super.onInit();
     _dataManager = Get.find<PropertyDataManager>();
+    userData = loadUserData();
+    print('👤 User data in PricingController: $userData');
 
     // Initialize input listeners
     _initializeListeners();

@@ -1,10 +1,18 @@
 import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/user_utils.dart';
 
 class ProfileController extends GetxController {
   RxInt selectEmoji = 0.obs;
+ Map<String, dynamic>? userData;
 
+onInit() {
+    super.onInit();
+
+    userData = loadUserData();
+    print('👤 User data in ProfileController: $userData');
+  }
   void updateEmoji(int index) {
     selectEmoji.value = index;
   }

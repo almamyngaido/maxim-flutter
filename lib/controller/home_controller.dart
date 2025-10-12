@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/user_utils.dart';
 
 class HomeController extends GetxController {
   TextEditingController searchController = TextEditingController();
@@ -16,12 +17,16 @@ class HomeController extends GetxController {
   String? userId;
   RxString userName = 'Guest'.obs;
   final storage = GetStorage();
+  Map<String, dynamic>? userData;
 
   @override
   void onInit() {
     super.onInit();
     fetchCurrentUser();
-    _loadUserData();
+    userData = loadUserData();
+    print('👤 User data in HomeController: $userData');
+      // Initialize the like status for trend properties
+      isTrendPropertyLiked.value = List<bool>.filled(10, false);
   }
 
   Future<void> fetchCurrentUser() async {
@@ -79,17 +84,19 @@ class HomeController extends GetxController {
 
 
   // Charger les données utilisateur depuis le storage
-  void _loadUserData() {
-    try {
-      final userData = storage.read('userData');
-      if (userData != null) {
-        userId = userData['id']?.toString();
-        print('User ID loaded: $userId');
-      }
-    } catch (e) {
-      print("Erreur chargement userData: $e");
-    }
-  }
+// Map<String, dynamic>? _loadUserData() {
+//     try {
+//       final userData = storage.read('userData');
+//       if (userData != null) {
+//         userId = userData['id']?.toString();
+//       return Map<String, dynamic>.from(userData);
+//       } else {
+//         return null;  
+//       }
+//     } catch (e) {
+//       print("Erreur chargement userData: $e");
+//     }
+//   }
 
   // Toggle du like pour les propriétés
   void toggleLike(int index) {

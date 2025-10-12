@@ -676,24 +676,43 @@ class SavedPropertiesView extends StatelessWidget {
               height: AppSize.appSize0,
             ).paddingOnly(top: AppSize.appSize16, bottom: AppSize.appSize16),
 
-            // Caractéristiques
-            Wrap(
-              spacing: AppSize.appSize12,
+            // Caractéristiques - Forcées sur une ligne
+            Row(
               children: [
-                if (property.nombreChambres > 0)
-                  _buildFeatureChip(
-                    Assets.images.bed.path,
-                    '${property.nombreChambres}',
+                if (property.nombreChambres > 0) ...[
+                  Expanded(
+                    child: _buildFeatureChip(
+                      Assets.images.bed.path,
+                      '${property.nombreChambres}',
+                    ),
                   ),
-                if (property.nombreSallesDeBain > 0)
-                  _buildFeatureChip(
-                    Assets.images.bath.path,
-                    '${property.nombreSallesDeBain}',
+                  const SizedBox(width: AppSize.appSize8),
+                ],
+                if (property.nombreSallesDeBain > 0) ...[
+                  Expanded(
+                    child: _buildFeatureChip(
+                      Assets.images.bath.path,
+                      '${property.nombreSallesDeBain}',
+                    ),
                   ),
-                _buildFeatureChip(
-                  Assets.images.plot.path,
-                  property.formattedSurface,
+                  const SizedBox(width: AppSize.appSize8),
+                ],
+                Expanded(
+                  child: _buildFeatureChip(
+                    Assets.images.plot.path,
+                    property.formattedSurface,
+                  ),
                 ),
+                // Ajoutons un 4ème cycle si disponible
+                if (property.typeBien.isNotEmpty) ...[
+                  const SizedBox(width: AppSize.appSize8),
+                  Expanded(
+                    child: _buildFeatureChip(
+                      Assets.images.home.path, // Icône pour le type de bien
+                      property.typeBien.substring(0, 3).toUpperCase(), // 3 premières lettres
+                    ),
+                  ),
+                ],
               ],
             ),
 

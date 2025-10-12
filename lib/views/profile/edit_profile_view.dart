@@ -495,10 +495,123 @@ class EditProfileView extends StatelessWidget {
               ),
             ) : const SizedBox.shrink(),
           )),
+
+          // Section d'upload de fichier
+          SizedBox(height: AppSize.appSize32),
+          Text(
+            'Documents',
+            style: AppStyle.heading4Medium(color: AppColor.textColor),
+          ),
+          SizedBox(height: AppSize.appSize8),
+          Text(
+            'Téléchargez vos documents (PDF, images, etc.)',
+            style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+          ),
+          SizedBox(height: AppSize.appSize16),
+
+          // Bouton de sélection de fichier
+          GestureDetector(
+            onTap: () {
+              editProfileController.pickFile();
+            },
+            child: Container(
+              padding: EdgeInsets.all(AppSize.appSize16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSize.appSize12),
+                border: Border.all(
+                  color: AppColor.primaryColor,
+                  width: AppSize.appSizePoint7,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.attach_file,
+                    color: AppColor.primaryColor,
+                    size: AppSize.appSize24,
+                  ),
+                  SizedBox(width: AppSize.appSize12),
+                  Expanded(
+                    child: Obx(() => Text(
+                          editProfileController.selectedFileName.value.isEmpty
+                              ? 'Sélectionner un fichier'
+                              : editProfileController.selectedFileName.value,
+                          style: AppStyle.heading5Medium(
+                            color: editProfileController
+                                    .selectedFileName.value.isEmpty
+                                ? AppColor.primaryColor
+                                : AppColor.textColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        )),
+                  ),
+                  Icon(
+                    Icons.folder_open,
+                    color: AppColor.primaryColor,
+                    size: AppSize.appSize24,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Bouton d'upload
+          Obx(() => editProfileController.selectedFileName.value.isNotEmpty
+              ? Column(
+                  children: [
+                    SizedBox(height: AppSize.appSize16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: editProfileController.isUploadingFile.value
+                            ? null
+                            : () {
+                                editProfileController.uploadFile();
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColor.primaryColor,
+                          padding: EdgeInsets.symmetric(
+                              vertical: AppSize.appSize16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppSize.appSize12),
+                          ),
+                        ),
+                        child: editProfileController.isUploadingFile.value
+                            ? SizedBox(
+                                width: AppSize.appSize20,
+                                height: AppSize.appSize20,
+                                child: CircularProgressIndicator(
+                                  color: AppColor.whiteColor,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.cloud_upload,
+                                    color: AppColor.whiteColor,
+                                    size: AppSize.appSize20,
+                                  ),
+                                  SizedBox(width: AppSize.appSize8),
+                                  Text(
+                                    'Télécharger le fichier',
+                                    style: AppStyle.heading5Medium(
+                                        color: AppColor.whiteColor),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink()),
         ],
       ).paddingOnly(
         top: AppSize.appSize10,
-        left: AppSize.appSize16, right: AppSize.appSize16,
+        left: AppSize.appSize16,
+        right: AppSize.appSize16,
       ),
     );
   }

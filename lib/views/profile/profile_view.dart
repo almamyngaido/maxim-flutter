@@ -66,7 +66,7 @@ class ProfileView extends StatelessWidget {
                   width: AppSize.appSize68,
                 ).paddingOnly(right: AppSize.appSize16),
                 Obx(() => Text(
-                  translationController.translate(AppString.francisZieme),
+                  translationController.translate('${profileController.userData?['prenom'] ?? 'GUEST'} ${profileController.userData?['nom'] ?? 'GUEST'} '),
                   style: AppStyle.heading3Medium(color: AppColor.textColor),
                 )),
               ],
