@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart'; // Add this import
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/auth.service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/session_service.dart';
 
 class LoginController extends GetxController {
   // Phone number fields (existing)
@@ -145,8 +146,35 @@ class LoginController extends GetxController {
 
       // Handle successful login
       if (response['token'] != null) {
-        await storage.write('authToken', response['token']); // Store token
-        print('Token stored: ${response['token']}'); // Debug
+        print('✅ Login successful, initializing session...');
+
+        final sessionService = Get.find<SessionService>();
+
+        // Fetch user data from response or call /me endpoint
+        Map<String, dynamic> userData;
+        if (response['user'] != null) {
+          print('📦 Using user data from response');
+          userData = Map<String, dynamic>.from(response['user']);
+        } else {
+          // If user data not in response, fetch from /me endpoint
+          print('🔄 Fetching user data from /me endpoint');
+          userData = await authService.getCurrentUser(response['token']);
+        }
+
+        print('👤 User data to store: $userData');
+        print('🔑 Token: ${response['token']}');
+
+        // Initialize session with user data and token
+        try {
+          sessionService.initializeSession(userData, response['token']);
+          print('✅ Session initialized successfully');
+        } catch (sessionError) {
+          print('❌ Error initializing session: $sessionError');
+          print('❌ Session error details: ${sessionError.runtimeType}');
+          rethrow;
+        }
+
+        print('✅ Session initialized, navigating to home');
 
         Get.snackbar(
           'Succès',
@@ -163,7 +191,21 @@ class LoginController extends GetxController {
 
       String errorMessage = e.toString();
       if (errorMessage.contains('Email not verified')) {
-        errorMessage = 'Email non vérifié. Veuillez vérifier votre email.';
+        // Redirect to OTP verification screen
+        Get.snackbar(
+          'Vérification requise',
+          'Votre compte n\'est pas encore vérifié. Veuillez entrer le code OTP reçu par email.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+
+        // Navigate to email verification OTP screen
+        await Future.delayed(const Duration(milliseconds: 500));
+        Get.toNamed(AppRoutes.emailVerificationOtpView, arguments: {
+          'email': emailController.text.trim().toLowerCase(),
+        });
+        return; // Don't show additional error
       } else if (errorMessage.contains('Invalid credentials')) {
         errorMessage = 'Email ou mot de passe incorrect.';
       }
@@ -259,6 +301,21 @@ class LoginController extends GetxController {
     mobileController.clear();
   }
 
+  // Reset controller state
+  void reset() {
+    clearForms();
+    hasFocus.value = false;
+    hasInput.value = false;
+    hasEmailFocus.value = false;
+    hasEmailInput.value = false;
+    hasPasswordFocus.value = false;
+    hasPasswordInput.value = false;
+    isPasswordVisible.value = false;
+    loginType.value = 'email';
+    isLoading.value = false;
+    print('🔄 LoginController reset');
+  }
+
   // In LoginController
   Future<void> verifyOtp(String phone, String otp) async {
     try {
@@ -275,8 +332,18 @@ class LoginController extends GetxController {
       final response = await authService.login(credentials);
 
       if (response['token'] != null) {
-        await storage.write('authToken', response['token']);
-        print('Token stored after OTP: ${response['token']}');
+        final sessionService = Get.find<SessionService>();
+
+        // Fetch user data from response or call /me endpoint
+        Map<String, dynamic> userData;
+        if (response['user'] != null) {
+          userData = response['user'];
+        } else {
+          userData = await authService.getCurrentUser(response['token']);
+        }
+
+        // Initialize session with user data and token
+        sessionService.initializeSession(userData, response['token']);
 
         Get.snackbar(
           'Succès',

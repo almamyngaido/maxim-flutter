@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:flutter/material.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
@@ -64,7 +65,7 @@ class DeleteListingController extends GetxController {
       String? token = storage.read('authToken');
 
       final response = await http.delete(
-        Uri.parse('${AppString.apiBaseUrl}/bien-immos/${propertyId.value}'),
+        Uri.parse('${ApiConfig.baseUrl}/bien-immos/${propertyId.value}'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

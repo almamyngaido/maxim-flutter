@@ -53,9 +53,10 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget buildProfile() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -133,6 +134,7 @@ class ProfileView extends StatelessWidget {
           },
         ),
       ],
+      ),
     ).paddingOnly(
       top: AppSize.appSize10,
       left: AppSize.appSize16, right: AppSize.appSize16,

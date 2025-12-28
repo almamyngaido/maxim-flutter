@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/common/common_button.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/common/common_rich_text.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/common/common_textfield.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/controller/messaging_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/owner_country_picker_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/property_details_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
@@ -86,7 +87,7 @@ class PropertyDetailsView extends StatelessWidget {
                 // Handle save functionality
               },
               child: Image.asset(
-                Assets.images.save.path,
+                Assets.images.emptyRatingStar.path,
                 width: AppSize.appSize24,
                 color: AppColor.descriptionColor,
               ).paddingOnly(right: AppSize.appSize26),
@@ -235,19 +236,70 @@ class PropertyDetailsView extends StatelessWidget {
   }
 
   Widget buildPropertyImage() {
+    final imagePath = propertyDetailsController.propertyImage;
+    final isNetworkImage = imagePath.startsWith('uploads/') ||
+        imagePath.startsWith('http://') ||
+        imagePath.startsWith('https://');
+
     return Container(
       height: AppSize.appSize200,
-      decoration: BoxDecoration(
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(AppSize.appSize12),
-        image: DecorationImage(
-          image: AssetImage(propertyDetailsController.propertyImage),
-          fit: BoxFit.cover,
-        ),
+        child: isNetworkImage
+            ? _buildNetworkImage(imagePath)
+            : Image.asset(
+                imagePath,
+                height: AppSize.appSize200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
       ),
     ).paddingOnly(
       left: AppSize.appSize16,
       right: AppSize.appSize16,
       top: AppSize.appSize10,
+    );
+  }
+
+  Widget _buildNetworkImage(String imagePath) {
+    final fullUrl = imagePath.startsWith('http')
+        ? imagePath
+        : '${ApiConfig.baseUrl}/$imagePath';
+
+    return Image.network(
+      fullUrl,
+      height: AppSize.appSize200,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          height: AppSize.appSize200,
+          width: double.infinity,
+          color: AppColor.backgroundColor,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              color: AppColor.primaryColor,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          height: AppSize.appSize200,
+          width: double.infinity,
+          color: AppColor.backgroundColor,
+          child: Icon(
+            Icons.home_outlined,
+            size: AppSize.appSize50,
+            color: AppColor.descriptionColor,
+          ),
+        );
+      },
     );
   }
 
@@ -625,14 +677,16 @@ class PropertyDetailsView extends StatelessWidget {
           child: Container(
             height: AppSize.appSize150,
             margin: const EdgeInsets.only(top: AppSize.appSize16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppSize.appSize12),
-              image: DecorationImage(
-                image: AssetImage(propertyDetailsController.propertyImages[0]),
-                fit: BoxFit.cover,
-              ),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSize.appSize12),
+                  child: _buildGalleryImage(
+                      propertyDetailsController.propertyImages[0]),
+                ),
+                _buildImageOverlay('Vue principale'),
+              ],
             ),
-            child: _buildImageOverlay('Vue principale'),
           ).paddingOnly(left: AppSize.appSize16, right: AppSize.appSize16),
         ),
 
@@ -645,17 +699,20 @@ class PropertyDetailsView extends StatelessWidget {
                   onTap: () => Get.toNamed(AppRoutes.galleryView),
                   child: Container(
                     height: AppSize.appSize150,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppSize.appSize12),
-                      image: DecorationImage(
-                        image: AssetImage(
-                            propertyDetailsController.propertyImages.length > 1
-                                ? propertyDetailsController.propertyImages[1]
-                                : Assets.images.kitchen.path),
-                        fit: BoxFit.cover,
-                      ),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(AppSize.appSize12),
+                          child: _buildGalleryImage(
+                              propertyDetailsController.propertyImages.length >
+                                      1
+                                  ? propertyDetailsController.propertyImages[1]
+                                  : Assets.images.kitchen.path),
+                        ),
+                        _buildImageOverlay('Cuisine'),
+                      ],
                     ),
-                    child: _buildImageOverlay('Cuisine'),
                   ),
                 ),
               ),
@@ -665,17 +722,20 @@ class PropertyDetailsView extends StatelessWidget {
                   onTap: () => Get.toNamed(AppRoutes.galleryView),
                   child: Container(
                     height: AppSize.appSize150,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppSize.appSize12),
-                      image: DecorationImage(
-                        image: AssetImage(
-                            propertyDetailsController.propertyImages.length > 2
-                                ? propertyDetailsController.propertyImages[2]
-                                : Assets.images.bedroom.path),
-                        fit: BoxFit.cover,
-                      ),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(AppSize.appSize12),
+                          child: _buildGalleryImage(
+                              propertyDetailsController.propertyImages.length >
+                                      2
+                                  ? propertyDetailsController.propertyImages[2]
+                                  : Assets.images.bedroom.path),
+                        ),
+                        _buildImageOverlay('Chambre'),
+                      ],
                     ),
-                    child: _buildImageOverlay('Chambre'),
                   ),
                 ),
               ),
@@ -686,6 +746,61 @@ class PropertyDetailsView extends StatelessWidget {
             right: AppSize.appSize16,
           ),
       ],
+    );
+  }
+
+  Widget _buildGalleryImage(String imagePath) {
+    final isNetworkImage = imagePath.startsWith('uploads/') ||
+        imagePath.startsWith('http://') ||
+        imagePath.startsWith('https://');
+
+    if (!isNetworkImage) {
+      return Image.asset(
+        imagePath,
+        height: AppSize.appSize150,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
+
+    final fullUrl = imagePath.startsWith('http')
+        ? imagePath
+        : '${ApiConfig.baseUrl}/$imagePath';
+
+    return Image.network(
+      fullUrl,
+      height: AppSize.appSize150,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          height: AppSize.appSize150,
+          width: double.infinity,
+          color: AppColor.backgroundColor,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              color: AppColor.primaryColor,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          height: AppSize.appSize150,
+          width: double.infinity,
+          color: AppColor.backgroundColor,
+          child: Icon(
+            Icons.image_not_supported,
+            size: AppSize.appSize40,
+            color: AppColor.descriptionColor,
+          ),
+        );
+      },
     );
   }
 
@@ -973,14 +1088,9 @@ class PropertyDetailsView extends StatelessWidget {
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () => Get.toNamed(AppRoutes.galleryView),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSize.appSize12),
-                    image: DecorationImage(
-                      image: AssetImage(images[index]),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSize.appSize12),
+                  child: _buildPhotoGridImage(images[index]),
                 ),
               );
             },
@@ -988,6 +1098,53 @@ class PropertyDetailsView extends StatelessWidget {
         ],
       );
     });
+  }
+
+  Widget _buildPhotoGridImage(String imagePath) {
+    final isNetworkImage = imagePath.startsWith('uploads/') ||
+        imagePath.startsWith('http://') ||
+        imagePath.startsWith('https://');
+
+    if (!isNetworkImage) {
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+      );
+    }
+
+    final fullUrl = imagePath.startsWith('http')
+        ? imagePath
+        : '${ApiConfig.baseUrl}/$imagePath';
+
+    return Image.network(
+      fullUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: AppColor.backgroundColor,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              color: AppColor.primaryColor,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: AppColor.backgroundColor,
+          child: Icon(
+            Icons.broken_image,
+            size: AppSize.appSize40,
+            color: AppColor.descriptionColor,
+          ),
+        );
+      },
+    );
   }
 
   Widget buildVisitTimeSection() {
@@ -1220,30 +1377,255 @@ class PropertyDetailsView extends StatelessWidget {
           left: AppSize.appSize16,
           right: AppSize.appSize16,
         ),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppSize.appSize12),
-          child: SizedBox(
-            height: AppSize.appSize200,
+
+        // Address display with map placeholder
+        Obx(() {
+          final property = propertyDetailsController.currentProperty.value;
+
+          return Container(
             width: double.infinity,
-            child: GoogleMap(
-              onMapCreated: (ctr) {},
-              mapType: MapType.normal,
-              myLocationEnabled: false,
-              zoomControlsEnabled: false,
-              myLocationButtonEnabled: false,
-              markers: {
-                const Marker(
-                  markerId: MarkerId('property_location'),
-                  visible: true,
-                  position: LatLng(AppSize.latitude, AppSize.longitude),
-                )
-              },
-              initialCameraPosition: const CameraPosition(
-                target: LatLng(AppSize.latitude, AppSize.longitude),
-                zoom: AppSize.appSize15,
+            padding: const EdgeInsets.all(AppSize.appSize16),
+            margin: const EdgeInsets.only(
+              top: AppSize.appSize16,
+              left: AppSize.appSize16,
+              right: AppSize.appSize16,
+            ),
+            decoration: BoxDecoration(
+              color: AppColor.secondaryColor,
+              borderRadius: BorderRadius.circular(AppSize.appSize12),
+              border: Border.all(
+                color: AppColor.primaryColor.withValues(alpha: 0.3),
+                width: 1,
               ),
             ),
-          ),
+            child: Column(
+              children: [
+                // Map icon
+                Container(
+                  width: double.infinity,
+                  height: AppSize.appSize150,
+                  decoration: BoxDecoration(
+                    color: AppColor.backgroundColor,
+                    borderRadius: BorderRadius.circular(AppSize.appSize8),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: AppSize.appSize64,
+                        color: AppColor.primaryColor,
+                      ),
+                      SizedBox(height: AppSize.appSize12),
+                      Text(
+                        'Carte interactive',
+                        style: AppStyle.heading5Medium(
+                            color: AppColor.descriptionColor),
+                      ),
+                      SizedBox(height: AppSize.appSize4),
+                      Text(
+                        'Bientôt disponible',
+                        style: AppStyle.heading6Regular(
+                            color: AppColor.descriptionColor),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: AppSize.appSize16),
+
+                // Address details
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.place,
+                      color: AppColor.primaryColor,
+                      size: AppSize.appSize20,
+                    ),
+                    SizedBox(width: AppSize.appSize8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Adresse',
+                            style: AppStyle.heading6Regular(
+                                color: AppColor.descriptionColor),
+                          ),
+                          SizedBox(height: AppSize.appSize4),
+                          Text(
+                            propertyDetailsController.propertyAddress,
+                            style: AppStyle.heading5Medium(
+                                color: AppColor.textColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Show detailed location info if available
+                if (property != null) ...[
+                  SizedBox(height: AppSize.appSize12),
+                  Divider(
+                    color: AppColor.descriptionColor.withValues(alpha: 0.3),
+                  ),
+                  SizedBox(height: AppSize.appSize12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ville',
+                              style: AppStyle.heading6Regular(
+                                  color: AppColor.descriptionColor),
+                            ),
+                            SizedBox(height: AppSize.appSize4),
+                            Text(
+                              property.ville,
+                              style: AppStyle.heading6Medium(
+                                  color: AppColor.textColor),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: AppSize.appSize16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Code postal',
+                              style: AppStyle.heading6Regular(
+                                  color: AppColor.descriptionColor),
+                            ),
+                            SizedBox(height: AppSize.appSize4),
+                            Text(
+                              property.codePostal,
+                              style: AppStyle.heading6Medium(
+                                  color: AppColor.textColor),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  if (property.departement.isNotEmpty) ...[
+                    SizedBox(height: AppSize.appSize12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Département',
+                          style: AppStyle.heading6Regular(
+                              color: AppColor.descriptionColor),
+                        ),
+                        SizedBox(height: AppSize.appSize4),
+                        Text(
+                          property.departement,
+                          style: AppStyle.heading6Medium(
+                              color: AppColor.textColor),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget buildReviewsSection() {
+    final reviews = propertyDetailsController.reviews;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Avis',
+              style: AppStyle.heading3SemiBold(color: AppColor.textColor),
+            ),
+            GestureDetector(
+              onTap: () => Get.toNamed(AppRoutes.addReviewsForPropertyView),
+              child: Text(
+                'Ajouter un avis',
+                style: AppStyle.heading5Regular(color: AppColor.primaryColor),
+              ),
+            ),
+          ],
+        ).paddingOnly(
+          top: AppSize.appSize36,
+          left: AppSize.appSize16,
+          right: AppSize.appSize16,
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: reviews.length,
+          itemBuilder: (context, index) {
+            final review = reviews[index];
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppSize.appSize16),
+              padding: const EdgeInsets.all(AppSize.appSize16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSize.appSize16),
+                border: Border.all(color: AppColor.descriptionColor),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        review['date'],
+                        style: AppStyle.heading6Regular(
+                            color: AppColor.descriptionColor),
+                      ),
+                      Image.asset(
+                        review['rating'],
+                        width: AppSize.appSize122,
+                        height: AppSize.appSize18,
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Image.asset(
+                        review['profile'],
+                        width: AppSize.appSize36,
+                      ),
+                      Text(
+                        review['name'],
+                        style: AppStyle.heading5Medium(
+                            color: AppColor.textColor),
+                      ).paddingOnly(left: AppSize.appSize6),
+                    ],
+                  ).paddingOnly(top: AppSize.appSize10),
+                  Text(
+                    review['type'],
+                    style: AppStyle.heading5Medium(
+                        color: AppColor.descriptionColor),
+                  ).paddingOnly(top: AppSize.appSize10),
+                  Text(
+                    review['description'],
+                    style:
+                        AppStyle.heading5Regular(color: AppColor.textColor),
+                  ).paddingOnly(top: AppSize.appSize10),
+                ],
+              ),
+            );
+          },
         ).paddingOnly(
           top: AppSize.appSize16,
           left: AppSize.appSize16,
@@ -1253,106 +1635,16 @@ class PropertyDetailsView extends StatelessWidget {
     );
   }
 
-  Widget buildReviewsSection() {
-    return Obx(() {
-      final reviews = propertyDetailsController.reviews;
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Avis',
-                style: AppStyle.heading3SemiBold(color: AppColor.textColor),
-              ),
-              GestureDetector(
-                onTap: () => Get.toNamed(AppRoutes.addReviewsForPropertyView),
-                child: Text(
-                  'Ajouter un avis',
-                  style: AppStyle.heading5Regular(color: AppColor.primaryColor),
-                ),
-              ),
-            ],
-          ).paddingOnly(
-            top: AppSize.appSize36,
-            left: AppSize.appSize16,
-            right: AppSize.appSize16,
-          ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: reviews.length,
-            itemBuilder: (context, index) {
-              final review = reviews[index];
-              return Container(
-                margin: const EdgeInsets.only(bottom: AppSize.appSize16),
-                padding: const EdgeInsets.all(AppSize.appSize16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppSize.appSize16),
-                  border: Border.all(color: AppColor.descriptionColor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          review['date'],
-                          style: AppStyle.heading6Regular(
-                              color: AppColor.descriptionColor),
-                        ),
-                        Image.asset(
-                          review['rating'],
-                          width: AppSize.appSize122,
-                          height: AppSize.appSize18,
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Image.asset(
-                          review['profile'],
-                          width: AppSize.appSize36,
-                        ),
-                        Text(
-                          review['name'],
-                          style: AppStyle.heading5Medium(
-                              color: AppColor.textColor),
-                        ).paddingOnly(left: AppSize.appSize6),
-                      ],
-                    ).paddingOnly(top: AppSize.appSize10),
-                    Text(
-                      review['type'],
-                      style: AppStyle.heading5Medium(
-                          color: AppColor.descriptionColor),
-                    ).paddingOnly(top: AppSize.appSize10),
-                    Text(
-                      review['description'],
-                      style:
-                          AppStyle.heading5Regular(color: AppColor.textColor),
-                    ).paddingOnly(top: AppSize.appSize10),
-                  ],
-                ),
-              );
-            },
-          ).paddingOnly(
-            top: AppSize.appSize16,
-            left: AppSize.appSize16,
-            right: AppSize.appSize16,
-          ),
-        ],
-      );
-    });
-  }
-
   Widget buildSimilarPropertiesSection() {
     return Obx(() {
       final similarProperties = propertyDetailsController.similarProperties;
 
-      if (similarProperties.isEmpty) return const SizedBox.shrink();
+      print('🏘️ Building similar properties section, count: ${similarProperties.length}');
+
+      if (similarProperties.isEmpty) {
+        print('⚠️ No similar properties to display');
+        return const SizedBox.shrink();
+      }
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1395,26 +1687,7 @@ class PropertyDetailsView extends StatelessWidget {
                             ClipRRect(
                               borderRadius:
                                   BorderRadius.circular(AppSize.appSize8),
-                              child: Image.asset(
-                                similarProperty.listeImages.isNotEmpty
-                                    ? similarProperty.listeImages.first
-                                    : Assets.images.searchProperty1.path,
-                                height: AppSize.appSize200,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    height: AppSize.appSize200,
-                                    width: double.infinity,
-                                    color: AppColor.backgroundColor,
-                                    child: Icon(
-                                      Icons.home,
-                                      size: AppSize.appSize50,
-                                      color: AppColor.descriptionColor,
-                                    ),
-                                  );
-                                },
-                              ),
+                              child: _buildSimilarPropertyImage(similarProperty),
                             ),
                             Positioned(
                               right: AppSize.appSize6,
@@ -1435,8 +1708,8 @@ class PropertyDetailsView extends StatelessWidget {
                                     child: Obx(() => Image.asset(
                                           propertyDetailsController
                                                   .isSimilarPropertyLiked[index]
-                                              ? Assets.images.saved.path
-                                              : Assets.images.save.path,
+                                              ? Assets.images.ratingStar.path
+                                              : Assets.images.emptyRatingStar.path,
                                           width: AppSize.appSize24,
                                         )),
                                   ),
@@ -1518,8 +1791,37 @@ class PropertyDetailsView extends StatelessWidget {
 
   Widget buildButton() {
     return CommonButton(
-      onPressed: () {
-        // Handle contact owner action
+      onPressed: () async {
+        final property = propertyDetailsController.currentProperty.value;
+        if (property?.id == null) {
+          Get.snackbar(
+            'Erreur',
+            'Impossible de créer la conversation',
+            backgroundColor: AppColor.negativeColor,
+            colorText: AppColor.whiteColor,
+          );
+          return;
+        }
+
+        // Get or create messaging controller
+        final messagingController = Get.put(MessagingController());
+
+        // Create or get existing conversation
+        final conversation = await messagingController.createConversation(
+          propertyId: property!.id!,
+          initialMessage: 'Bonjour, je suis intéressé par cette propriété.',
+        );
+
+        if (conversation != null) {
+          // Navigate to chat view
+          Get.toNamed(
+            AppRoutes.chatView,
+            arguments: {
+              'conversationId': conversation.id,
+              'propertyTitle': property.titre ?? 'Propriété',
+            },
+          );
+        }
       },
       backgroundColor: AppColor.primaryColor,
       child: Text(
@@ -1531,6 +1833,111 @@ class PropertyDetailsView extends StatelessWidget {
       right: AppSize.appSize16,
       bottom: AppSize.appSize26,
       top: AppSize.appSize10,
+    );
+  }
+
+  Widget _buildSimilarPropertyImage(dynamic similarProperty) {
+    // Get the first image from the property
+    if (similarProperty.listeImages == null ||
+        similarProperty.listeImages.isEmpty) {
+      // No image available
+      return Container(
+        height: AppSize.appSize200,
+        width: double.infinity,
+        color: AppColor.backgroundColor,
+        child: Icon(
+          Icons.home_outlined,
+          size: AppSize.appSize50,
+          color: AppColor.descriptionColor,
+        ),
+      );
+    }
+
+    String imagePath = similarProperty.listeImages.first;
+    print('📸 Similar property image path: $imagePath');
+
+    // Check if it's already a full URL
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      print('🌐 Loading from full URL: $imagePath');
+      return Image.network(
+        imagePath,
+        height: AppSize.appSize200,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            height: AppSize.appSize200,
+            width: double.infinity,
+            color: AppColor.backgroundColor,
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+                color: AppColor.primaryColor,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          print('❌ Error loading image from: $imagePath');
+          print('Error: $error');
+          return Container(
+            height: AppSize.appSize200,
+            width: double.infinity,
+            color: AppColor.backgroundColor,
+            child: Icon(
+              Icons.home_outlined,
+              size: AppSize.appSize50,
+              color: AppColor.descriptionColor,
+            ),
+          );
+        },
+      );
+    }
+
+    // It's a relative path from server, build the full URL
+    final fullUrl = '${ApiConfig.baseUrl}/$imagePath';
+    print('🔗 Loading from server: $fullUrl');
+
+    return Image.network(
+      fullUrl,
+      height: AppSize.appSize200,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          height: AppSize.appSize200,
+          width: double.infinity,
+          color: AppColor.backgroundColor,
+          child: Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              color: AppColor.primaryColor,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        print('❌ Error loading image from: $fullUrl');
+        print('Error: $error');
+        return Container(
+          height: AppSize.appSize200,
+          width: double.infinity,
+          color: AppColor.backgroundColor,
+          child: Icon(
+            Icons.home_outlined,
+            size: AppSize.appSize50,
+            color: AppColor.descriptionColor,
+          ),
+        );
+      },
     );
   }
 }

@@ -111,69 +111,191 @@ class UnverifiedUsersTab extends StatelessWidget {
   }
 
   Widget buildUserCard(BuildContext context, Map<String, dynamic> user) {
-    return GestureDetector(
-      onTap: () {
-        Get.to(() => UserDetailsView(userData: user));
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: AppSize.appSize12),
-        padding: EdgeInsets.all(AppSize.appSize12),
-        decoration: BoxDecoration(
-          color: AppColor.whiteColor,
-          borderRadius: BorderRadius.circular(AppSize.appSize12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              spreadRadius: AppSize.appSizePoint1,
-              blurRadius: AppSize.appSize4,
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSize.appSize12),
+      padding: EdgeInsets.all(AppSize.appSize12),
+      decoration: BoxDecoration(
+        color: AppColor.whiteColor,
+        borderRadius: BorderRadius.circular(AppSize.appSize12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            spreadRadius: AppSize.appSizePoint1,
+            blurRadius: AppSize.appSize4,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // User info row
+          GestureDetector(
+            onTap: () {
+              Get.to(() => UserDetailsView(userData: user));
+            },
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: AppSize.appSize24,
+                  backgroundColor: AppColor.primaryColor.withValues(alpha: 0.1),
+                  child: Text(
+                    _getInitials(user['nom'], user['prenom']),
+                    style: AppStyle.heading5SemiBold(color: AppColor.primaryColor),
+                  ),
+                ),
+                SizedBox(width: AppSize.appSize12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getFullName(user['nom'], user['prenom']),
+                        style: AppStyle.heading5Medium(color: AppColor.textColor),
+                      ),
+                      if (user['email'] != null)
+                        Text(
+                          user['email'],
+                          style: AppStyle.heading6Regular(
+                              color: AppColor.descriptionColor),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSize.appSize8,
+                    vertical: AppSize.appSize4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppSize.appSize12),
+                  ),
+                  child: Text(
+                    'Non vérifié',
+                    style: AppStyle.heading6Medium(color: Colors.orange),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
+          SizedBox(height: AppSize.appSize12),
+          // Send OTP Button
+          Obx(() => SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: adminUsersController.isSendingOtp.value
+                      ? null
+                      : () {
+                          // Show confirmation dialog
+                          _showSendOtpConfirmation(context, user);
+                        },
+                  icon: adminUsersController.isSendingOtp.value
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColor.whiteColor,
+                          ),
+                        )
+                      : Icon(Icons.email_outlined, size: 18),
+                  label: Text(
+                    adminUsersController.isSendingOtp.value
+                        ? 'Envoi en cours...'
+                        : 'Approuver & Envoyer OTP',
+                    style: AppStyle.heading6Medium(color: AppColor.whiteColor),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.primaryColor,
+                    foregroundColor: AppColor.whiteColor,
+                    padding: EdgeInsets.symmetric(
+                      vertical: AppSize.appSize12,
+                      horizontal: AppSize.appSize16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSize.appSize8),
+                    ),
+                  ),
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  void _showSendOtpConfirmation(BuildContext context, Map<String, dynamic> user) {
+    Get.dialog(
+      AlertDialog(
+        title: Text(
+          'Confirmer l\'approbation',
+          style: AppStyle.heading4Medium(color: AppColor.textColor),
         ),
-        child: Row(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: AppSize.appSize24,
-              backgroundColor: AppColor.primaryColor.withValues(alpha: 0.1),
-              child: Text(
-                _getInitials(user['nom'], user['prenom']),
-                style: AppStyle.heading5SemiBold(color: AppColor.primaryColor),
-              ),
+            Text(
+              'Voulez-vous approuver cet utilisateur et lui envoyer le code OTP par email ?',
+              style: AppStyle.heading6Regular(color: AppColor.textColor),
             ),
-            SizedBox(width: AppSize.appSize12),
-            Expanded(
+            SizedBox(height: AppSize.appSize16),
+            Container(
+              padding: EdgeInsets.all(AppSize.appSize12),
+              decoration: BoxDecoration(
+                color: AppColor.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppSize.appSize8),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _getFullName(user['nom'], user['prenom']),
-                    style: AppStyle.heading5Medium(color: AppColor.textColor),
+                    'Utilisateur :',
+                    style: AppStyle.heading6Medium(color: AppColor.textColor),
                   ),
-                  if (user['email'] != null)
+                  SizedBox(height: AppSize.appSize4),
+                  Text(
+                    _getFullName(user['nom'], user['prenom']),
+                    style: AppStyle.heading6Regular(color: AppColor.textColor),
+                  ),
+                  if (user['email'] != null) ...[
+                    SizedBox(height: AppSize.appSize4),
                     Text(
-                      user['email'],
-                      style: AppStyle.heading6Regular(
-                          color: AppColor.descriptionColor),
-                      overflow: TextOverflow.ellipsis,
+                      'Email : ${user['email']}',
+                      style: AppStyle.heading6Regular(color: AppColor.textColor),
                     ),
+                  ],
                 ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSize.appSize8,
-                vertical: AppSize.appSize4,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppSize.appSize12),
-              ),
-              child: Text(
-                'Non vérifié',
-                style: AppStyle.heading6Medium(color: Colors.orange),
               ),
             ),
           ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: Text(
+              'Annuler',
+              style: AppStyle.heading6Medium(color: AppColor.descriptionColor),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back(); // Close dialog
+              // Send OTP
+              adminUsersController.sendOtpToUser(
+                userId: user['id'],
+                email: user['email'],
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColor.primaryColor,
+              foregroundColor: AppColor.whiteColor,
+            ),
+            child: Text(
+              'Confirmer',
+              style: AppStyle.heading6Medium(color: AppColor.whiteColor),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import '../model/panier_model.dart';
 import '../model/ajouter_bien_response.dart';
 
 class PanierService {
-  final String baseUrl = "http://localhost:3000"; 
+  // Using centralized API configuration
+  String get baseUrl => ApiConfig.baseUrl; 
 
   
   Future<Panier> createPanier(Panier panier) async {

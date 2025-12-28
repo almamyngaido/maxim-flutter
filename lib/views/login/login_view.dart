@@ -13,7 +13,8 @@ import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 class LoginView extends StatelessWidget {
   LoginView({super.key});
 
-  final LoginController loginController = Get.put(LoginController());
+  // Create a fresh instance each time, not permanent
+  final LoginController loginController = Get.put(LoginController(), permanent: false);
 
   @override
   Widget build(BuildContext context) {

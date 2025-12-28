@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/common/cached_network_image_widget.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
@@ -28,9 +30,7 @@ managePropertyBottomSheet(
   String propertyAddress = property != null
       ? _getPropertyAddress(property)
       : AppString.northBombaySociety;
-  String propertyImage = property != null
-      ? _getPropertyImage(property)
-      : Assets.images.property1.path;
+  String propertyImage = property != null ? _getPropertyImage(property) : '';
   String propertyPrice =
       property != null ? _getPropertyPrice(property) : AppString.rupees50Lakh;
 
@@ -55,7 +55,9 @@ managePropertyBottomSheet(
     builder: (context) {
       return Container(
         width: MediaQuery.of(context).size.width,
-        height: AppSize.appSize315,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.5,
+        ),
         padding: const EdgeInsets.only(
           top: AppSize.appSize26,
           left: AppSize.appSize16,
@@ -68,241 +70,245 @@ managePropertyBottomSheet(
             topRight: Radius.circular(AppSize.appSize12),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "AppString.manageProperty",
-                  style: AppStyle.heading4Medium(color: AppColor.textColor),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Get.back();
-                  },
-                  child: Image.asset(
-                    Assets.images.close.path,
-                    width: AppSize.appSize24,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppString.manageProperty,
+                    style: AppStyle.heading4Medium(color: AppColor.textColor),
                   ),
-                ),
-              ],
-            ),
+                  GestureDetector(
+                    onTap: () {
+                      Get.back();
+                    },
+                    child: Image.asset(
+                      Assets.images.close.path,
+                      width: AppSize.appSize24,
+                    ),
+                  ),
+                ],
+              ),
 
-            // Property Info Card
-            Row(
-              children: [
-                Container(
-                  width: AppSize.appSize70,
-                  height: AppSize.appSize70,
-                  margin: const EdgeInsets.only(right: AppSize.appSize16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSize.appSize6),
-                    color: AppColor.backgroundColor,
+              // Property Info Card
+              Row(
+                children: [
+                  Container(
+                    width: AppSize.appSize70,
+                    height: AppSize.appSize70,
+                    margin: const EdgeInsets.only(right: AppSize.appSize16),
+                    child: PropertyImageWidget(
+                      imageUrl: propertyImage,
+                      width: AppSize.appSize70,
+                      height: AppSize.appSize70,
+                      borderRadius: BorderRadius.circular(AppSize.appSize6),
+                    ),
                   ),
-                  child: _buildPropertyImageWidget(propertyImage),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        propertyTitle,
-                        style: AppStyle.heading5SemiBold(
-                            color: AppColor.textColor),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Text(
+                          propertyTitle,
+                          style: AppStyle.heading5SemiBold(
+                              color: AppColor.textColor),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          propertyAddress,
+                          style: AppStyle.heading5Regular(
+                              color: AppColor.descriptionColor),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ).paddingOnly(top: AppSize.appSize4),
+                        Text(
+                          propertyPrice,
+                          style: AppStyle.heading5Medium(
+                              color: AppColor.primaryColor),
+                        ).paddingOnly(top: AppSize.appSize2),
+                      ],
+                    ),
+                  ),
+                ],
+              ).paddingOnly(top: AppSize.appSize26),
+
+              // Action Buttons
+              Column(
+                children: [
+                  // Preview Button with Enhanced Debugging
+                  GestureDetector(
+                    onTap: () {
+                      print('🔍 DEBUG: Preview button tapped');
+                      print('🔍 DEBUG: Property ID value: "$propertyId"');
+                      print(
+                          '🔍 DEBUG: Property ID is empty: ${propertyId.isEmpty}');
+
+                      Get.back();
+
+                      if (propertyId.isNotEmpty) {
+                        print(
+                            '✅ DEBUG: Navigating to property details with ID: "$propertyId"');
+                        Get.toNamed(
+                          AppRoutes.showPropertyDetailsView,
+                          arguments: propertyId,
+                        );
+                      } else {
+                        print(
+                            '❌ DEBUG: Cannot navigate - property ID is empty');
+                        print('🔍 DEBUG: Showing error message to user');
+
+                        Get.snackbar(
+                          'Erreur',
+                          'ID de propriété manquant. Données reçues: ${property?.keys}',
+                          backgroundColor: AppColor.negativeColor,
+                          colorText: AppColor.whiteColor,
+                          duration: Duration(seconds: 5),
+                        );
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      color: Colors.transparent,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppString.preview,
+                            style: AppStyle.heading4Medium(
+                                color: AppColor.textColor),
+                          ),
+                          Image.asset(
+                            Assets.images.arrowRight.path,
+                            width: AppSize.appSize20,
+                          ),
+                        ],
                       ),
-                      Text(
-                        propertyAddress,
-                        style: AppStyle.heading5Regular(
-                            color: AppColor.descriptionColor),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ).paddingOnly(top: AppSize.appSize4),
-                      Text(
-                        propertyPrice,
-                        style: AppStyle.heading5Medium(
-                            color: AppColor.primaryColor),
-                      ).paddingOnly(top: AppSize.appSize2),
-                    ],
-                  ),
-                ),
-              ],
-            ).paddingOnly(top: AppSize.appSize26),
-
-            // Action Buttons
-            Column(
-              children: [
-                // Preview Button with Enhanced Debugging
-                GestureDetector(
-                  onTap: () {
-                    print('🔍 DEBUG: Preview button tapped');
-                    print('🔍 DEBUG: Property ID value: "$propertyId"');
-                    print(
-                        '🔍 DEBUG: Property ID is empty: ${propertyId.isEmpty}');
-
-                    Get.back();
-
-                    if (propertyId.isNotEmpty) {
-                      print(
-                          '✅ DEBUG: Navigating to property details with ID: "$propertyId"');
-                      Get.toNamed(
-                        AppRoutes.showPropertyDetailsView,
-                        arguments: propertyId,
-                      );
-                    } else {
-                      print('❌ DEBUG: Cannot navigate - property ID is empty');
-                      print('🔍 DEBUG: Showing error message to user');
-
-                      Get.snackbar(
-                        'Erreur',
-                        'ID de propriété manquant. Données reçues: ${property?.keys}',
-                        backgroundColor: AppColor.negativeColor,
-                        colorText: AppColor.whiteColor,
-                        duration: Duration(seconds: 5),
-                      );
-                    }
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    color: Colors.transparent,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppString.preview,
-                          style: AppStyle.heading4Medium(
-                              color: AppColor.textColor),
-                        ),
-                        Image.asset(
-                          Assets.images.arrowRight.path,
-                          width: AppSize.appSize20,
-                        ),
-                      ],
                     ),
                   ),
-                ),
 
-                Divider(
-                  color: AppColor.descriptionColor
-                      .withValues(alpha: AppSize.appSizePoint3),
-                  height: AppSize.appSize0,
-                  thickness: AppSize.appSizePoint7,
-                ).paddingOnly(
-                    top: AppSize.appSize15, bottom: AppSize.appSize15),
+                  Divider(
+                    color: AppColor.descriptionColor
+                        .withValues(alpha: AppSize.appSizePoint3),
+                    height: AppSize.appSize0,
+                    thickness: AppSize.appSizePoint7,
+                  ).paddingOnly(
+                      top: AppSize.appSize15, bottom: AppSize.appSize15),
 
-                // Edit Details Button with Enhanced Debugging
-                GestureDetector(
-                  onTap: () {
-                    print('🔍 DEBUG: Edit button tapped');
-                    print('🔍 DEBUG: Property ID value: "$propertyId"');
+                  // Edit Details Button with Enhanced Debugging
+                  GestureDetector(
+                    onTap: () {
+                      print('🔍 DEBUG: Edit button tapped');
+                      print('🔍 DEBUG: Property ID value: "$propertyId"');
 
-                    Get.back();
+                      Get.back();
 
-                    if (propertyId.isNotEmpty) {
-                      print(
-                          '✅ DEBUG: Navigating to edit property with ID: "$propertyId"');
-                      Get.toNamed(
-                        AppRoutes.editPropertyView,
-                        arguments: propertyId,
-                      );
-                    } else {
-                      print(
-                          '❌ DEBUG: Cannot navigate to edit - property ID is empty');
-                      Get.snackbar(
-                        'Erreur',
-                        'ID de propriété manquant pour l\'édition',
-                        backgroundColor: AppColor.negativeColor,
-                        colorText: AppColor.whiteColor,
-                      );
-                    }
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    color: Colors.transparent,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppString.editDetails,
-                          style: AppStyle.heading4Medium(
-                              color: AppColor.textColor),
-                        ),
-                        Image.asset(
-                          Assets.images.arrowRight.path,
-                          width: AppSize.appSize20,
-                        ),
-                      ],
+                      if (propertyId.isNotEmpty) {
+                        print(
+                            '✅ DEBUG: Navigating to edit property with ID: "$propertyId"');
+                        Get.toNamed(
+                          AppRoutes.editPropertyView,
+                          arguments: propertyId,
+                        );
+                      } else {
+                        print(
+                            '❌ DEBUG: Cannot navigate to edit - property ID is empty');
+                        Get.snackbar(
+                          'Erreur',
+                          'ID de propriété manquant pour l\'édition',
+                          backgroundColor: AppColor.negativeColor,
+                          colorText: AppColor.whiteColor,
+                        );
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      color: Colors.transparent,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppString.editDetails,
+                            style: AppStyle.heading4Medium(
+                                color: AppColor.textColor),
+                          ),
+                          Image.asset(
+                            Assets.images.arrowRight.path,
+                            width: AppSize.appSize20,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-                Divider(
-                  color: AppColor.descriptionColor
-                      .withValues(alpha: AppSize.appSizePoint3),
-                  height: AppSize.appSize0,
-                  thickness: AppSize.appSizePoint7,
-                ).paddingOnly(
-                    top: AppSize.appSize15, bottom: AppSize.appSize15),
+                  Divider(
+                    color: AppColor.descriptionColor
+                        .withValues(alpha: AppSize.appSizePoint3),
+                    height: AppSize.appSize0,
+                    thickness: AppSize.appSizePoint7,
+                  ).paddingOnly(
+                      top: AppSize.appSize15, bottom: AppSize.appSize15),
 
-                // Delete Property Button with Enhanced Debugging
-                GestureDetector(
-                  onTap: () {
-                    print('🔍 DEBUG: Delete button tapped');
-                    print('🔍 DEBUG: Property ID value: "$propertyId"');
+                  // Delete Property Button with Enhanced Debugging
+                  GestureDetector(
+                    onTap: () {
+                      print('🔍 DEBUG: Delete button tapped');
+                      print('🔍 DEBUG: Property ID value: "$propertyId"');
 
-                    Get.back();
+                      Get.back();
 
-                    if (propertyId.isNotEmpty) {
-                      print(
-                          '✅ DEBUG: Navigating to delete listing with property data');
-                      Get.toNamed(
-                        AppRoutes.deleteListingView,
-                        arguments: {
-                          'propertyId': propertyId,
-                          'propertyTitle': propertyTitle,
-                          'propertyAddress': propertyAddress,
-                          'propertyImage': propertyImage,
-                        },
-                      );
-                    } else {
-                      print(
-                          '❌ DEBUG: Cannot navigate to delete - property ID is empty');
-                      Get.snackbar(
-                        'Erreur',
-                        'ID de propriété manquant pour la suppression',
-                        backgroundColor: AppColor.negativeColor,
-                        colorText: AppColor.whiteColor,
-                      );
-                    }
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    color: Colors.transparent,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          AppString.deleteProperty,
-                          style: AppStyle.heading4Medium(
-                              color: AppColor.negativeColor),
-                        ),
-                        Image.asset(
-                          Assets.images.arrowRight.path,
-                          width: AppSize.appSize20,
-                          color: AppColor.negativeColor,
-                        ),
-                      ],
+                      if (propertyId.isNotEmpty) {
+                        print(
+                            '✅ DEBUG: Navigating to delete listing with property data');
+                        Get.toNamed(
+                          AppRoutes.deleteListingView,
+                          arguments: {
+                            'propertyId': propertyId,
+                            'propertyTitle': propertyTitle,
+                            'propertyAddress': propertyAddress,
+                            'propertyImage': propertyImage,
+                          },
+                        );
+                      } else {
+                        print(
+                            '❌ DEBUG: Cannot navigate to delete - property ID is empty');
+                        Get.snackbar(
+                          'Erreur',
+                          'ID de propriété manquant pour la suppression',
+                          backgroundColor: AppColor.negativeColor,
+                          colorText: AppColor.whiteColor,
+                        );
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      color: Colors.transparent,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppString.deleteProperty,
+                            style: AppStyle.heading4Medium(
+                                color: AppColor.negativeColor),
+                          ),
+                          Image.asset(
+                            Assets.images.arrowRight.path,
+                            width: AppSize.appSize20,
+                            color: AppColor.negativeColor,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ).paddingOnly(top: AppSize.appSize26),
-          ],
+                ],
+              ).paddingOnly(top: AppSize.appSize26),
+            ],
+          ),
         ),
       ).paddingOnly(bottom: MediaQuery.of(context).viewInsets.bottom);
     },
@@ -439,89 +445,33 @@ String _getPropertyPrice(Map<String, dynamic> property) {
 
 String _getPropertyImage(Map<String, dynamic> property) {
   try {
-    // If the property has images, return the first one
+    // Check if property has images
     if (property['listeImages'] != null &&
         property['listeImages'] is List &&
         (property['listeImages'] as List).isNotEmpty) {
-      return (property['listeImages'] as List).first.toString();
+      String imagePath = (property['listeImages'] as List).first.toString();
+
+      print('🖼️ DEBUG: Raw image path from API: "$imagePath"');
+
+      // If already a full URL, return as-is
+      if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        print('✅ DEBUG: Image is already a full URL');
+        return imagePath;
+      }
+
+      // Otherwise, construct full URL from relative path
+      // Example: "uploads/bien-immos/123.png" -> "http://192.168.1.4:3000/uploads/bien-immos/123.png"
+      String fullUrl = '${ApiConfig.baseUrl}/$imagePath';
+      print('✅ DEBUG: Constructed full image URL: "$fullUrl"');
+      return fullUrl;
     }
 
-    // Fallback to asset images based on property type
-    String type = property['typeBien']?.toString().toLowerCase() ?? '';
-    switch (type) {
-      case 'appartement':
-        return Assets.images.listing1.path;
-      case 'maison':
-        return Assets.images.listing2.path;
-      case 'terrain':
-        return Assets.images.listing3.path;
-      default:
-        return Assets.images.listing4.path;
-    }
+    print('⚠️ DEBUG: No images found in listeImages, will show fallback');
+    // Return empty string so PropertyImageWidget shows fallback
+    return '';
   } catch (e) {
-    print('Error getting property image: $e');
-    return Assets.images.listing1.path;
+    print('❌ DEBUG: Error getting property image: $e');
+    return '';
   }
 }
 
-Widget _buildPropertyImageWidget(String imagePath) {
-  // Check if it's a network image or asset
-  if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppSize.appSize6),
-      child: Image.network(
-        imagePath,
-        width: AppSize.appSize70,
-        height: AppSize.appSize70,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return _buildFallbackImageWidget();
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return _buildImagePlaceholderWidget();
-        },
-      ),
-    );
-  } else {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppSize.appSize6),
-      child: Image.asset(
-        imagePath,
-        width: AppSize.appSize70,
-        height: AppSize.appSize70,
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-}
-
-Widget _buildFallbackImageWidget() {
-  return Container(
-    width: AppSize.appSize70,
-    height: AppSize.appSize70,
-    decoration: BoxDecoration(
-      color: AppColor.backgroundColor,
-      borderRadius: BorderRadius.circular(AppSize.appSize6),
-    ),
-    child: Icon(
-      Icons.home_outlined,
-      size: AppSize.appSize30,
-      color: AppColor.descriptionColor,
-    ),
-  );
-}
-
-Widget _buildImagePlaceholderWidget() {
-  return Container(
-    width: AppSize.appSize70,
-    height: AppSize.appSize70,
-    decoration: BoxDecoration(
-      color: AppColor.backgroundColor,
-      borderRadius: BorderRadius.circular(AppSize.appSize6),
-    ),
-    child: const Center(
-      child: CircularProgressIndicator(),
-    ),
-  );
-}

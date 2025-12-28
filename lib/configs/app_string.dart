@@ -5,8 +5,10 @@ class AppString {
   static const String prenom = "Prénom";
   static const String motDePasse = "Créer un Mot de Passe ";
   static const String tel = "Numéro Téléphone";
-  static const String apiBaseUrl = 'http://localhost:3000';
-//   static const String apiBaseUrl = 'http://192.168.1.3:3000';
+  // DEPRECATED: Use ApiConfig.baseUrl instead for proper mobile support
+  // This is kept for backward compatibility but should not be used
+  @Deprecated('Use ApiConfig.baseUrl instead')
+  static const String apiBaseUrl = 'http://127.0.0.1:3000';
 
   static const String onboardTitle1 = "Bienvenue sur Maxiim ";
   static const String onboardTitle2 =

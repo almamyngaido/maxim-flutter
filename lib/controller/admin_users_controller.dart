@@ -1,12 +1,15 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/user_service.dart';
 
 class AdminUsersController extends GetxController {
   final UserService _userService = UserService();
+  final storage = GetStorage();
 
   RxList<Map<String, dynamic>> unverifiedUsers = <Map<String, dynamic>>[].obs;
   RxBool isLoading = false.obs;
   RxString errorMessage = ''.obs;
+  RxBool isSendingOtp = false.obs;
 
   @override
   void onInit() {
@@ -97,6 +100,69 @@ class AdminUsersController extends GetxController {
       return null;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // Send OTP to user (Admin approves and triggers OTP email)
+  Future<void> sendOtpToUser({String? userId, String? email}) async {
+    try {
+      isSendingOtp.value = true;
+      errorMessage.value = '';
+
+      // Get admin token
+      String? adminToken = storage.read('authToken');
+      if (adminToken == null || adminToken.isEmpty) {
+        throw Exception('Token d\'authentification manquant. Veuillez vous reconnecter.');
+      }
+
+      print('🔄 Sending OTP request...');
+      print('📧 Email: $email');
+      print('🆔 User ID: $userId');
+      print('🔑 Token exists: ${adminToken.isNotEmpty}');
+
+      // Send OTP via API
+      final response = await _userService.sendOtpToUser(
+        userId: userId,
+        email: email,
+        adminToken: adminToken,
+      );
+
+      print('✅ OTP sent successfully!');
+      print('📦 Response type: ${response.runtimeType}');
+      print('📦 Response data: $response');
+
+      // Extract message safely
+      String successMessage = 'Code OTP envoyé à l\'utilisateur par email !';
+      if (response is Map<String, dynamic> && response.containsKey('message')) {
+        successMessage = response['message'] as String? ?? successMessage;
+      }
+
+      Get.snackbar(
+        'Succès',
+        successMessage,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.primaryColor,
+        colorText: Get.theme.colorScheme.onPrimary,
+        duration: const Duration(seconds: 3),
+      );
+
+      // Refresh the unverified users list
+      await fetchUnverifiedUsers();
+    } catch (e, stackTrace) {
+      errorMessage.value = e.toString().replaceAll('Exception: ', '');
+      print('❌ Error sending OTP: $e');
+      print('📍 Stack trace: $stackTrace');
+
+      Get.snackbar(
+        'Erreur',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error,
+        colorText: Get.theme.colorScheme.onError,
+        duration: const Duration(seconds: 4),
+      );
+    } finally {
+      isSendingOtp.value = false;
     }
   }
 

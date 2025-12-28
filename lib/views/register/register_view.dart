@@ -384,10 +384,10 @@ class RegisterView extends StatelessWidget {
                             await registerController.registerUser();
 
                             if (!registerController.isLoading.value) {
-                              // Pass the stored email to the bottom sheet
+                              // Show pending approval dialog instead of OTP sheet
                               print(
-                                  'Opening OTP sheet with email: $userEmail'); // Debug
-                              otpVerificationBottomSheet(context, userEmail);
+                                  'Registration successful, showing pending approval dialog'); // Debug
+                              _showPendingApprovalDialog(context, userEmail);
                             }
                           },
                     child: registerController.isLoading.value
@@ -431,5 +431,168 @@ class RegisterView extends StatelessWidget {
         ),
       ],
     ).paddingOnly(bottom: AppSize.appSize26);
+  }
+
+  // Show pending approval dialog
+  void _showPendingApprovalDialog(BuildContext context, String userEmail) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.check_circle, color: AppColor.primaryColor, size: 28),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Inscription Soumise',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Votre demande d\'inscription a été soumise avec succès !',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Prochaines étapes :',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              _buildStep('1', 'Un administrateur examinera votre demande'),
+              _buildStep(
+                  '2', 'Consultez votre email régulièrement à l\'adresse :'),
+              Padding(
+                padding: const EdgeInsets.only(left: 24, top: 4),
+                child: Text(
+                  userEmail,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppColor.primaryColor,
+                  ),
+                ),
+              ),
+              _buildStep('3',
+                  'Vous recevrez un code OTP par email une fois approuvé'),
+              _buildStep('4',
+                  'Entrez le code OTP dans l\'application pour activer votre compte'),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColor.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        color: AppColor.primaryColor, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Gardez l\'application installée pour recevoir votre code OTP.',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Get.offAllNamed(AppRoutes.loginView); // Navigate to login screen
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSize.appSize16,
+                  vertical: AppSize.appSize12,
+                ),
+              ),
+              child: Text(
+                'Compris',
+                style: AppStyle.heading5Medium(color: AppColor.descriptionColor),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Get.toNamed(AppRoutes.emailVerificationOtpView, arguments: {
+                  'email': userEmail,
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor.primaryColor,
+                foregroundColor: AppColor.whiteColor,
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSize.appSize16,
+                  vertical: AppSize.appSize12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: Icon(Icons.vpn_key, size: 18),
+              label: Text(
+                'Entrer OTP',
+                style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildStep(String number, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: AppColor.primaryColor,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                number,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

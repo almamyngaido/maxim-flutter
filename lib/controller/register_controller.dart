@@ -165,9 +165,10 @@ class RegisterController extends GetxController {
 
       Get.snackbar(
         'Succès',
-        'Inscription réussie ! Vérifiez votre email pour le code OTP.',
+        'Inscription soumise avec succès ! En attente d\'approbation de l\'administrateur. Vous recevrez un code OTP par email une fois approuvé.',
         backgroundColor: Colors.green,
         colorText: Colors.white,
+        duration: const Duration(seconds: 5),
       );
 
       print(

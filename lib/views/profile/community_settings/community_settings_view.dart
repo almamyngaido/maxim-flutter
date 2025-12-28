@@ -45,9 +45,10 @@ class CommunitySettingsView extends StatelessWidget {
 
   Widget buildCommunitySettings() {
     return Obx(() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      return SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Row(
             children: [
               Expanded(
@@ -81,6 +82,7 @@ class CommunitySettingsView extends StatelessWidget {
             height: AppSize.appSize0,
           ).paddingOnly(top: AppSize.appSize16, bottom: AppSize.appSize26),
         ],
+        ),
       );
     }).paddingOnly(
       top: AppSize.appSize10,

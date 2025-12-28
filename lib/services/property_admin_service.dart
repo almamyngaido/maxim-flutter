@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:luxury_real_estate_flutter_ui_kit/services/auth.service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 
 class PropertyAdminService {
-  static const String baseUrl = AuthService.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
 
   final http.Client _client = http.Client();
 

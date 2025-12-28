@@ -30,10 +30,11 @@ class OtpView extends StatelessWidget {
   }
 
   Widget buildOTPField(String phone) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
         Text(
           AppString.otpVerification,
           style: AppStyle.heading1(color: AppColor.textColor),
@@ -144,6 +145,7 @@ class OtpView extends StatelessWidget {
                     ),
             )).paddingOnly(top: AppSize.appSize36),
       ],
+      ),
     ).paddingOnly(left: AppSize.appSize16, right: AppSize.appSize16);
   }
 

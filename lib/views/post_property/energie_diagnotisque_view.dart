@@ -7,12 +7,14 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/energie_diagnostique_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
 
 class EnergyDiagnosticsView extends StatelessWidget {
   EnergyDiagnosticsView({super.key});
 
   final EnergyDiagnosticsController energyDiagnosticsController =
       Get.put(EnergyDiagnosticsController());
+  final PropertyDataManager dataManager = Get.find<PropertyDataManager>();
 
   @override
   Widget build(BuildContext context) {
@@ -505,11 +507,16 @@ class EnergyDiagnosticsView extends StatelessWidget {
         onPressed: () {
           final error = energyDiagnosticsController.getValidationError();
           if (error == null) {
-            // Data is valid, navigate to next page
+            // Get energy diagnostics data
             final diagnosticsData =
                 energyDiagnosticsController.getEnergyDiagnosticsData();
             print('Energy Diagnostics Data: $diagnosticsData'); // Debug log
 
+            // IMPORTANT: Save data to DataManager before navigating
+            dataManager.updateEnergyDiagnostics(diagnosticsData);
+            print('✅ Energy diagnostics data saved to DataManager');
+
+            // Navigate to next page
             Get.toNamed(AppRoutes.priceView);
           } else {
             Get.snackbar(

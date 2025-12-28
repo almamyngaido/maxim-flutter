@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
+import 'package:image_picker/image_picker.dart'; // For XFile
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'dart:io';
 
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dart';
@@ -40,7 +41,7 @@ class PropertyDataManager extends GetxService {
       'energyDiagnostics': null,
       'pricing': null,
       'description': null,
-      'images': <String>[],
+      'images': <XFile>[], // Changed from String to XFile
       'metadata': {
         'createdAt': DateTime.now().toIso8601String(),
         'lastUpdated': DateTime.now().toIso8601String(),
@@ -59,15 +60,15 @@ class PropertyDataManager extends GetxService {
       }
 
       final response = await http.get(
-        Uri.parse('${AppString.apiBaseUrl}/me'),
+        Uri.parse('${ApiConfig.baseUrl}/me'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
-      print(
-          'Getting current user ID - Response status: ${response.statusCode}');
+      print('🔍 Getting current user ID from: ${ApiConfig.baseUrl}/me');
+      print('📡 Response status: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final userData = jsonDecode(response.body);
@@ -179,10 +180,10 @@ class PropertyDataManager extends GetxService {
 
   /// Step 9: Update description and images
   void updateDescriptionAndImages(
-      Map<String, dynamic> description, List<File> imageFiles) {
+      Map<String, dynamic> description, List<XFile> imageFiles) {
     _propertyData['description'] = description;
-    // Store file paths for now - we'll upload them later
-    _propertyData['images'] = imageFiles.map((file) => file.path).toList();
+    // Store XFile references - we'll upload them later
+    _propertyData['images'] = imageFiles; // Store XFile objects directly
     _propertyData['metadata']['currentStep'] = totalSteps;
     _propertyData['metadata']['isComplete'] = true;
     _updateTimestamp();
@@ -384,9 +385,9 @@ class PropertyDataManager extends GetxService {
   }
 
   /// Get image files for upload
-  List<File> getImageFiles() {
-    final imagePaths = _propertyData['images'] as List<String>? ?? [];
-    return imagePaths.map((path) => File(path)).toList();
+  List<XFile> getImageFiles() {
+    final images = _propertyData['images'] as List<dynamic>? ?? [];
+    return images.cast<XFile>();
   }
 
   // ===========================================
@@ -395,8 +396,13 @@ class PropertyDataManager extends GetxService {
 
   /// Submit property to API (placeholder for Step 2)
   Future<bool> submitProperty() async {
+    print('=' * 80);
+    print('🏠 STARTING PROPERTY SUBMISSION');
+    print('=' * 80);
+
     if (!validateRequiredData()) {
       final errors = getValidationErrors();
+      print('❌ Validation failed: ${errors.join(", ")}');
       Get.snackbar(
         'Données incomplètes',
         errors.join('\n'),
@@ -408,26 +414,53 @@ class PropertyDataManager extends GetxService {
       return false;
     }
 
+    print('✅ Validation passed');
+
     isSubmitting.value = true;
 
     try {
       // Get the API service
+      print('📦 Getting ApiService...');
       final apiService = Get.find<ApiService>();
+      print('✅ ApiService found');
 
       // Prepare data for API using your existing method
-      final apiData = prepareForApi();
+      print('📋 Preparing API data...');
+      final apiData = await prepareForApi();
+      print('✅ API data prepared');
+      print('📄 Data structure:');
+      print('   - typeBien: ${apiData['typeBien']}');
+      print('   - localisation: ${apiData['localisation']?['ville']}');
+      print('   - prix HAI: ${apiData['prix']?['hai']}');
+      print('   - utilisateurId: ${apiData['utilisateurId']}');
 
       // Get image files using your existing method
       final imageFiles = getImageFiles();
+      print('📸 Found ${imageFiles.length} images to upload');
+      for (int i = 0; i < imageFiles.length; i++) {
+        print('   Image ${i + 1}: ${imageFiles[i].path}');
+      }
 
-      print('🚀 Submitting property with ${imageFiles.length} images');
-      print('📋 Property data: $apiData');
+      print('');
+      print('🚀 Calling submitPropertyWithImages...');
+      print('   - API Base URL: ${ApiConfig.baseUrl}');
+      print('   - Creating BienImmo first, then uploading images');
+      print('');
 
       // Submit property with images using the API service
       final result = await apiService.submitPropertyWithImages(
-        propertyData: await apiData,
+        propertyData: apiData,
         imageFiles: imageFiles,
       );
+
+      print('');
+      print('📡 Submission response received:');
+      print('   - Result: ${result != null ? "Success" : "Null"}');
+      if (result != null) {
+        print('   - ID: ${result['id']}');
+        print('   - Image count: ${result['imageCount']}');
+        print('   - Uploaded images: ${result['uploadedImages']}');
+      }
 
       if (result != null && result['id'] != null) {
         // Success! Property created
@@ -453,12 +486,22 @@ class PropertyDataManager extends GetxService {
       } else {
         throw Exception('API returned null result');
       }
-    } catch (e) {
-      print('💥 Submission failed: $e');
+    } catch (e, stackTrace) {
+      print('=' * 80);
+      print('💥 SUBMISSION FAILED');
+      print('=' * 80);
+      print('❌ Error: $e');
+      print('📚 Stack trace:');
+      print(stackTrace);
+      print('=' * 80);
 
       String userMessage = 'Erreur lors de la soumission';
       if (e is ApiException) {
         userMessage = e.userMessage;
+        print('🔍 API Exception Details:');
+        print('   - Status Code: ${e.statusCode}');
+        print('   - Message: ${e.message}');
+        print('   - Body: ${e.body}');
       } else {
         userMessage = 'Erreur de connexion: $e';
       }
@@ -473,6 +516,7 @@ class PropertyDataManager extends GetxService {
       );
       return false;
     } finally {
+      print('🔚 Submission process ended (isSubmitting = false)');
       isSubmitting.value = false;
     }
   }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,8 +25,8 @@ class PhotosDescriptionController extends GetxController {
   final RxString titreText = ''.obs;
   final RxString annonceText = ''.obs;
 
-  // Image management (your existing code)
-  final RxList<File> selectedImages = <File>[].obs;
+  // Image management - FIXED: Store XFile for Web compatibility
+  final RxList<XFile> selectedImages = <XFile>[].obs;  // Changed from File to XFile
   final RxBool isUploadingImages = false.obs;
   final ImagePicker _picker = ImagePicker();
 
@@ -72,14 +73,7 @@ class PhotosDescriptionController extends GetxController {
       annonceController.text = existingDescription['annonce'] ?? '';
       print('Loaded existing description data');
     }
-
-    // Load existing images if any (though typically this is the first time)
-    final existingImages =
-        _propertyDataManager.getSectionData<List<String>>('images');
-    if (existingImages != null && existingImages.isNotEmpty) {
-      // Convert paths back to File objects if needed
-      selectedImages.addAll(existingImages.map((path) => File(path)));
-    }
+    // Note: We don't reload images from storage as XFile doesn't persist well
   }
 
   // Image selection methods (your existing code - keeping all as is)
@@ -104,7 +98,8 @@ class PhotosDescriptionController extends GetxController {
       );
 
       if (image != null) {
-        selectedImages.add(File(image.path));
+        selectedImages.add(image);  // Keep XFile, don't convert to File
+        print('📷 Added image from camera: ${image.name}');
       }
     } catch (e) {
       Get.snackbar(
@@ -138,7 +133,8 @@ class PhotosDescriptionController extends GetxController {
       );
 
       if (image != null) {
-        selectedImages.add(File(image.path));
+        selectedImages.add(image);  // Keep XFile, don't convert to File
+        print('📸 Added image from gallery: ${image.name}');
       }
     } catch (e) {
       Get.snackbar(
@@ -177,7 +173,8 @@ class PhotosDescriptionController extends GetxController {
         final List<XFile> imagesToAdd = images.take(remainingSlots).toList();
 
         for (XFile image in imagesToAdd) {
-          selectedImages.add(File(image.path));
+          selectedImages.add(image);  // Keep XFile, don't convert to File
+          print('📸 Added image: ${image.name}');
         }
 
         if (images.length > remainingSlots) {
@@ -211,7 +208,7 @@ class PhotosDescriptionController extends GetxController {
     if (newIndex > oldIndex) {
       newIndex -= 1;
     }
-    final File item = selectedImages.removeAt(oldIndex);
+    final XFile item = selectedImages.removeAt(oldIndex);
     selectedImages.insert(newIndex, item);
   }
 
@@ -497,15 +494,13 @@ class PhotosDescriptionController extends GetxController {
     super.onClose();
   }
 
-// Dans imgDescription.controller.dart, ajoutez SEULEMENT ces 2 méthodes :
-
-  /// Get selected image files for upload
-  List<File> getSelectedImageFiles() {
+  /// Get selected image files for upload (returns XFile for Web compatibility)
+  List<XFile> getSelectedImageFiles() {
     return selectedImages;
   }
 
   /// Get image paths as strings (for backward compatibility)
   List<String> getImagePaths() {
-    return selectedImages.map((file) => file.path).toList();
+    return selectedImages.map((xfile) => xfile.path).toList();
   }
 }

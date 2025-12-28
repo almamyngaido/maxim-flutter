@@ -1,28 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/common/common_rich_text.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/common/cached_network_image_widget.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/controller/favoris_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/viewed_property_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/model/text_segment_model.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/model/bien_immo_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 
 class ViewedPropertyView extends StatelessWidget {
   ViewedPropertyView({super.key});
 
-  final ViewedPropertyController viewedPropertyController = Get.put(ViewedPropertyController());
+  final ViewedPropertyController viewedPropertyController =
+      Get.put(ViewedPropertyController());
+
+  final FavorisController favorisController = Get.put(FavorisController());
 
   @override
   Widget build(BuildContext context) {
-    viewedPropertyController.isSimilarPropertyLiked.value = List<bool>.generate(
-        viewedPropertyController.searchImageList.length, (index) => false);
     return Scaffold(
       backgroundColor: AppColor.whiteColor,
       appBar: buildAppBar(),
-      body: buildViewedPropertyList(),
+      body: Obx(() {
+        if (viewedPropertyController.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: AppColor.primaryColor,
+            ),
+          );
+        }
+
+        if (viewedPropertyController.viewedProperties.isEmpty) {
+          return buildEmptyState();
+        }
+
+        return buildViewedPropertyList();
+      }),
     );
   }
 
@@ -42,211 +59,268 @@ class ViewedPropertyView extends StatelessWidget {
         ),
       ),
       leadingWidth: AppSize.appSize40,
-      title: Text(
-        AppString.viewedProperties,
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
+      title: Obx(() => Text(
+            '${AppString.viewedProperties} (${viewedPropertyController.viewedProperties.length})',
+            style: AppStyle.heading4Medium(color: AppColor.textColor),
+          )),
+    );
+  }
+
+  Widget buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            Assets.images.emptyRatingStar.path,
+            width: AppSize.appSize80,
+            height: AppSize.appSize80,
+          ),
+          const SizedBox(height: AppSize.appSize20),
+          Text(
+            'Aucun bien visité',
+            style: AppStyle.heading4Medium(color: AppColor.textColor),
+          ),
+          const SizedBox(height: AppSize.appSize10),
+          Text(
+            'Les biens que vous consultez apparaîtront ici',
+            style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+            textAlign: TextAlign.center,
+          ).paddingSymmetric(horizontal: AppSize.appSize40),
+        ],
       ),
     );
   }
 
   Widget buildViewedPropertyList() {
-    return ListView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.only(
-        bottom: AppSize.appSize20, top: AppSize.appSize10,
+    return RefreshIndicator(
+      onRefresh: () => viewedPropertyController.loadViewedProperties(),
+      color: AppColor.primaryColor,
+      child: ListView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsets.only(
+          bottom: AppSize.appSize20,
+          top: AppSize.appSize10,
+          left: AppSize.appSize16,
+          right: AppSize.appSize16,
+        ),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: viewedPropertyController.viewedProperties.length,
+        itemBuilder: (context, index) {
+          final property = viewedPropertyController.viewedProperties[index];
+          return buildPropertyCard(property);
+        },
       ),
-      physics: const ClampingScrollPhysics(),
-      itemCount: viewedPropertyController.searchImageList.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Get.toNamed(AppRoutes.propertyDetailsView);
-          },
-          child: Container(
-            padding: const EdgeInsets.all(AppSize.appSize10),
-            margin: const EdgeInsets.only(bottom: AppSize.appSize16),
-            decoration: BoxDecoration(
-              color: AppColor.secondaryColor,
-              borderRadius: BorderRadius.circular(AppSize.appSize12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Stack(
-                  children: [
-                    Image.asset(
-                      viewedPropertyController.searchImageList[index],
-                    ),
-                    Positioned(
-                      right: AppSize.appSize6,
-                      top: AppSize.appSize6,
-                      child: GestureDetector(
-                        onTap: () {
-                          viewedPropertyController.isSimilarPropertyLiked[index] =
-                          !viewedPropertyController.isSimilarPropertyLiked[index];
-                        },
-                        child: Container(
-                          width: AppSize.appSize32,
-                          height: AppSize.appSize32,
-                          decoration: BoxDecoration(
-                            color: AppColor.whiteColor.withValues(alpha:AppSize.appSizePoint50),
-                            borderRadius: BorderRadius.circular(AppSize.appSize6),
-                          ),
-                          child: Center(
-                            child: Obx(() => Image.asset(
-                              viewedPropertyController.isSimilarPropertyLiked[index]
-                                  ? Assets.images.saved.path
-                                  : Assets.images.save.path,
-                              width: AppSize.appSize24,
-                            )),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppString.completedProjects,
-                      style: AppStyle.heading6Regular(color: AppColor.primaryColor),
-                    ),
-                    Text(
-                      viewedPropertyController.searchTitleList[index],
-                      style: AppStyle.heading5SemiBold(color: AppColor.textColor),
-                    ).paddingOnly(top: AppSize.appSize6),
-                    Text(
-                      viewedPropertyController.searchAddressList[index],
-                      style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
-                    ).paddingOnly(top: AppSize.appSize6),
-                  ],
-                ).paddingOnly(top: AppSize.appSize16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      viewedPropertyController.searchRupeesList[index],
-                      style: AppStyle.heading5Medium(color: AppColor.primaryColor),
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          AppString.rating4Point5,
-                          style: AppStyle.heading5Medium(color: AppColor.primaryColor),
-                        ).paddingOnly(right: AppSize.appSize6),
-                        Image.asset(
-                          Assets.images.star.path,
-                          width: AppSize.appSize18,
-                        ),
-                      ],
-                    ),
-                  ],
-                ).paddingOnly(top: AppSize.appSize16),
-                Divider(
-                  color: AppColor.descriptionColor.withValues(alpha:AppSize.appSizePoint3),
-                  height: AppSize.appSize0,
-                ).paddingOnly(top: AppSize.appSize16, bottom: AppSize.appSize16),
-                Row(
-                  children: List.generate(viewedPropertyController.searchPropertyTitleList.length, (index) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSize.appSize6, horizontal: AppSize.appSize14,
-                      ),
-                      margin: const EdgeInsets.only(right: AppSize.appSize16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppSize.appSize12),
-                        border: Border.all(
-                          color: AppColor.primaryColor,
-                          width: AppSize.appSizePoint50,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            viewedPropertyController.searchPropertyImageList[index],
-                            width: AppSize.appSize18,
-                            height: AppSize.appSize18,
-                          ).paddingOnly(right: AppSize.appSize6),
-                          Text(
-                            viewedPropertyController.searchPropertyTitleList[index],
-                            style: AppStyle.heading5Medium(color: AppColor.textColor),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ),
-                IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      CommonRichText(
-                        segments: [
-                          TextSegment(
-                            text: AppString.squareFeet966,
-                            style: AppStyle.heading5Regular(color: AppColor.textColor),
-                          ),
-                          TextSegment(
-                            text: AppString.builtUp,
-                            style: AppStyle.heading7Regular(color: AppColor.descriptionColor),
-                          ),
-                        ],
-                      ),
-                      const VerticalDivider(
-                        color: AppColor.descriptionColor,
-                        width: AppSize.appSize0,
-                        indent: AppSize.appSize2,
-                        endIndent: AppSize.appSize2,
-                      ).paddingOnly(left: AppSize.appSize8, right: AppSize.appSize8),
-                      CommonRichText(
-                        segments: [
-                          TextSegment(
-                            text: AppString.squareFeet773,
-                            style: AppStyle.heading5Regular(color: AppColor.textColor),
-                          ),
-                          TextSegment(
-                            text: AppString.builtUp,
-                            style: AppStyle.heading7Regular(color: AppColor.descriptionColor),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ).paddingOnly(top: AppSize.appSize10),
-                ),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: AppSize.appSize35,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      viewedPropertyController.launchDialer();
-                    },
-                    style: ButtonStyle(
-                      elevation: const WidgetStatePropertyAll(AppSize.appSize0),
-                      shape: WidgetStatePropertyAll(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppSize.appSize12),
-                          side: const BorderSide(
-                              color: AppColor.primaryColor,
-                              width: AppSize.appSizePoint7
-                          ),
-                        ),
-                      ),
-                      backgroundColor: WidgetStateColor.transparent,
-                    ),
-                    child: Text(
-                      AppString.getCallbackButton,
-                      style: AppStyle.heading6Regular(color: AppColor.primaryColor),
-                    ),
-                  ),
-                ).paddingOnly(top: AppSize.appSize26),
-              ],
-            ),
-          ),
+    );
+  }
+
+  Widget buildPropertyCard(BienImmo property) {
+    // Get first image URL
+    String? imageUrl;
+    if (property.listeImages.isNotEmpty) {
+      imageUrl = '${ApiConfig.baseUrl}/bien-immos/${property.id}/images/${property.listeImages[0]}';
+    }
+
+    // Format price
+    final formattedPrice = '${property.prixHAI.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]} ',
+        )} €';
+
+    // Get property type display
+    String propertyTypeDisplay = property.typeBien;
+
+    // Build address string using the displayAddress helper
+    String address = property.displayAddress;
+
+    return GestureDetector(
+      onTap: () {
+        Get.toNamed(
+          AppRoutes.propertyDetailsView,
+          arguments: property,
         );
       },
-    ).paddingOnly(
-      left: AppSize.appSize16, right: AppSize.appSize16,
+      child: Container(
+        padding: const EdgeInsets.all(AppSize.appSize10),
+        margin: const EdgeInsets.only(bottom: AppSize.appSize16),
+        decoration: BoxDecoration(
+          color: AppColor.secondaryColor,
+          borderRadius: BorderRadius.circular(AppSize.appSize12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Property Image with Favorite Button
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSize.appSize8),
+                  child: imageUrl != null
+                      ? CachedNetworkImageWidget(
+                          imageUrl: imageUrl,
+                          height: 200,
+                          width: double.infinity,
+                        )
+                      : Container(
+                          height: 200,
+                          width: double.infinity,
+                          color: AppColor.descriptionColor.withValues(alpha: 0.3),
+                          child: Center(
+                            child: Icon(
+                              Icons.home,
+                              size: 60,
+                              color: AppColor.descriptionColor,
+                            ),
+                          ),
+                        ),
+                ),
+                Positioned(
+                  right: AppSize.appSize6,
+                  top: AppSize.appSize6,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (property.id != null) {
+                        favorisController.toggleFavori(property.id!);
+                      }
+                    },
+                    child: Container(
+                      width: AppSize.appSize32,
+                      height: AppSize.appSize32,
+                      decoration: BoxDecoration(
+                        color: AppColor.whiteColor
+                            .withValues(alpha: AppSize.appSizePoint50),
+                        borderRadius: BorderRadius.circular(AppSize.appSize6),
+                      ),
+                      child: Center(
+                        child: Obx(() {
+                          final isFavorite =
+                              favorisController.estEnFavori(property.id ?? '');
+                          return Image.asset(
+                            isFavorite
+                                ? Assets.images.ratingStar.path
+                                : Assets.images.emptyRatingStar.path,
+                            width: AppSize.appSize24,
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Property Type
+            if (propertyTypeDisplay.isNotEmpty)
+              Text(
+                propertyTypeDisplay,
+                style: AppStyle.heading6Regular(color: AppColor.primaryColor),
+              ).paddingOnly(top: AppSize.appSize16),
+
+            // Property Title
+            Text(
+              property.titre.isNotEmpty ? property.titre : 'Sans titre',
+              style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ).paddingOnly(top: AppSize.appSize6),
+
+            // Address
+            if (address.isNotEmpty)
+              Text(
+                address,
+                style:
+                    AppStyle.heading5Regular(color: AppColor.descriptionColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ).paddingOnly(top: AppSize.appSize6),
+
+            // Price
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formattedPrice,
+                  style: AppStyle.heading5Medium(color: AppColor.primaryColor),
+                ),
+              ],
+            ).paddingOnly(top: AppSize.appSize16),
+
+            // Property Details (bedrooms, bathrooms, surface)
+            if (property.chambres != null ||
+                property.salleDeBain != null)
+              Column(
+                children: [
+                  Divider(
+                    color: AppColor.descriptionColor
+                        .withValues(alpha: AppSize.appSizePoint3),
+                    height: AppSize.appSize0,
+                  ).paddingOnly(
+                      top: AppSize.appSize16, bottom: AppSize.appSize16),
+                  Row(
+                    children: [
+                      if (property.chambres != null && property.chambres! > 0)
+                        _buildDetailChip(
+                          Assets.images.bed.path,
+                          '${property.chambres}',
+                        ),
+                      if (property.salleDeBain != null &&
+                          property.salleDeBain! > 0)
+                        _buildDetailChip(
+                          Assets.images.bath.path,
+                          '${property.salleDeBain}',
+                        ).paddingOnly(
+                            left: (property.chambres != null &&
+                                    property.chambres! > 0)
+                                ? AppSize.appSize12
+                                : 0),
+                      _buildDetailChip(
+                        Assets.images.plot.path,
+                        '${property.surfaceHabitable.toInt()} m²',
+                      ).paddingOnly(
+                          left: ((property.chambres != null &&
+                                      property.chambres! > 0) ||
+                                  (property.salleDeBain != null &&
+                                      property.salleDeBain! > 0))
+                              ? AppSize.appSize12
+                              : 0),
+                    ],
+                  ),
+                ],
+              ),
+
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailChip(String iconPath, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSize.appSize6,
+        horizontal: AppSize.appSize14,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSize.appSize12),
+        border: Border.all(
+          color: AppColor.primaryColor,
+          width: AppSize.appSizePoint50,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            iconPath,
+            width: AppSize.appSize18,
+            height: AppSize.appSize18,
+          ).paddingOnly(right: AppSize.appSize6),
+          Text(
+            text,
+            style: AppStyle.heading5Medium(color: AppColor.textColor),
+          ),
+        ],
+      ),
     );
   }
 }

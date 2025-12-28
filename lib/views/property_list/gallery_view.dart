@@ -4,26 +4,32 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/controller/gallery_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 
 class GalleryView extends StatelessWidget {
   GalleryView({super.key});
 
-  final GalleryController galleryController = Get.put(GalleryController());
-
   @override
   Widget build(BuildContext context) {
+    // Get images from navigation arguments
+    final Map<String, dynamic>? args = Get.arguments as Map<String, dynamic>?;
+    final List<String> images = args?['images'] ?? [];
+    final int initialIndex = args?['initialIndex'] ?? 0;
+
+    // Create a PageController with the initial index
+    final PageController pageController = PageController(initialPage: initialIndex);
+    final RxInt currentImageIndex = initialIndex.obs;
+
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
-      appBar: buildAppBar(),
-      body: buildGallery(),
+      backgroundColor: Colors.black,
+      appBar: buildAppBar(currentImageIndex, images.length),
+      body: buildGallery(images, pageController, currentImageIndex),
     );
   }
 
-  AppBar buildAppBar() {
+  AppBar buildAppBar(RxInt currentImageIndex, int totalImages) {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.black,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -31,76 +37,125 @@ class GalleryView extends StatelessWidget {
           onTap: () {
             Get.back();
           },
-          child: Image.asset(
-            Assets.images.backArrow.path,
+          child: Icon(
+            Icons.close,
+            color: AppColor.whiteColor,
+            size: AppSize.appSize24,
           ),
         ),
       ),
       leadingWidth: AppSize.appSize40,
-      title: Text(
-        AppString.gallery,
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
-      ),
+      title: Obx(() => Text(
+            '${currentImageIndex.value + 1} / $totalImages',
+            style: AppStyle.heading4Medium(color: AppColor.whiteColor),
+          )),
+      centerTitle: true,
     );
   }
 
-  SingleChildScrollView buildGallery() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: AppSize.appSize10),
-      physics: const ClampingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppString.hall,
-            style: AppStyle.heading3Medium(color: AppColor.textColor),
+  Widget buildGallery(List<String> images, PageController pageController, RxInt currentImageIndex) {
+    if (images.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_not_supported_outlined,
+              size: AppSize.appSize80,
+              color: AppColor.descriptionColor,
+            ),
+            SizedBox(height: AppSize.appSize16),
+            Text(
+              'Aucune image disponible',
+              style: AppStyle.heading4Medium(color: AppColor.whiteColor),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return PageView.builder(
+      controller: pageController,
+      itemCount: images.length,
+      onPageChanged: (index) {
+        currentImageIndex.value = index;
+      },
+      itemBuilder: (context, index) {
+        final imageUrl = images[index];
+
+        return Container(
+          color: Colors.black,
+          child: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: _buildImage(imageUrl),
+            ),
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: galleryController.hallImageList.length,
-            itemBuilder: (context, index) {
-              return Image.asset(
-                galleryController.hallImageList[index],
-                height: AppSize.appSize150,
-              ).paddingOnly(bottom: AppSize.appSize4);
-            },
-          ).paddingOnly(top: AppSize.appSize10),
-          Text(
-            AppString.kitchen,
-            style: AppStyle.heading3Medium(color: AppColor.textColor),
-          ).paddingOnly(top: AppSize.appSize14),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: galleryController.kitchenImageList.length,
-            itemBuilder: (context, index) {
-              return Image.asset(
-                galleryController.kitchenImageList[index],
-                height: AppSize.appSize150,
-              ).paddingOnly(bottom: AppSize.appSize4);
-            },
-          ).paddingOnly(top: AppSize.appSize10),
-          Text(
-            AppString.bedroom,
-            style: AppStyle.heading3Medium(color: AppColor.textColor),
-          ).paddingOnly(top: AppSize.appSize14),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: galleryController.bedroomImageList.length,
-            itemBuilder: (context, index) {
-              return Image.asset(
-                galleryController.bedroomImageList[index],
-                height: AppSize.appSize150,
-              ).paddingOnly(bottom: AppSize.appSize4);
-            },
-          ).paddingOnly(top: AppSize.appSize10),
-        ],
-      ).paddingOnly(
-        top: AppSize.appSize10,
-        left: AppSize.appSize16, right: AppSize.appSize16,
-      ),
+        );
+      },
     );
+  }
+
+  Widget _buildImage(String imageUrl) {
+    // Check if it's a network URL or local asset
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              color: AppColor.primaryColor,
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.broken_image_outlined,
+                size: AppSize.appSize60,
+                color: AppColor.descriptionColor,
+              ),
+              SizedBox(height: AppSize.appSize12),
+              Text(
+                'Erreur de chargement',
+                style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Local asset
+      return Image.asset(
+        imageUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.broken_image_outlined,
+                size: AppSize.appSize60,
+                color: AppColor.descriptionColor,
+              ),
+              SizedBox(height: AppSize.appSize12),
+              Text(
+                'Image non trouvée',
+                style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 }

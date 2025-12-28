@@ -70,7 +70,7 @@ class InterestingReadsDetailsView extends StatelessWidget {
                 },);
               },
               child: Image.asset(
-                Assets.images.save.path,
+                Assets.images.emptyRatingStar.path,
                 width: AppSize.appSize24,
                 color: AppColor.descriptionColor,
               ).paddingOnly(right: AppSize.appSize26),

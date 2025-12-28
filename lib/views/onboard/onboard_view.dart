@@ -19,50 +19,59 @@ class OnboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.whiteColor,
-      body: Column(
+      body: Stack(
         children: [
+          // Background PageView with images
+          PageView.builder(
+            controller: pageController,
+            onPageChanged: (index) {
+              onboardController.currentIndex.value = index;
+            },
+            itemCount: onboardController.titles.length,
+            itemBuilder: (context, index) {
+              return buildPageBackground(index);
+            },
+          ),
+
+          // Gradient overlay for better text visibility
           Container(
-            padding: const EdgeInsets.only(
-              top: AppSize.appSize60,
-              left: AppSize.appSize16,
-            ),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Image.asset(
-                Assets.images.appLogo.path,
-                width: AppSize.appSize75,
-                height: AppSize.appSize75,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColor.whiteColor.withValues(alpha: 0.7),
+                  AppColor.whiteColor.withValues(alpha: 0.3),
+                  AppColor.textColor.withValues(alpha: 0.6),
+                ],
+                stops: const [0.0, 0.5, 1.0],
               ),
             ),
           ),
-          Expanded(
-            child: Stack(
+
+          // Content overlay
+          SafeArea(
+            child: Column(
               children: [
-                PageView.builder(
-                  controller: pageController,
-                  onPageChanged: (index) {
-                    onboardController.currentIndex.value = index;
-                  },
-                  itemCount: onboardController.titles.length,
-                  itemBuilder: (context, index) {
-                    return Obx(() => AnimatedSwitcher(
-                          duration:
-                              const Duration(milliseconds: AppSize.size500),
-                          transitionBuilder:
-                              (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                                opacity: animation, child: child);
-                          },
-                          child: buildPage(index,
-                              key: ValueKey<int>(
-                                  onboardController.currentIndex.value)),
-                        ));
-                  },
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Obx(() => buildBottomSection()),
-                ),
+                // Top section with logo and skip button
+                buildTopBar(),
+
+                const Spacer(),
+
+                // Content cards with animation
+                Obx(() => buildContentCard()),
+
+                const SizedBox(height: AppSize.appSize40),
+
+                // Page indicators
+                Obx(() => buildPageIndicators()),
+
+                const SizedBox(height: AppSize.appSize30),
+
+                // Bottom buttons
+                Obx(() => buildBottomButtons()),
+
+                const SizedBox(height: AppSize.appSize40),
               ],
             ),
           ),
@@ -71,100 +80,291 @@ class OnboardView extends StatelessWidget {
     );
   }
 
-  Widget buildPage(int index, {required Key key}) {
-    return Column(
-      key: key,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSize.appSize16),
-          margin: const EdgeInsets.only(top: AppSize.appSize26),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                onboardController.titles[index],
-                style: const TextStyle(
-                  fontSize: AppSize.appSize30,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: AppFont.interBold,
-                  color: AppColor.textColor,
-                ),
-              ),
-              Text(
-                onboardController.subtitles[index],
-                style:
-                    AppStyle.heading3Medium(color: AppColor.descriptionColor),
-              ).paddingOnly(top: AppSize.appSize14),
-            ],
-          ),
+  Widget buildPageBackground(int index) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(onboardController.images[index]),
+          fit: BoxFit.cover,
         ),
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.only(top: AppSize.appSize40),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppSize.appSize16),
-                topRight: Radius.circular(AppSize.appSize16),
-              ),
-              image: DecorationImage(
-                image: AssetImage(onboardController.images[index]),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
-  Widget buildBottomSection() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSize.appSize26),
-      padding: const EdgeInsets.all(AppSize.appSize6),
-      height: AppSize.appSize68,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSize.appSize50),
-        color: AppColor.textColor.withValues(alpha: AppSize.appSizePoint90),
+  Widget buildTopBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSize.appSize20,
+        vertical: AppSize.appSize16,
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            onboardController.currentIndex.value ==
-                    onboardController.titles.length - 1
-                ? AppString.getStartButton
-                : AppString.nextButton,
-            style: AppStyle.heading3Medium(color: AppColor.whiteColor),
-          ).paddingOnly(
-            left: AppSize.appSize10,
-            right: onboardController.currentIndex.value ==
-                    onboardController.titles.length - 1
-                ? AppSize.appSize22
-                : AppSize.appSize60,
+          // Logo
+          Container(
+            padding: const EdgeInsets.all(AppSize.appSize12),
+            decoration: BoxDecoration(
+              color: AppColor.whiteColor,
+              borderRadius: BorderRadius.circular(AppSize.appSize16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: AppSize.appSize16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Image.asset(
+              Assets.images.appLogo.path,
+              width: AppSize.appSize50,
+              height: AppSize.appSize50,
+            ),
           ),
-          GestureDetector(
-            onTap: () {
-              if (onboardController.currentIndex.value <
-                  onboardController.titles.length - 1) {
-                pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              } else {
-                Get.offAllNamed(AppRoutes.loginView);
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.all(AppSize.appSize16),
-              decoration: const BoxDecoration(
+
+          // Skip button
+          Obx(() {
+            if (onboardController.currentIndex.value <
+                onboardController.titles.length - 1) {
+              return GestureDetector(
+                onTap: () => Get.offAllNamed(AppRoutes.loginView),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSize.appSize20,
+                    vertical: AppSize.appSize10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColor.whiteColor.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(AppSize.appSize20),
+                    border: Border.all(
+                      color: AppColor.primaryColor.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    'Passer',
+                    style: AppStyle.heading5Medium(color: AppColor.primaryColor),
+                  ),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget buildContentCard() {
+    final index = onboardController.currentIndex.value;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 400),
+      switchInCurve: Curves.easeInOut,
+      switchOutCurve: Curves.easeInOut,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.0, 0.3),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: Container(
+        key: ValueKey<int>(index),
+        margin: const EdgeInsets.symmetric(horizontal: AppSize.appSize24),
+        padding: const EdgeInsets.all(AppSize.appSize32),
+        decoration: BoxDecoration(
+          color: AppColor.whiteColor.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(AppSize.appSize24),
+          boxShadow: [
+            BoxShadow(
+              color: AppColor.primaryColor.withValues(alpha: 0.15),
+              blurRadius: AppSize.appSize30,
+              offset: const Offset(0, 10),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Decorative line
+            Container(
+              width: AppSize.appSize60,
+              height: AppSize.appSize4,
+              decoration: BoxDecoration(
                 color: AppColor.primaryColor,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(AppSize.appSize2),
               ),
-              child: Center(
-                child: Image.asset(
-                  Assets.images.nextButton.path,
-                  width: AppSize.appSize24,
+            ),
+
+            const SizedBox(height: AppSize.appSize24),
+
+            // Title
+            Text(
+              onboardController.titles[index],
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: AppSize.appSize28,
+                fontWeight: FontWeight.w800,
+                fontFamily: AppFont.interBold,
+                color: AppColor.textColor,
+                height: 1.3,
+              ),
+            ),
+
+            const SizedBox(height: AppSize.appSize16),
+
+            // Subtitle
+            Text(
+              onboardController.subtitles[index],
+              textAlign: TextAlign.center,
+              style: AppStyle.heading4Regular(
+                color: AppColor.descriptionColor,
+              ).copyWith(height: 1.6),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildPageIndicators() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        onboardController.titles.length,
+        (index) {
+          final isActive = onboardController.currentIndex.value == index;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.symmetric(horizontal: AppSize.appSize4),
+            height: AppSize.appSize8,
+            width: isActive ? AppSize.appSize32 : AppSize.appSize8,
+            decoration: BoxDecoration(
+              color: isActive
+                  ? AppColor.primaryColor
+                  : AppColor.whiteColor.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(AppSize.appSize4),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppColor.primaryColor.withValues(alpha: 0.4),
+                        blurRadius: AppSize.appSize8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : [],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget buildBottomButtons() {
+    final isLastPage = onboardController.currentIndex.value ==
+        onboardController.titles.length - 1;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSize.appSize24),
+      child: Row(
+        children: [
+          // Previous button (only show if not first page)
+          if (onboardController.currentIndex.value > 0)
+            Expanded(
+              flex: 1,
+              child: GestureDetector(
+                onTap: () {
+                  pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                child: Container(
+                  height: AppSize.appSize56,
+                  decoration: BoxDecoration(
+                    color: AppColor.whiteColor.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(AppSize.appSize16),
+                    border: Border.all(
+                      color: AppColor.primaryColor.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: AppColor.primaryColor,
+                      size: AppSize.appSize20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          if (onboardController.currentIndex.value > 0)
+            const SizedBox(width: AppSize.appSize16),
+
+          // Next/Get Started button
+          Expanded(
+            flex: 3,
+            child: GestureDetector(
+              onTap: () {
+                if (!isLastPage) {
+                  pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                } else {
+                  Get.offAllNamed(AppRoutes.loginView);
+                }
+              },
+              child: Container(
+                height: AppSize.appSize56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColor.primaryColor,
+                      AppColor.primaryColor.withValues(alpha: 0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(AppSize.appSize16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColor.primaryColor.withValues(alpha: 0.4),
+                      blurRadius: AppSize.appSize16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isLastPage ? AppString.getStartButton : AppString.nextButton,
+                      style: AppStyle.heading3SemiBold(color: AppColor.whiteColor),
+                    ),
+                    const SizedBox(width: AppSize.appSize12),
+                    Container(
+                      padding: const EdgeInsets.all(AppSize.appSize4),
+                      decoration: BoxDecoration(
+                        color: AppColor.whiteColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(AppSize.appSize8),
+                      ),
+                      child: Icon(
+                        isLastPage
+                            ? Icons.check_rounded
+                            : Icons.arrow_forward_ios_rounded,
+                        color: AppColor.whiteColor,
+                        size: AppSize.appSize18,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

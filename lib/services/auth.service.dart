@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 
 class AuthService extends GetxService {
-  // Replace with your actual API base URL
-  static const String baseUrl = 'http://127.0.0.1:3000'; // Update this!
-  // static const String baseUrl = 'http://192.168.1.3:3000'; // Update this!
-
-  static const String apiUrl = '$baseUrl';
+  // Use centralized API configuration
+  static String get baseUrl => ApiConfig.baseUrl;
+  static String get apiUrl => ApiConfig.apiUrl;
 
   // HTTP client with default headers
   final http.Client _client = http.Client();
@@ -43,8 +42,20 @@ class AuthService extends GetxService {
         return json.decode(response.body);
       } else {
         final errorData = json.decode(response.body);
-        throw Exception(
-            errorData['error']?.toString() ?? 'Erreur lors de l\'inscription');
+
+        // Extract error message properly
+        String errorMessage = 'Erreur lors de l\'inscription';
+        if (errorData['message'] != null && errorData['message'] is String) {
+          errorMessage = errorData['message'];
+        } else if (errorData['error'] != null) {
+          if (errorData['error'] is Map && errorData['error']['message'] != null) {
+            errorMessage = errorData['error']['message'].toString();
+          } else if (errorData['error'] is String) {
+            errorMessage = errorData['error'];
+          }
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
       print('Signup error: $e');
@@ -78,8 +89,20 @@ class AuthService extends GetxService {
       } else if (response.statusCode == 401) {
         // Handle specific 401 errors from backend
         final errorData = json.decode(response.body);
-        String errorMessage =
-            errorData['message'] ?? errorData['error'] ?? 'Invalid credentials';
+
+        // Extract error message from nested error object or top-level message
+        String errorMessage = 'Invalid credentials';
+
+        if (errorData['message'] != null && errorData['message'] is String) {
+          errorMessage = errorData['message'];
+        } else if (errorData['error'] != null) {
+          // Handle nested error object
+          if (errorData['error'] is Map && errorData['error']['message'] != null) {
+            errorMessage = errorData['error']['message'].toString();
+          } else if (errorData['error'] is String) {
+            errorMessage = errorData['error'];
+          }
+        }
 
         // Handle specific backend error messages
         if (errorMessage.contains('Email not verified')) {
@@ -97,9 +120,21 @@ class AuthService extends GetxService {
         throw Exception(errorMessage);
       } else {
         final errorData = json.decode(response.body);
-        throw Exception(errorData['error']?.toString() ??
-            errorData['message']?.toString() ??
-            'Erreur de connexion (${response.statusCode})');
+
+        // Extract error message properly from nested structures
+        String errorMessage = 'Erreur de connexion (${response.statusCode})';
+
+        if (errorData['message'] != null && errorData['message'] is String) {
+          errorMessage = errorData['message'];
+        } else if (errorData['error'] != null) {
+          if (errorData['error'] is Map && errorData['error']['message'] != null) {
+            errorMessage = errorData['error']['message'].toString();
+          } else if (errorData['error'] is String) {
+            errorMessage = errorData['error'];
+          }
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
       print('Login error: $e');
@@ -133,9 +168,20 @@ class AuthService extends GetxService {
         return responseData;
       } else {
         final errorData = json.decode(response.body);
-        throw Exception(errorData['error']?.toString() ??
-            errorData['message']?.toString() ??
-            'Erreur de connexion OTP');
+
+        // Extract error message properly
+        String errorMessage = 'Erreur de connexion OTP';
+        if (errorData['message'] != null && errorData['message'] is String) {
+          errorMessage = errorData['message'];
+        } else if (errorData['error'] != null) {
+          if (errorData['error'] is Map && errorData['error']['message'] != null) {
+            errorMessage = errorData['error']['message'].toString();
+          } else if (errorData['error'] is String) {
+            errorMessage = errorData['error'];
+          }
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
       print('Login with OTP error: $e');
@@ -194,9 +240,17 @@ class AuthService extends GetxService {
         String errorMessage = 'Code OTP invalide';
         try {
           final errorData = json.decode(response.body);
-          errorMessage = errorData['error']?.toString() ??
-              errorData['message']?.toString() ??
-              'Erreur de vérification OTP (${response.statusCode})';
+
+          // Extract error message properly
+          if (errorData['message'] != null && errorData['message'] is String) {
+            errorMessage = errorData['message'];
+          } else if (errorData['error'] != null) {
+            if (errorData['error'] is Map && errorData['error']['message'] != null) {
+              errorMessage = errorData['error']['message'].toString();
+            } else if (errorData['error'] is String) {
+              errorMessage = errorData['error'];
+            }
+          }
         } catch (parseError) {
           errorMessage =
               'Erreur de vérification OTP (${response.statusCode}): ${response.body}';
@@ -237,11 +291,69 @@ class AuthService extends GetxService {
         return;
       } else {
         final errorData = json.decode(response.body);
-        throw Exception(
-            errorData['error']?.toString() ?? 'Erreur lors du renvoi du code');
+
+        // Extract error message properly
+        String errorMessage = 'Erreur lors du renvoi du code';
+        if (errorData['message'] != null && errorData['message'] is String) {
+          errorMessage = errorData['message'];
+        } else if (errorData['error'] != null) {
+          if (errorData['error'] is Map && errorData['error']['message'] != null) {
+            errorMessage = errorData['error']['message'].toString();
+          } else if (errorData['error'] is String) {
+            errorMessage = errorData['error'];
+          }
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
       print('Resend OTP error: $e');
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('Connection')) {
+        throw Exception(
+            'Erreur de connexion. Vérifiez votre connexion internet.');
+      }
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  // Get current user data from /me endpoint
+  Future<Map<String, dynamic>> getCurrentUser(String token) async {
+    try {
+      print('Getting current user from /me endpoint');
+
+      final response = await _client.get(
+        Uri.parse('$apiUrl/me'),
+        headers: {
+          ..._headers,
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('Get current user response status: ${response.statusCode}');
+      print('Get current user response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        final errorData = json.decode(response.body);
+
+        // Extract error message properly
+        String errorMessage = 'Erreur lors de la récupération de l\'utilisateur';
+        if (errorData['message'] != null && errorData['message'] is String) {
+          errorMessage = errorData['message'];
+        } else if (errorData['error'] != null) {
+          if (errorData['error'] is Map && errorData['error']['message'] != null) {
+            errorMessage = errorData['error']['message'].toString();
+          } else if (errorData['error'] is String) {
+            errorMessage = errorData['error'];
+          }
+        }
+
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      print('Get current user error: $e');
       if (e.toString().contains('SocketException') ||
           e.toString().contains('Connection')) {
         throw Exception(
@@ -271,8 +383,20 @@ class AuthService extends GetxService {
         return;
       } else {
         final errorData = json.decode(response.body);
-        throw Exception(errorData['error']?.toString() ??
-            'Erreur lors de la réinitialisation');
+
+        // Extract error message properly
+        String errorMessage = 'Erreur lors de la réinitialisation';
+        if (errorData['message'] != null && errorData['message'] is String) {
+          errorMessage = errorData['message'];
+        } else if (errorData['error'] != null) {
+          if (errorData['error'] is Map && errorData['error']['message'] != null) {
+            errorMessage = errorData['error']['message'].toString();
+          } else if (errorData['error'] is String) {
+            errorMessage = errorData['error'];
+          }
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
       print('Forgot password error: $e');

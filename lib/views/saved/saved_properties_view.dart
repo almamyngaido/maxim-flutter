@@ -145,7 +145,7 @@ class SavedPropertiesView extends StatelessWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: AppSize.appSize16,
                 mainAxisSpacing: AppSize.appSize16,
-                childAspectRatio: 1.2,
+                childAspectRatio: 0.7,
               ),
               itemCount: favorisController.favoris.length,
               itemBuilder: (context, index) {
@@ -217,7 +217,7 @@ class SavedPropertiesView extends StatelessWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: AppSize.appSize16,
                 mainAxisSpacing: AppSize.appSize16,
-                childAspectRatio: 1.2,
+                childAspectRatio: 0.7,
               ),
               itemCount: images.length,
               itemBuilder: (context, index) {
@@ -270,7 +270,7 @@ class SavedPropertiesView extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
           children: [
                 Stack(
                   children: [
@@ -540,7 +540,7 @@ class SavedPropertiesView extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Image avec bouton de suppression des favoris
             Stack(

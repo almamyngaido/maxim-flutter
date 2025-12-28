@@ -1,3 +1,5 @@
+import 'utilisateur_model.dart';
+
 class BienImmo {
   // Basic info
   String? id;
@@ -97,6 +99,7 @@ class BienImmo {
 
   // Relations
   String utilisateurId;
+  Utilisateur? utilisateur; // Owner information
 
   BienImmo({
     this.id,
@@ -170,6 +173,7 @@ class BienImmo {
     required this.datePublication,
     required this.statut,
     required this.utilisateurId,
+    this.utilisateur,
   });
 
   factory BienImmo.fromJson(Map<String, dynamic> json) {
@@ -296,6 +300,11 @@ class BienImmo {
       datePublication: json['datePublication'] ?? '',
       statut: json['statut'] ?? '',
       utilisateurId: json['utilisateurId'] ?? '',
+
+      // Parse utilisateur if available
+      utilisateur: json['utilisateur'] != null
+          ? Utilisateur.fromJson(json['utilisateur'])
+          : null,
     );
   }
 

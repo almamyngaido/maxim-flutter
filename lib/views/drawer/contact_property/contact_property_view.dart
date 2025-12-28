@@ -152,8 +152,8 @@ class ContactPropertyView extends StatelessWidget {
                                 child: Center(
                                   child: Obx(() => Image.asset(
                                     contactPropertyController.isSimilarPropertyLiked[index]
-                                        ? Assets.images.save.path
-                                        : Assets.images.saved.path,
+                                        ? Assets.images.emptyRatingStar.path
+                                        : Assets.images.ratingStar.path,
                                     width: AppSize.appSize24,
                                   )),
                                 ),

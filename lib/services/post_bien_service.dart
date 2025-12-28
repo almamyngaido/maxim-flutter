@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart'; // Ajouté pour kIsWeb
+import 'package:image_picker/image_picker.dart'; // For XFile
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 
 class ApiService extends GetxService {
-  // Base URL for your LoopBack API
-  static const String baseUrl ='http://localhost:3000'; // Change to your server URL
-  // static const String baseUrl ='http://192.168.1.3:3000'; // Change to your server URL
+  // Use centralized API configuration
+  static String get baseUrl => ApiConfig.baseUrl;
 
   // Default headers
   Map<String, String> get headers => {
@@ -154,59 +155,225 @@ class ApiService extends GetxService {
 
   // ================== IMAGE UPLOAD ENDPOINTS ==================
 
-  /// Upload a single image to a specific BienImmo using correct endpoint
+  /// NEW: Upload images BEFORE creating BienImmo (to temporary storage)
+  Future<List<String>> uploadImagesToTemp(List<XFile> images) async {
+    List<String> uploadedUrls = [];
+
+    print('📸 Starting temporary upload for ${images.length} images...');
+
+    for (int i = 0; i < images.length; i++) {
+      try {
+        print('📤 Uploading image ${i + 1}/${images.length}...');
+        String? imageUrl = await uploadSingleImageToTemp(images[i]);
+        if (imageUrl != null) {
+          uploadedUrls.add(imageUrl);
+          print('✅ Image ${i + 1} uploaded: $imageUrl');
+        } else {
+          print('⚠️ Image ${i + 1} upload returned null');
+        }
+      } catch (e) {
+        print('❌ Failed to upload image ${i + 1}: $e');
+        // Continue with other images even if one fails
+      }
+    }
+
+    print('📸 Temp upload complete: ${uploadedUrls.length}/${images.length} images uploaded');
+    return uploadedUrls;
+  }
+
+  /// NEW: Upload a single image to temporary storage (no BienImmo ID needed)
+  Future<String?> uploadSingleImageToTemp(XFile image) async {
+    try {
+      print('📱 Uploading to temp storage...');
+      print('   Image path: ${image.path}');
+      print('   Is Web: $kIsWeb');
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/uploads/temp'),
+      );
+
+      // Remove Content-Type for multipart
+      var headers = Map<String, String>.from(authHeaders);
+      headers.remove('Content-Type');
+      request.headers.addAll(headers);
+
+      // Web and Mobile compatible upload using XFile
+      print('📤 Reading image bytes from XFile...');
+      try {
+        // XFile.readAsBytes() works on both Web and Mobile!
+        final bytes = await image.readAsBytes();
+        print('✅ Read ${bytes.length} bytes from image');
+
+        // Use original filename if available, otherwise generate one
+        String filename = image.name.isNotEmpty ? image.name : 'image-${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+        // If no extension in filename, detect from bytes
+        if (!filename.contains('.')) {
+          String detectedExt = 'jpg'; // default
+          if (bytes.length >= 4) {
+            // Check for PNG (89 50 4E 47)
+            if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+              detectedExt = 'png';
+            }
+            // Check for JPEG (FF D8 FF)
+            else if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+              detectedExt = 'jpg';
+            }
+            // Check for GIF (47 49 46)
+            else if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+              detectedExt = 'gif';
+            }
+            // Check for WebP (52 49 46 46 ... 57 45 42 50)
+            else if (bytes.length >= 12 && bytes[0] == 0x52 && bytes[1] == 0x49 &&
+                     bytes[2] == 0x46 && bytes[3] == 0x46 && bytes[8] == 0x57 &&
+                     bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+              detectedExt = 'webp';
+            }
+          }
+          filename = '${filename}.$detectedExt';
+        }
+
+        print('🏷️ Using filename: $filename');
+
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          bytes,
+          filename: filename,
+        ));
+        print('✅ Added ${bytes.length} bytes as $filename');
+      } catch (readError) {
+        print('❌ Error reading image bytes: $readError');
+        throw Exception('Failed to read image file: $readError');
+      }
+
+      print('🚀 Sending temp upload request to: $baseUrl/uploads/temp');
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      print('📡 Upload response status: ${response.statusCode}');
+      print('📡 Upload response body: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final responseData = jsonDecode(response.body);
+
+        // Extract URL from response
+        if (responseData['files'] != null && (responseData['files'] as List).isNotEmpty) {
+          String imageUrl = responseData['files'][0]['url'] ??
+                           responseData['files'][0]['path'];
+          print('✅ Image uploaded to temp storage: $imageUrl');
+          return imageUrl;
+        } else {
+          print('⚠️ No file URL in response');
+          return null;
+        }
+      } else {
+        print('❌ Temp upload failed: ${response.body}');
+        return null;
+      }
+    } catch (e, stackTrace) {
+      print('💥 Exception uploading to temp: $e');
+      print('📚 Stack trace: $stackTrace');
+      return null;
+    }
+  }
+
+  /// DEPRECATED: Old method that required BienImmo ID first
+  @Deprecated('Use uploadSingleImageToTemp instead')
   Future<String?> uploadSingleImageToBienImmo(
       File image, String bienImmoId) async {
     try {
+      print('📱 Uploading image to BienImmo $bienImmoId...');
+      print('   Image path: ${image.path}');
+      print('   Is Web: $kIsWeb');
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/bien-immos/$bienImmoId/media'),
+      );
+
+      // Supprimer Content-Type des headers pour multipart
+      var headers = Map<String, String>.from(authHeaders);
+      headers.remove('Content-Type'); // Important pour multipart
+      request.headers.addAll(headers);
+
+      // Web and Mobile compatible upload
       if (kIsWeb) {
-        // Solution temporaire pour Flutter Web : désactiver l'upload
-        print('🌐 Flutter Web: Image upload temporairement désactivé');
-        print('📱 Image ignorée: ${image.path}');
+        // Flutter Web: Read file as bytes
+        print('🌐 Web upload: Reading file bytes...');
+        try {
+          final bytes = await image.readAsBytes();
+          print('✅ Read ${bytes.length} bytes from image');
 
-        // Retourner une URL temporaire ou null
-        return null;
+          // FIXED: Generate proper filename for Web
+          // For blob URLs, we need to generate a proper filename with extension
+          String filename = 'image-${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-        /* Alternative si vous voulez implémenter l'upload Web plus tard :
-      // Pour Flutter Web, il faudrait utiliser image_picker_web 
-      // ou dart:html FileReader pour lire le fichier correctement
-      print('📱 Web upload: Lecture du fichier...');
-      
-      // Cette méthode nécessiterait d'autres imports et une approche différente
-      // return await _uploadWebImage(image, bienImmoId);
-      */
-      } else {
-        // Pour Mobile : utiliser MultipartRequest (fonctionne correctement)
-        print('📱 Mobile upload: Using multipart...');
+          // Try to detect image type from the bytes (magic numbers)
+          String detectedExt = 'jpg'; // default
+          if (bytes.length >= 4) {
+            // Check for PNG (89 50 4E 47)
+            if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+              detectedExt = 'png';
+            }
+            // Check for JPEG (FF D8 FF)
+            else if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+              detectedExt = 'jpg';
+            }
+            // Check for GIF (47 49 46)
+            else if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+              detectedExt = 'gif';
+            }
+            // Check for WebP (52 49 46 46 ... 57 45 42 50)
+            else if (bytes.length >= 12 && bytes[0] == 0x52 && bytes[1] == 0x49 &&
+                     bytes[2] == 0x46 && bytes[3] == 0x46 && bytes[8] == 0x57 &&
+                     bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+              detectedExt = 'webp';
+            }
+          }
 
-        var request = http.MultipartRequest(
-          'POST',
-          Uri.parse('$baseUrl/bien-immos/$bienImmoId/media'),
-        );
+          filename = 'image-${DateTime.now().millisecondsSinceEpoch}.$detectedExt';
+          print('🏷️ Detected image type: $detectedExt');
+          print('🏷️ Using filename: $filename');
 
-        // Supprimer Content-Type des headers pour multipart
-        var headers = Map<String, String>.from(authHeaders);
-        headers.remove('Content-Type'); // Important pour multipart
-        request.headers.addAll(headers);
-
-        request.files
-            .add(await http.MultipartFile.fromPath('file', image.path));
-
-        var streamedResponse = await request.send();
-        var response = await http.Response.fromStream(streamedResponse);
-
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          final responseData = jsonDecode(response.body);
-          String imageUrl = responseData['url'] ??
-              responseData['path'] ??
-              responseData['filename'];
-          return imageUrl;
-        } else {
-          print('❌ Mobile image upload failed: ${response.body}');
-          return null;
+          request.files.add(http.MultipartFile.fromBytes(
+            'file',
+            bytes,
+            filename: filename,
+          ));
+          print('✅ Web: Added ${bytes.length} bytes as $filename');
+        } catch (readError) {
+          print('❌ Error reading image bytes: $readError');
+          throw Exception('Failed to read image file: $readError');
         }
+      } else {
+        // Mobile: Use file path
+        print('📱 Mobile upload: Using file path...');
+        request.files.add(await http.MultipartFile.fromPath('file', image.path));
+        print('✅ Mobile: Added file from ${image.path}');
       }
-    } catch (e) {
+
+      print('🚀 Sending upload request to: $baseUrl/bien-immos/$bienImmoId/media');
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      print('📡 Upload response status: ${response.statusCode}');
+      print('📡 Upload response body: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final responseData = jsonDecode(response.body);
+        String imageUrl = responseData['url'] ??
+            responseData['path'] ??
+            responseData['filename'];
+        print('✅ Image uploaded successfully: $imageUrl');
+        return imageUrl;
+      } else {
+        print('❌ Image upload failed: ${response.body}');
+        return null;
+      }
+    } catch (e, stackTrace) {
       print('💥 Exception uploading image: $e');
+      print('📚 Stack trace: $stackTrace');
       return null;
     }
   }
@@ -302,16 +469,38 @@ class ApiService extends GetxService {
 
   // ================== COMPLETE SUBMISSION ==================
 
-  /// Complete property submission - UPDATED: Create property first, then upload images
+  /// NEW: Complete property submission - Upload images FIRST, then create BienImmo with images
   Future<Map<String, dynamic>?> submitPropertyWithImages({
     required Map<String, dynamic> propertyData,
-    required List<File> imageFiles,
+    required List<XFile> imageFiles,
   }) async {
     try {
-      print('🏠 Starting complete property submission...');
+      print('🏠 Starting complete property submission (NEW FLOW)...');
+      print('📋 Step 1: Upload images to temporary storage FIRST');
 
-      // Step 1: Create the BienImmo first WITHOUT images
-      print('🚀 Creating BienImmo without images...');
+      // Step 1: Upload images to temporary storage FIRST (if any)
+      List<String> imageUrls = [];
+      if (imageFiles.isNotEmpty) {
+        print('📸 Uploading ${imageFiles.length} images to temp storage...');
+        imageUrls = await uploadImagesToTemp(imageFiles);
+
+        if (imageUrls.isEmpty) {
+          print('⚠️ Warning: No images were uploaded successfully');
+          // Continue anyway - images are optional
+        } else {
+          print('✅ ${imageUrls.length} images uploaded to temp storage');
+          print('   URLs: $imageUrls');
+        }
+      } else {
+        print('ℹ️ No images to upload');
+      }
+
+      // Step 2: Add image URLs to propertyData
+      print('📋 Step 2: Adding ${imageUrls.length} image URLs to propertyData');
+      propertyData['listeImages'] = imageUrls;
+
+      // Step 3: Create BienImmo WITH images already included
+      print('📋 Step 3: Creating BienImmo with images already included...');
       final bienImmoResult = await createBienImmo(propertyData);
 
       if (bienImmoResult == null || bienImmoResult['id'] == null) {
@@ -321,27 +510,6 @@ class ApiService extends GetxService {
       final bienImmoId = bienImmoResult['id'].toString();
       print('✅ BienImmo created with ID: $bienImmoId');
 
-      // Step 2: Upload images to the created BienImmo (if any)
-      List<String> imageUrls = [];
-      if (imageFiles.isNotEmpty) {
-        print(
-            '📸 Uploading ${imageFiles.length} images to BienImmo $bienImmoId...');
-        imageUrls = await uploadImagesToBienImmo(imageFiles, bienImmoId);
-
-        if (imageUrls.isNotEmpty) {
-          print('✅ Images uploaded successfully: $imageUrls');
-
-          // Step 3: Optionally update the BienImmo with image URLs (if your API supports it)
-          try {
-            await updateBienImmo(bienImmoId, {'listeImages': imageUrls});
-            print('✅ BienImmo updated with image URLs');
-          } catch (e) {
-            print('⚠️ Could not update BienImmo with image URLs: $e');
-            // Continue anyway as the images are uploaded
-          }
-        }
-      }
-
       // Return the complete result
       final result = {
         ...bienImmoResult,
@@ -349,8 +517,7 @@ class ApiService extends GetxService {
         'imageCount': imageUrls.length,
       };
 
-      print(
-          '🎉 Property submission complete! ID: ${result['id']}, Images: ${imageUrls.length}');
+      print('🎉 Property submission complete! ID: ${result['id']}, Images: ${imageUrls.length}');
       return result;
     } catch (e) {
       print('💥 Property submission failed: $e');

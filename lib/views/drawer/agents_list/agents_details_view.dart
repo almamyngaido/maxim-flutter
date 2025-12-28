@@ -215,8 +215,8 @@ class AgentsDetailsView extends StatelessWidget {
                                 child: Center(
                                   child: Obx(() => Image.asset(
                                     agentDetailsController.isSimilarPropertyLiked[index]
-                                        ? Assets.images.saved.path
-                                        : Assets.images.save.path,
+                                        ? Assets.images.ratingStar.path
+                                        : Assets.images.emptyRatingStar.path,
                                     width: AppSize.appSize24,
                                   )),
                                 ),

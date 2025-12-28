@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/bien_immo_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/propretyDetails_service.dart';
@@ -134,6 +135,21 @@ class PropertyListController extends GetxController {
       default:
         return Assets.images.searchProperty1.path;
     }
+  }
+
+  /// Get full image URL from backend
+  String getPropertyImageUrl(BienImmo property) {
+    if (property.listeImages.isNotEmpty) {
+      final imagePath = property.listeImages.first;
+      // Build full URL: http://192.168.1.4:3000/uploads/bien-immos/123.png
+      return '${ApiConfig.baseUrl}/$imagePath';
+    }
+    return ''; // Empty string means no server image, use fallback
+  }
+
+  /// Check if property has server images (vs local assets)
+  bool hasServerImages(BienImmo property) {
+    return property.listeImages.isNotEmpty;
   }
 
   String getFormattedPrice(BienImmo property) {

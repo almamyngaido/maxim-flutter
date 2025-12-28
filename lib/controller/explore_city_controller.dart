@@ -22,7 +22,6 @@ class ExploreCityController extends GetxController {
 
   RxList<String> propertyLookingList = [
     AppString.buy,
-    AppString.rentPg,
     AppString.room,
   ].obs;
 

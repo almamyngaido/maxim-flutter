@@ -84,7 +84,8 @@ class AdminUsersView extends StatelessWidget {
                       ),
                       child: Text(
                         'Réessayer',
-                        style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+                        style:
+                            AppStyle.heading5Medium(color: AppColor.whiteColor),
                       ),
                     ),
                   ],
@@ -105,8 +106,7 @@ class AdminUsersView extends StatelessWidget {
                     SizedBox(height: AppSize.appSize16),
                     Text(
                       'Aucun utilisateur non vérifié',
-                      style:
-                          AppStyle.heading4Medium(color: AppColor.textColor),
+                      style: AppStyle.heading4Medium(color: AppColor.textColor),
                     ),
                     SizedBox(height: AppSize.appSize8),
                     Text(
@@ -140,7 +140,7 @@ class AdminUsersView extends StatelessWidget {
   Widget buildUserCard(BuildContext context, Map<String, dynamic> user) {
     return GestureDetector(
       onTap: () {
-        Get.to(() => UserDetailsView(userId: user['_id'] ?? ''));
+        Get.to(() => UserDetailsView(userData: user));
       },
       child: Container(
         margin: EdgeInsets.only(bottom: AppSize.appSize16),
@@ -166,8 +166,8 @@ class AdminUsersView extends StatelessWidget {
                   backgroundColor: AppColor.primaryColor.withValues(alpha: 0.1),
                   child: Text(
                     (user['name']?[0] ?? 'U').toUpperCase(),
-                    style: AppStyle.heading3SemiBold(
-                        color: AppColor.primaryColor),
+                    style:
+                        AppStyle.heading3SemiBold(color: AppColor.primaryColor),
                   ),
                 ),
                 SizedBox(width: AppSize.appSize12),
@@ -177,8 +177,8 @@ class AdminUsersView extends StatelessWidget {
                     children: [
                       Text(
                         user['name'] ?? 'Nom non disponible',
-                        style: AppStyle.heading4Medium(
-                            color: AppColor.textColor),
+                        style:
+                            AppStyle.heading4Medium(color: AppColor.textColor),
                       ),
                       SizedBox(height: AppSize.appSize4),
                       if (user['email'] != null)
