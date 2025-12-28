@@ -48,9 +48,10 @@ class AddReviewsForPropertyView extends StatelessWidget {
   }
 
   Widget buildAddReviewsForPropertyFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         Container(
           padding: const EdgeInsets.all(AppSize.appSize16),
           decoration: BoxDecoration(
@@ -128,6 +129,7 @@ class AddReviewsForPropertyView extends StatelessWidget {
           ),
         ).paddingOnly(top: AppSize.appSize26),
       ],
+      ),
     ).paddingOnly(
       top: AppSize.appSize10,
       left: AppSize.appSize16,

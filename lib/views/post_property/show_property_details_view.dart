@@ -9,6 +9,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/show_property_details_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ShowPropertyDetailsView extends StatelessWidget {
   ShowPropertyDetailsView({super.key});
@@ -178,6 +179,11 @@ class ShowPropertyDetailsView extends StatelessWidget {
 
             // Key Information Section
             _buildKeyInformationSection(),
+
+            SizedBox(height: AppSize.appSize24),
+
+            // Rooms Section
+            _buildRoomsSection(),
 
             SizedBox(height: AppSize.appSize24),
 
@@ -423,6 +429,22 @@ class ShowPropertyDetailsView extends StatelessWidget {
   Widget _buildEnergyDiagnosticsSection() {
     final energyDiagnostics = showPropertyDetailsController.energyDiagnostics;
 
+    // Récupérer les valeurs DPE et GES
+    String dpeValue = '';
+    String gesValue = '';
+
+    // Essayer différentes structures de données possibles
+    if (energyDiagnostics['dpe'] != null) {
+      dpeValue = energyDiagnostics['dpe'].toString().toUpperCase();
+    }
+    if (energyDiagnostics['ges'] != null) {
+      gesValue = energyDiagnostics['ges'].toString().toUpperCase();
+    }
+
+    // Log pour debug
+    print('🔋 DPE affiché: $dpeValue');
+    print('🔋 GES affiché: $gesValue');
+
     return Container(
       padding: EdgeInsets.all(AppSize.appSize16),
       decoration: BoxDecoration(
@@ -433,29 +455,77 @@ class ShowPropertyDetailsView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Diagnostics',
-            style: AppStyle.heading4SemiBold(color: AppColor.textColor),
+          Row(
+            children: [
+              Text(
+                'Diagnostics Énergie',
+                style: AppStyle.heading4SemiBold(color: AppColor.textColor),
+              ),
+              SizedBox(width: AppSize.appSize8),
+              if (dpeValue.isEmpty && gesValue.isEmpty)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSize.appSize8,
+                    vertical: AppSize.appSize2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColor.descriptionColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppSize.appSize4),
+                  ),
+                  child: Text(
+                    'Non renseigné',
+                    style: AppStyle.heading7Regular(color: AppColor.descriptionColor),
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: AppSize.appSize16),
 
           // DPE (Energy Class)
           _buildEnergyRating(
-            'Classe énergie',
-            energyDiagnostics['dpe']?.toString() ?? 'N/A',
+            'Classe énergie (DPE)',
+            dpeValue,
             Icons.energy_savings_leaf_outlined,
           ),
+
           SizedBox(height: AppSize.appSize12),
 
           // GES (Greenhouse Gas)
           _buildEnergyRating(
-            'GES',
-            energyDiagnostics['ges']?.toString() ?? 'N/A',
+            'Émissions de gaz (GES)',
+            gesValue,
             Icons.co2_outlined,
           ),
+
+          // Afficher la date du diagnostic si disponible
+          if (energyDiagnostics['dateDiagnostique'] != null) ...[
+            SizedBox(height: AppSize.appSize12),
+            Row(
+              children: [
+                Icon(Icons.calendar_today_outlined,
+                     size: AppSize.appSize16,
+                     color: AppColor.descriptionColor),
+                SizedBox(width: AppSize.appSize8),
+                Text(
+                  'Date du diagnostic: ${_formatDiagnosticDate(energyDiagnostics['dateDiagnostique'])}',
+                  style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  String _formatDiagnosticDate(dynamic date) {
+    try {
+      if (date == null) return '';
+      DateTime dateTime = DateTime.parse(date.toString());
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    } catch (e) {
+      return date.toString();
+    }
   }
 
   Widget _buildEnergyRating(String label, String rating, IconData icon) {
@@ -470,49 +540,324 @@ class ShowPropertyDetailsView extends StatelessWidget {
       Color(0xFFC0392B), // G - Dark Red
     ];
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: AppSize.appSize18, color: AppColor.descriptionColor),
-        SizedBox(width: AppSize.appSize8),
-        Text(
-          label,
-          style: AppStyle.heading5Regular(color: AppColor.textColor),
-        ),
-        SizedBox(width: AppSize.appSize8),
-        Icon(Icons.info_outline,
-            size: AppSize.appSize16, color: AppColor.descriptionColor),
-        Spacer(),
+        // Label row
         Row(
-          children: grades.map((grade) {
-            int index = grades.indexOf(grade);
-            bool isSelected = grade == rating.toUpperCase();
-
-            return Container(
-              margin: EdgeInsets.only(left: AppSize.appSize2),
-              width: AppSize.appSize24,
-              height: AppSize.appSize20,
-              decoration: BoxDecoration(
-                color:
-                    isSelected ? colors[index] : colors[index].withOpacity(0.3),
-                borderRadius: BorderRadius.circular(AppSize.appSize2),
+          children: [
+            Icon(icon, size: AppSize.appSize18, color: AppColor.descriptionColor),
+            SizedBox(width: AppSize.appSize8),
+            Expanded(
+              child: Text(
+                label,
+                style: AppStyle.heading5Regular(color: AppColor.textColor),
               ),
-              child: Center(
-                child: Text(
-                  grade,
-                  style: TextStyle(
-                    color:
-                        isSelected ? AppColor.whiteColor : AppColor.textColor,
-                    fontSize: 10,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+            Icon(Icons.info_outline,
+                size: AppSize.appSize16, color: AppColor.descriptionColor),
+          ],
+        ),
+        SizedBox(height: AppSize.appSize8),
+
+        // Grades row - scrollable on small screens
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: grades.map((grade) {
+              int index = grades.indexOf(grade);
+              bool isSelected = grade == rating.toUpperCase();
+
+              return Container(
+                margin: EdgeInsets.only(right: AppSize.appSize4),
+                width: isSelected ? AppSize.appSize40 : AppSize.appSize32,
+                height: isSelected ? AppSize.appSize36 : AppSize.appSize28,
+                decoration: BoxDecoration(
+                  color:
+                      isSelected ? colors[index] : colors[index].withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(AppSize.appSize6),
+                  border: isSelected
+                      ? Border.all(color: colors[index].withOpacity(0.8), width: 2)
+                      : null,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: colors[index].withOpacity(0.4),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          )
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    grade,
+                    style: TextStyle(
+                      color:
+                          isSelected ? AppColor.whiteColor : AppColor.textColor.withOpacity(0.6),
+                      fontSize: isSelected ? 16 : 12,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
+  }
+
+  String _getEnergyRatingDescription(String rating) {
+    switch (rating) {
+      case 'A':
+        return 'Excellent - Très performant';
+      case 'B':
+        return 'Très bien - Bon niveau de performance';
+      case 'C':
+        return 'Bien - Performance moyenne';
+      case 'D':
+        return 'Assez bien - Performance acceptable';
+      case 'E':
+        return 'Passable - Performance médiocre';
+      case 'F':
+        return 'Insuffisant - Peu performant';
+      case 'G':
+        return 'Très insuffisant - Très peu performant';
+      default:
+        return 'Non renseigné';
+    }
+  }
+
+  Widget _buildRoomsSection() {
+    final pieces = showPropertyDetailsController.pieces;
+
+    if (pieces.isEmpty) {
+      return SizedBox.shrink();
+    }
+
+    return Container(
+      padding: EdgeInsets.all(AppSize.appSize16),
+      decoration: BoxDecoration(
+        color: AppColor.secondaryColor,
+        borderRadius: BorderRadius.circular(AppSize.appSize12),
+        border: Border.all(color: AppColor.borderColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Composition des pièces',
+            style: AppStyle.heading4SemiBold(color: AppColor.textColor),
+          ),
+          SizedBox(height: AppSize.appSize16),
+          ...pieces.asMap().entries.map((entry) {
+            int index = entry.key;
+            Map<String, dynamic> piece = entry.value;
+
+            return Column(
+              children: [
+                if (index > 0)
+                  Divider(
+                    color: AppColor.descriptionColor.withOpacity(0.3),
+                    height: AppSize.appSize24,
+                  ),
+                _buildRoomItem(piece),
+              ],
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoomItem(Map<String, dynamic> piece) {
+    String type = _getRoomTypeLabel(piece['type']?.toString() ?? '');
+    String nom = piece['nom']?.toString() ?? '';
+    double? surface = piece['surface']?.toDouble();
+    int niveau = piece['niveau']?.toInt() ?? 0;
+    String orientation = piece['orientation']?.toString() ?? '';
+    String description = piece['description']?.toString() ?? '';
+
+    // Check for special features
+    List<String> features = [];
+    if (piece['avecBalcon'] == true) features.add('Balcon');
+    if (piece['avecTerrasse'] == true) features.add('Terrasse');
+    if (piece['avecDressing'] == true) features.add('Dressing');
+    if (piece['avecSalleDeBainPrivee'] == true) features.add('Salle de bain privée');
+
+    return Container(
+      padding: EdgeInsets.all(AppSize.appSize12),
+      decoration: BoxDecoration(
+        color: AppColor.whiteColor,
+        borderRadius: BorderRadius.circular(AppSize.appSize8),
+        border: Border.all(color: AppColor.borderColor.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(AppSize.appSize8),
+                decoration: BoxDecoration(
+                  color: AppColor.primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppSize.appSize6),
+                ),
+                child: Icon(
+                  _getRoomIcon(piece['type']?.toString() ?? ''),
+                  color: AppColor.primaryColor,
+                  size: AppSize.appSize20,
+                ),
+              ),
+              SizedBox(width: AppSize.appSize12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nom.isNotEmpty ? nom : type,
+                      style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+                    ),
+                    if (nom.isNotEmpty)
+                      Text(
+                        type,
+                        style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+                      ),
+                  ],
+                ),
+              ),
+              if (surface != null && surface > 0)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppSize.appSize8,
+                    vertical: AppSize.appSize4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColor.primaryColor,
+                    borderRadius: BorderRadius.circular(AppSize.appSize4),
+                  ),
+                  child: Text(
+                    '${surface.toInt()} m²',
+                    style: AppStyle.heading6Medium(color: AppColor.whiteColor),
+                  ),
+                ),
+            ],
+          ),
+
+          // Additional details
+          if (niveau > 0 || orientation.isNotEmpty || features.isNotEmpty) ...[
+            SizedBox(height: AppSize.appSize12),
+            Wrap(
+              spacing: AppSize.appSize8,
+              runSpacing: AppSize.appSize6,
+              children: [
+                if (niveau > 0)
+                  _buildRoomDetail(Icons.layers_outlined, 'Niveau $niveau'),
+                if (orientation.isNotEmpty)
+                  _buildRoomDetail(Icons.compass_calibration_outlined, orientation),
+                ...features.map((feature) =>
+                  _buildRoomDetail(Icons.check_circle_outline, feature)
+                ),
+              ],
+            ),
+          ],
+
+          // Description
+          if (description.isNotEmpty) ...[
+            SizedBox(height: AppSize.appSize8),
+            Text(
+              description,
+              style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoomDetail(IconData icon, String text) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSize.appSize8,
+        vertical: AppSize.appSize4,
+      ),
+      decoration: BoxDecoration(
+        color: AppColor.backgroundColor,
+        borderRadius: BorderRadius.circular(AppSize.appSize4),
+        border: Border.all(color: AppColor.borderColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: AppSize.appSize14, color: AppColor.descriptionColor),
+          SizedBox(width: AppSize.appSize4),
+          Text(
+            text,
+            style: AppStyle.heading7Regular(color: AppColor.textColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getRoomTypeLabel(String type) {
+    switch (type.toLowerCase()) {
+      case 'chambre':
+        return 'Chambre';
+      case 'salon':
+        return 'Salon';
+      case 'cuisine':
+        return 'Cuisine';
+      case 'salle_de_bain':
+        return 'Salle de bain';
+      case 'salle_d_eau':
+        return 'Salle d\'eau';
+      case 'wc':
+        return 'WC';
+      case 'bureau':
+        return 'Bureau';
+      case 'cellier':
+        return 'Cellier';
+      case 'dressing':
+        return 'Dressing';
+      case 'entree':
+        return 'Entrée';
+      case 'couloir':
+        return 'Couloir';
+      case 'autre':
+        return 'Autre pièce';
+      default:
+        return type;
+    }
+  }
+
+  IconData _getRoomIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'chambre':
+        return Icons.bed_outlined;
+      case 'salon':
+        return Icons.weekend_outlined;
+      case 'cuisine':
+        return Icons.kitchen_outlined;
+      case 'salle_de_bain':
+      case 'salle_d_eau':
+        return Icons.bathtub_outlined;
+      case 'wc':
+        return Icons.wc_outlined;
+      case 'bureau':
+        return Icons.desk_outlined;
+      case 'cellier':
+        return Icons.inventory_2_outlined;
+      case 'dressing':
+        return Icons.checkroom_outlined;
+      case 'entree':
+      case 'couloir':
+        return Icons.meeting_room_outlined;
+      default:
+        return Icons.room_outlined;
+    }
   }
 
   Widget _buildKeyInformationSection() {
@@ -533,18 +878,43 @@ class ShowPropertyDetailsView extends StatelessWidget {
           SizedBox(height: AppSize.appSize16),
           _buildKeyInfoGrid(),
           SizedBox(height: AppSize.appSize12),
-          GestureDetector(
+          Obx(() => GestureDetector(
             onTap: () {
-              // Navigate to full details
+              showPropertyDetailsController.toggleKeyInfoExpansion();
             },
-            child: Text(
-              'Voir les critères supplémentaires',
-              style: AppStyle.heading5Medium(color: AppColor.primaryColor)
-                  .copyWith(
-                decoration: TextDecoration.underline,
-              ),
+            child: Row(
+              children: [
+                Text(
+                  showPropertyDetailsController.isKeyInfoExpanded.value
+                      ? 'Masquer les critères supplémentaires'
+                      : 'Voir les critères supplémentaires',
+                  style: AppStyle.heading5Medium(color: AppColor.primaryColor)
+                      .copyWith(
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+                SizedBox(width: AppSize.appSize4),
+                Icon(
+                  showPropertyDetailsController.isKeyInfoExpanded.value
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: AppColor.primaryColor,
+                  size: AppSize.appSize18,
+                ),
+              ],
             ),
-          ),
+          )),
+          Obx(() {
+            if (showPropertyDetailsController.isKeyInfoExpanded.value) {
+              return Column(
+                children: [
+                  SizedBox(height: AppSize.appSize16),
+                  _buildAdditionalInfoGrid(),
+                ],
+              );
+            }
+            return SizedBox.shrink();
+          }),
         ],
       ),
     );
@@ -556,7 +926,7 @@ class ShowPropertyDetailsView extends StatelessWidget {
     final numberOfRooms = showPropertyDetailsController.numberOfRooms;
     final pieces = showPropertyDetailsController.pieces;
     final characteristics = showPropertyDetailsController.characteristics;
-    final heating = showPropertyDetailsController.heating;
+    final propertyData = showPropertyDetailsController.propertyData;
 
     List<Widget> infoItems = [];
 
@@ -578,12 +948,30 @@ class ShowPropertyDetailsView extends StatelessWidget {
       ));
     }
 
+    // Surface Carrez
+    if (surfaces['habitableCarrez'] != null && surfaces['habitableCarrez'] > 0) {
+      infoItems.add(_buildKeyInfoItem(
+        Icons.straighten_outlined,
+        'Surface Carrez',
+        '${surfaces['habitableCarrez'].toInt()} m²',
+      ));
+    }
+
     // Surface totale du terrain
-    if (surfaces['terrain'] != null) {
+    if (surfaces['terrain'] != null && surfaces['terrain'] > 0) {
       infoItems.add(_buildKeyInfoItem(
         Icons.landscape_outlined,
-        'Surface totale du terrain',
+        'Surface terrain',
         '${surfaces['terrain'].toInt()} m²',
+      ));
+    }
+
+    // Surface garage
+    if (surfaces['garage'] != null && surfaces['garage'] > 0) {
+      infoItems.add(_buildKeyInfoItem(
+        Icons.garage_outlined,
+        'Surface garage',
+        '${surfaces['garage'].toInt()} m²',
       ));
     }
 
@@ -592,7 +980,16 @@ class ShowPropertyDetailsView extends StatelessWidget {
       infoItems.add(_buildKeyInfoItem(
         Icons.meeting_room_outlined,
         'Nombre de pièces',
-        numberOfRooms.toString(),
+        '$numberOfRooms pièce${numberOfRooms > 1 ? 's' : ''}',
+      ));
+    }
+
+    // Nombre de niveaux
+    if (propertyData['nombreNiveaux'] != null && propertyData['nombreNiveaux'] > 0) {
+      infoItems.add(_buildKeyInfoItem(
+        Icons.layers_outlined,
+        'Nombre de niveaux',
+        '${propertyData['nombreNiveaux']} niveau${propertyData['nombreNiveaux'] > 1 ? 'x' : ''}',
       ));
     }
 
@@ -601,8 +998,8 @@ class ShowPropertyDetailsView extends StatelessWidget {
     if (bedrooms > 0) {
       infoItems.add(_buildKeyInfoItem(
         Icons.bed_outlined,
-        'Nombre de chambres',
-        '$bedrooms ch.',
+        'Chambres',
+        '$bedrooms',
       ));
     }
 
@@ -614,33 +1011,18 @@ class ShowPropertyDetailsView extends StatelessWidget {
     if (bathrooms > 0) {
       infoItems.add(_buildKeyInfoItem(
         Icons.bathtub_outlined,
-        'Nombre de salles de bain',
-        bathrooms.toString(),
+        'Salles de bain',
+        '$bathrooms',
       ));
     }
 
-    // Caractéristiques (garage, parking, etc.)
-    List<String> features = [];
-    if (characteristics['box'] == true) features.add('garage');
-    if (characteristics['parkingOuvert'] == true) features.add('parking');
-    if (characteristics['terrasse'] == true) features.add('terrasse');
-    if (characteristics['balcon'] == true) features.add('balcon');
-
-    if (features.isNotEmpty) {
+    // Année de construction
+    if (propertyData['batiment'] != null &&
+        propertyData['batiment']['anneeConstruction'] != null) {
       infoItems.add(_buildKeyInfoItem(
-        Icons.local_parking_outlined,
-        'Caractéristiques',
-        'Avec ${features.join(', ')}...',
-      ));
-    }
-
-    // Type de chauffage
-    String heatingType = heating['type']?.toString() ?? '';
-    if (heatingType.isNotEmpty) {
-      infoItems.add(_buildKeyInfoItem(
-        Icons.thermostat_outlined,
-        'Type de chauffage',
-        heatingType,
+        Icons.calendar_today_outlined,
+        'Année de construction',
+        '${propertyData['batiment']['anneeConstruction']}',
       ));
     }
 
@@ -654,7 +1036,163 @@ class ShowPropertyDetailsView extends StatelessWidget {
     );
   }
 
+  Widget _buildAdditionalInfoGrid() {
+    final characteristics = showPropertyDetailsController.characteristics;
+    final chauffageClim = showPropertyDetailsController.heating;
+    final energie = showPropertyDetailsController.energy;
+    final propertyData = showPropertyDetailsController.propertyData;
+
+    List<Widget> infoItems = [];
+
+    // Copropriété
+    if (propertyData['batiment'] != null) {
+      bool isCopropriete = propertyData['batiment']['copropriete'] ?? false;
+      infoItems.add(_buildKeyInfoItem(
+        Icons.apartment_outlined,
+        'Copropriété',
+        isCopropriete ? 'Oui' : 'Non',
+      ));
+    }
+
+    // Caractéristiques du bien
+    List<String> availableFeatures = [];
+    if (characteristics['grenier'] == true) availableFeatures.add('Grenier');
+    if (characteristics['balcon'] == true) availableFeatures.add('Balcon');
+    if (characteristics['terrasse'] == true) availableFeatures.add('Terrasse');
+    if (characteristics['cave'] == true) availableFeatures.add('Cave');
+    if (characteristics['box'] == true) availableFeatures.add('Box');
+    if (characteristics['parkingOuvert'] == true) availableFeatures.add('Parking');
+    if (characteristics['jardin'] == true) availableFeatures.add('Jardin');
+    if (characteristics['piscine'] == true) availableFeatures.add('Piscine');
+    if (characteristics['ascenseur'] == true) availableFeatures.add('Ascenseur');
+    if (characteristics['dependance'] == true) availableFeatures.add('Dépendance');
+
+    if (availableFeatures.isNotEmpty) {
+      infoItems.add(_buildKeyInfoItem(
+        Icons.check_circle_outline,
+        'Équipements',
+        availableFeatures.join(', '),
+      ));
+    }
+
+    // Chauffage
+    List<String> heatingTypes = [];
+    if (chauffageClim['cheminee'] == true) heatingTypes.add('Cheminée');
+    if (chauffageClim['poeleABois'] == true) heatingTypes.add('Poêle à bois');
+    if (chauffageClim['insertABois'] == true) heatingTypes.add('Insert à bois');
+    if (chauffageClim['poeleAPellets'] == true) heatingTypes.add('Poêle à pellets');
+    if (chauffageClim['chauffageIndividuelChaudiere'] == true) heatingTypes.add('Chaudière individuelle');
+    if (chauffageClim['chauffageAuSol'] == true) heatingTypes.add('Chauffage au sol');
+    if (chauffageClim['chauffageIndividuelElectrique'] == true) heatingTypes.add('Chauffage électrique');
+    if (chauffageClim['chauffageUrbain'] == true) heatingTypes.add('Chauffage urbain');
+
+    if (heatingTypes.isNotEmpty) {
+      infoItems.add(_buildKeyInfoItem(
+        Icons.thermostat_outlined,
+        'Chauffage',
+        heatingTypes.join(', '),
+      ));
+    }
+
+    // Énergie
+    List<String> energyTypes = [];
+    if (energie['electricite'] == true) energyTypes.add('Électricité');
+    if (energie['gaz'] == true) energyTypes.add('Gaz');
+    if (energie['fioul'] == true) energyTypes.add('Fioul');
+    if (energie['pompeAChaleur'] == true) energyTypes.add('Pompe à chaleur');
+    if (energie['geothermie'] == true) energyTypes.add('Géothermie');
+
+    if (energyTypes.isNotEmpty) {
+      infoItems.add(_buildKeyInfoItem(
+        Icons.bolt_outlined,
+        'Sources d\'énergie',
+        energyTypes.join(', '),
+      ));
+    }
+
+    // Accès égout
+    if (characteristics['accesEgout'] != null) {
+      infoItems.add(_buildKeyInfoItem(
+        Icons.water_outlined,
+        'Accès égout',
+        characteristics['accesEgout'] ? 'Oui' : 'Non',
+      ));
+    }
+
+    // Informations financières
+    if (propertyData['prix'] != null) {
+      Map<String, dynamic> prix = propertyData['prix'];
+
+      // Prix net vendeur
+      if (prix['netVendeur'] != null) {
+        infoItems.add(_buildKeyInfoItem(
+          Icons.euro_outlined,
+          'Prix net vendeur',
+          '${prix['netVendeur'].toInt()} €',
+        ));
+      }
+
+      // Honoraires
+      if (prix['honoraireEuros'] != null && prix['honoraireEuros'] > 0) {
+        infoItems.add(_buildKeyInfoItem(
+          Icons.account_balance_wallet_outlined,
+          'Honoraires',
+          '${prix['honoraireEuros'].toInt()} € (${prix['honorairePourcentage'] ?? 0}%)',
+        ));
+      }
+
+      // Charges copropriété
+      if (prix['chargesAnnuellesCopropriete'] != null && prix['chargesAnnuellesCopropriete'] > 0) {
+        infoItems.add(_buildKeyInfoItem(
+          Icons.receipt_long_outlined,
+          'Charges annuelles',
+          '${prix['chargesAnnuellesCopropriete'].toInt()} €/an',
+        ));
+      }
+    }
+
+    return Column(
+      children: infoItems
+          .map((item) => Padding(
+                padding: EdgeInsets.only(bottom: AppSize.appSize12),
+                child: item,
+              ))
+          .toList(),
+    );
+  }
+
   Widget _buildKeyInfoItem(IconData icon, String label, String value) {
+    // Check if value is long (e.g., lists of features)
+    bool isLongValue = value.length > 20;
+
+    if (isLongValue) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: AppSize.appSize18, color: AppColor.descriptionColor),
+              SizedBox(width: AppSize.appSize12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: AppSize.appSize6),
+          Padding(
+            padding: EdgeInsets.only(left: AppSize.appSize30),
+            child: Text(
+              value,
+              style: AppStyle.heading5Medium(color: AppColor.textColor),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         Icon(icon, size: AppSize.appSize18, color: AppColor.descriptionColor),
@@ -705,6 +1243,15 @@ class ShowPropertyDetailsView extends StatelessWidget {
   }
 
   Widget _buildContactOwnerSection() {
+    // Get owner information from propertyData
+    final utilisateur = showPropertyDetailsController.propertyData['utilisateur'];
+    final ownerName = utilisateur != null
+        ? '${utilisateur['prenom'] ?? ''} ${utilisateur['nom'] ?? ''}'.trim()
+        : 'Propriétaire';
+    final ownerEmail = utilisateur?['email'] ?? '';
+    final ownerPhone = utilisateur?['phoneNumber'] ?? '';
+    final firstLetter = ownerName.isNotEmpty ? ownerName[0].toUpperCase() : 'P';
+
     return Container(
       padding: EdgeInsets.all(AppSize.appSize16),
       decoration: BoxDecoration(
@@ -716,6 +1263,7 @@ class ShowPropertyDetailsView extends StatelessWidget {
         children: [
           Row(
             children: [
+              // Owner avatar with first letter
               Container(
                 width: AppSize.appSize50,
                 height: AppSize.appSize50,
@@ -723,10 +1271,11 @@ class ShowPropertyDetailsView extends StatelessWidget {
                   color: AppColor.primaryColor,
                   borderRadius: BorderRadius.circular(AppSize.appSize25),
                 ),
-                child: Icon(
-                  Icons.person,
-                  color: AppColor.whiteColor,
-                  size: AppSize.appSize24,
+                child: Center(
+                  child: Text(
+                    firstLetter,
+                    style: AppStyle.heading4Medium(color: AppColor.whiteColor),
+                  ),
                 ),
               ),
               SizedBox(width: AppSize.appSize12),
@@ -735,30 +1284,88 @@ class ShowPropertyDetailsView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Propriétaire',
-                      style:
-                          AppStyle.heading5SemiBold(color: AppColor.textColor),
+                      ownerName,
+                      style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      'Contactez pour plus d\'informations',
-                      style: AppStyle.heading6Regular(
-                          color: AppColor.descriptionColor),
-                    ),
+                    if (ownerEmail.isNotEmpty)
+                      Text(
+                        ownerEmail,
+                        style: AppStyle.heading6Regular(
+                            color: AppColor.descriptionColor),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                   ],
                 ),
               ),
             ],
           ),
           SizedBox(height: AppSize.appSize16),
-          CommonButton(
-            onPressed: () {
-              Get.toNamed(AppRoutes.contactOwnerView);
-            },
-            backgroundColor: AppColor.primaryColor,
-            child: Text(
-              'Voir le numéro de téléphone',
-              style: AppStyle.heading5Medium(color: AppColor.whiteColor),
-            ),
+
+          // Action buttons
+          Row(
+            children: [
+              // Call button
+              if (ownerPhone.isNotEmpty)
+                Expanded(
+                  child: CommonButton(
+                    onPressed: () async {
+                      final Uri phoneUri = Uri(scheme: 'tel', path: ownerPhone);
+                      if (await canLaunchUrl(phoneUri)) {
+                        await launchUrl(phoneUri);
+                      } else {
+                        Get.snackbar(
+                          'Erreur',
+                          'Impossible d\'appeler ce numéro',
+                          backgroundColor: AppColor.negativeColor,
+                          colorText: AppColor.whiteColor,
+                        );
+                      }
+                    },
+                    backgroundColor: AppColor.primaryColor,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.phone, color: AppColor.whiteColor, size: 18),
+                        SizedBox(width: AppSize.appSize8),
+                        Text(
+                          'Appeler',
+                          style: AppStyle.heading6Medium(color: AppColor.whiteColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              if (ownerPhone.isNotEmpty) SizedBox(width: AppSize.appSize12),
+
+              // Message button
+              Expanded(
+                child: CommonButton(
+                  onPressed: () {
+                    // Navigate to messaging
+                    Get.toNamed(AppRoutes.chatView, arguments: {
+                      'propertyId': showPropertyDetailsController.propertyData['id'],
+                      'sellerId': utilisateur?['id'],
+                    });
+                  },
+                  backgroundColor: AppColor.whiteColor,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.message, color: AppColor.primaryColor, size: 18),
+                      SizedBox(width: AppSize.appSize8),
+                      Text(
+                        'Message',
+                        style: AppStyle.heading6Medium(color: AppColor.primaryColor),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

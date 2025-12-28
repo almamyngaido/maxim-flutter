@@ -10,6 +10,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/controller/property_list_contr
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/text_segment_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/property_list/widget/contact_owner_bottom_sheet.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/property_list/widget/filter_bottom_sheet.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -66,7 +67,7 @@ class PropertyListView extends StatelessWidget {
                 );
               },
               child: Image.asset(
-                Assets.images.save.path,
+                Assets.images.star.path,
                 width: AppSize.appSize24,
                 color: AppColor.descriptionColor,
               ).paddingOnly(right: AppSize.appSize26),
@@ -287,43 +288,78 @@ class PropertyListView extends StatelessWidget {
                               ClipRRect(
                                 borderRadius:
                                     BorderRadius.circular(AppSize.appSize8),
-                                child: Image.asset(
-                                  propertyListController
-                                      .getPropertyImage(property),
-                                  width: double.infinity,
-                                  height: AppSize.appSize200,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: double.infinity,
-                                      height: AppSize.appSize200,
-                                      decoration: BoxDecoration(
-                                        color: AppColor.backgroundColor,
-                                        borderRadius: BorderRadius.circular(
-                                            AppSize.appSize8),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.home,
-                                            size: AppSize.appSize50,
-                                            color: AppColor.descriptionColor,
-                                          ),
-                                          Text(
-                                            propertyListController
-                                                .getFormattedPropertyType(
-                                                    property),
-                                            style: AppStyle.heading6Regular(
-                                              color: AppColor.descriptionColor,
+                                child: propertyListController.hasServerImages(property)
+                                    ? // Server image from backend
+                                    Image.network(
+                                        propertyListController.getPropertyImageUrl(property),
+                                        width: double.infinity,
+                                        height: AppSize.appSize200,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Container(
+                                            width: double.infinity,
+                                            height: AppSize.appSize200,
+                                            color: AppColor.backgroundColor,
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                color: AppColor.primaryColor,
+                                                value: loadingProgress.expectedTotalBytes != null
+                                                    ? loadingProgress.cumulativeBytesLoaded /
+                                                        loadingProgress.expectedTotalBytes!
+                                                    : null,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          );
+                                        },
+                                        errorBuilder: (context, error, stackTrace) {
+                                          print('❌ Error loading image: $error');
+                                          // Fallback to default asset image
+                                          return Image.asset(
+                                            propertyListController.getPropertyImage(property),
+                                            width: double.infinity,
+                                            height: AppSize.appSize200,
+                                            fit: BoxFit.cover,
+                                          );
+                                        },
+                                      )
+                                    : // Default local asset image
+                                    Image.asset(
+                                        propertyListController.getPropertyImage(property),
+                                        width: double.infinity,
+                                        height: AppSize.appSize200,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Container(
+                                            width: double.infinity,
+                                            height: AppSize.appSize200,
+                                            decoration: BoxDecoration(
+                                              color: AppColor.backgroundColor,
+                                              borderRadius: BorderRadius.circular(
+                                                  AppSize.appSize8),
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.home,
+                                                  size: AppSize.appSize50,
+                                                  color: AppColor.descriptionColor,
+                                                ),
+                                                Text(
+                                                  propertyListController
+                                                      .getFormattedPropertyType(
+                                                          property),
+                                                  style: AppStyle.heading6Regular(
+                                                    color: AppColor.descriptionColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
                                       ),
-                                    );
-                                  },
-                                ),
                               ),
                               Positioned(
                                 right: AppSize.appSize6,
@@ -345,9 +381,9 @@ class PropertyListView extends StatelessWidget {
                                     child: Center(
                                       child: Obx(() => Image.asset(
                                             propertyListController
-                                                    .isPropertyLiked(property.id!) 
-                                                ? Assets.images.saved.path
-                                                : Assets.images.save.path,
+                                                    .isPropertyLiked(property.id!)
+                                                ? Assets.images.ratingStar.path
+                                                : Assets.images.emptyRatingStar.path,
                                             width: AppSize.appSize24,
                                           )),
                                     ),
@@ -530,13 +566,13 @@ class PropertyListView extends StatelessWidget {
                               ).paddingOnly(top: AppSize.appSize12),
                             ),
 
-                          // Call button
+                          // Contact button
                           SizedBox(
                             width: MediaQuery.of(context).size.width,
                             height: AppSize.appSize35,
                             child: ElevatedButton(
                               onPressed: () {
-                                propertyListController.launchDialer();
+                                showContactOwnerBottomSheet(context, property);
                               },
                               style: ButtonStyle(
                                 elevation: const WidgetStatePropertyAll(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 
@@ -11,6 +12,7 @@ class ShowPropertyDetailsController extends GetxController {
 
   // UI State
   RxBool isExpanded = false.obs;
+  RxBool isKeyInfoExpanded = false.obs;
   RxInt selectAgent = 0.obs;
   RxBool isChecked = false.obs;
   RxInt selectProperty = 0.obs;
@@ -111,7 +113,7 @@ class ShowPropertyDetailsController extends GetxController {
       String? token = storage.read('authToken');
 
       final response = await http.get(
-        Uri.parse('${AppString.apiBaseUrl}/bien-immos/$propertyId'),
+        Uri.parse('${ApiConfig.baseUrl}/bien-immos/$propertyId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -126,6 +128,13 @@ class ShowPropertyDetailsController extends GetxController {
         propertyData.value = data;
 
         print('✅ Property data loaded successfully');
+        print('📊 Property Data Keys: ${data.keys.toList()}');
+        print('🔋 Energy Diagnostics: ${data['diagnosticsEnergie']}');
+        if (data['diagnosticsEnergie'] != null) {
+          print('  - DPE: ${data['diagnosticsEnergie']['dpe']}');
+          print('  - GES: ${data['diagnosticsEnergie']['ges']}');
+          print('  - Date: ${data['diagnosticsEnergie']['dateDiagnostique']}');
+        }
       } else {
         throw Exception(
             'Échec du chargement de la propriété: ${response.statusCode}');
@@ -299,7 +308,16 @@ class ShowPropertyDetailsController extends GetxController {
       if (propertyData['listeImages'] != null &&
           propertyData['listeImages'] is List &&
           (propertyData['listeImages'] as List).isNotEmpty) {
-        return (propertyData['listeImages'] as List).cast<String>();
+        // Convert relative paths to full URLs
+        List<String> imagePaths = (propertyData['listeImages'] as List).cast<String>();
+        return imagePaths.map((path) {
+          // If already a full URL, return as-is
+          if (path.startsWith('http://') || path.startsWith('https://')) {
+            return path;
+          }
+          // Convert relative path to full URL
+          return '${ApiConfig.baseUrl}/$path';
+        }).toList();
       }
       return [Assets.images.property3.path]; // Fallback image
     } catch (e) {
@@ -315,6 +333,10 @@ class ShowPropertyDetailsController extends GetxController {
   /// UI interaction methods
   void toggleVisitExpansion() {
     isVisitExpanded.value = !isVisitExpanded.value;
+  }
+
+  void toggleKeyInfoExpansion() {
+    isKeyInfoExpanded.value = !isKeyInfoExpanded.value;
   }
 
   void updateAgent(int index) {

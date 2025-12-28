@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:luxury_real_estate_flutter_ui_kit/services/auth.service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 
 class UserService {
-  static const String baseUrl = AuthService.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
 
   final http.Client _client = http.Client();
 
@@ -234,6 +234,68 @@ class UserService {
       }
     } catch (e) {
       print('Upload file error: $e');
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('Connection')) {
+        throw Exception(
+            'Erreur de connexion. Vérifiez votre connexion internet.');
+      }
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
+  // Send OTP to user (Admin approval - triggers email with OTP)
+  Future<Map<String, dynamic>> sendOtpToUser({
+    String? userId,
+    String? email,
+    required String adminToken,
+  }) async {
+    try {
+      // Validate that at least one identifier is provided
+      if (userId == null && email == null) {
+        throw Exception('Either userId or email is required');
+      }
+
+      print('Sending OTP to user - userId: $userId, email: $email');
+
+      final Map<String, dynamic> requestBody = {};
+      if (userId != null) requestBody['userId'] = userId;
+      if (email != null) requestBody['email'] = email;
+
+      final response = await _client.post(
+        Uri.parse('$baseUrl/send-user-otp'),
+        headers: {
+          ..._headers,
+          'Authorization': 'Bearer $adminToken',
+        },
+        body: json.encode(requestBody),
+      );
+
+      print('Send OTP response status: ${response.statusCode}');
+      print('Send OTP response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        final errorData = json.decode(response.body);
+
+        // Extract error message from various possible structures
+        String errorMessage = 'Erreur lors de l\'envoi de l\'OTP';
+
+        if (errorData['error'] != null) {
+          final error = errorData['error'];
+          if (error is Map && error['message'] != null) {
+            errorMessage = error['message'].toString();
+          } else if (error is String) {
+            errorMessage = error;
+          }
+        } else if (errorData['message'] != null) {
+          errorMessage = errorData['message'].toString();
+        }
+
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      print('Send OTP error: $e');
       if (e.toString().contains('SocketException') ||
           e.toString().contains('Connection')) {
         throw Exception(

@@ -1,61 +1,77 @@
 import 'package:get/get.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/model/bien_immo_model.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/viewed_properties_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ViewedPropertyController extends GetxController {
-  RxList<bool> isSimilarPropertyLiked = <bool>[].obs;
+  final ViewedPropertiesService _viewedPropertiesService =
+      Get.put(ViewedPropertiesService());
 
-  void launchDialer() async {
-    final Uri phoneNumber = Uri(scheme: 'tel', path: '9995958748');
-    if (await canLaunchUrl(phoneNumber)) {
-      await launchUrl(phoneNumber);
-    } else {
-      throw 'Could not launch $phoneNumber';
+  RxList<BienImmo> viewedProperties = <BienImmo>[].obs;
+  RxBool isLoading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadViewedProperties();
+  }
+
+  /// Load viewed properties from API
+  Future<void> loadViewedProperties() async {
+    try {
+      isLoading.value = true;
+      print('🔍 Loading viewed properties...');
+
+      final properties = await _viewedPropertiesService.fetchViewedProperties(
+        limit: 20,
+      );
+
+      viewedProperties.value = properties;
+
+      print('✅ Loaded ${properties.length} viewed properties');
+    } catch (e) {
+      print('❌ Error loading viewed properties: $e');
+    } finally {
+      isLoading.value = false;
     }
   }
 
-  RxList<String> searchImageList = [
-    Assets.images.searchProperty1.path,
-    Assets.images.searchProperty3.path,
-    Assets.images.contactProperty1.path,
-    Assets.images.contactProperty2.path,
-    Assets.images.contactProperty3.path,
-  ].obs;
+  /// Get the number of viewed properties
+  int get viewedPropertiesCount =>
+      _viewedPropertiesService.getViewedPropertiesCount();
 
-  RxList<String> searchTitleList = [
-    AppString.semiModernHouse,
-    AppString.theAcceptanceSociety,
-    AppString.silverstone,
-    AppString.vijayVRX,
-    AppString.yashasviSiddhi,
-  ].obs;
+  /// Clear all viewed properties
+  Future<void> clearAllViewedProperties() async {
+    await _viewedPropertiesService.clearViewedProperties();
+    await loadViewedProperties();
+  }
 
-  RxList<String> searchAddressList = [
-    AppString.address6,
-    AppString.mistyAddress,
-    AppString.thorstenBusse,
-    AppString.kohinoorChowk,
-    AppString.puranaPaltan,
-  ].obs;
+  /// Remove a specific property from viewed list
+  Future<void> removeViewedProperty(String propertyId) async {
+    await _viewedPropertiesService.removeViewedProperty(propertyId);
+    await loadViewedProperties();
+  }
 
-  RxList<String> searchRupeesList = [
-    AppString.rupees58Lakh,
-    AppString.rupee25Lakh,
-    AppString.rupee63Lakh,
-    AppString.rupees58Lakh,
-    AppString.rupee65Lakh,
-  ].obs;
+  /// Launch phone dialer with property owner's phone
+  void launchDialer(String? phoneNumber) async {
+    if (phoneNumber == null || phoneNumber.isEmpty) {
+      Get.snackbar(
+        'Erreur',
+        'Numéro de téléphone non disponible',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
 
-  RxList<String> searchPropertyImageList = [
-    Assets.images.bath.path,
-    Assets.images.bed.path,
-    Assets.images.plot.path,
-  ].obs;
-
-  RxList<String> searchPropertyTitleList = [
-    AppString.point2,
-    AppString.point2,
-    AppString.bhk2,
-  ].obs;
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      Get.snackbar(
+        'Erreur',
+        'Impossible d\'appeler ce numéro',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 }

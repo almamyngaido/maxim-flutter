@@ -12,7 +12,8 @@ class EditPropertyDetailsController extends GetxController {
   RxInt selectPropertyType = 0.obs;
   RxInt selectPropertyType2 = 0.obs;
 
-  TextEditingController mobileNumberController = TextEditingController(text: AppString.francisZiemeNumber);
+  TextEditingController mobileNumberController =
+      TextEditingController(text: AppString.francisZiemeNumber);
 
   @override
   void onInit() {
@@ -50,7 +51,6 @@ class EditPropertyDetailsController extends GetxController {
 
   RxList<String> propertyLookingList = [
     AppString.buy,
-    AppString.rent,
     AppString.pg,
   ].obs;
 

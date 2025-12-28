@@ -73,7 +73,7 @@ class ContactOwnerView extends StatelessWidget {
                 },);
               },
               child: Image.asset(
-                Assets.images.save.path,
+                Assets.images.emptyRatingStar.path,
                 width: AppSize.appSize24,
                 color: AppColor.descriptionColor,
               ).paddingOnly(right: AppSize.appSize26),
@@ -246,8 +246,8 @@ class ContactOwnerView extends StatelessWidget {
                                 child: Center(
                                   child: Obx(() => Image.asset(
                                     contactOwnerController.isSimilarPropertyLiked[index]
-                                        ? Assets.images.saved.path
-                                        : Assets.images.save.path,
+                                        ? Assets.images.ratingStar.path
+                                        : Assets.images.emptyRatingStar.path,
                                     width: AppSize.appSize24,
                                   )),
                                 ),

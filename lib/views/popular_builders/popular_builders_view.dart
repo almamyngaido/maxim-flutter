@@ -65,7 +65,7 @@ class PopularBuildersView extends StatelessWidget {
             },);
           },
           child: Image.asset(
-            Assets.images.save.path,
+            Assets.images.emptyRatingStar.path,
             width: AppSize.appSize24,
             color: AppColor.descriptionColor,
           ).paddingOnly(right: AppSize.appSize22),
@@ -217,8 +217,8 @@ class PopularBuildersView extends StatelessWidget {
                                 child: Center(
                                   child: Obx(() => Image.asset(
                                     popularBuildersController.isSimilarPropertyLiked[index]
-                                        ? Assets.images.saved.path
-                                        : Assets.images.save.path,
+                                        ? Assets.images.ratingStar.path
+                                        : Assets.images.emptyRatingStar.path,
                                     width: AppSize.appSize24,
                                   )),
                                 ),

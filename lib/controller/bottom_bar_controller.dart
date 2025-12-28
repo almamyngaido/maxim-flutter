@@ -24,6 +24,15 @@ class BottomBarController extends GetxController {
     }
   }
 
+  /// Reset controller state to defaults
+  ///
+  /// Called during logout to ensure clean state for next login
+  void reset() {
+    isAdmin.value = false;
+    selectIndex.value = 0;
+    print('🔄 BottomBarController reset - isAdmin: ${isAdmin.value}');
+  }
+
   void updateIndex(int index) {
     selectIndex.value = index;
     pageController.jumpToPage(index);
@@ -36,7 +45,7 @@ class BottomBarController extends GetxController {
         Assets.images.home.path,
         Assets.images.task.path,
         '',
-        Assets.images.save.path,
+        Assets.images.emptyRatingStar.path,
         Assets.images.user.path,
         'admin', // Icône spéciale pour admin
       ];
@@ -45,7 +54,7 @@ class BottomBarController extends GetxController {
         Assets.images.home.path,
         Assets.images.task.path,
         '',
-        Assets.images.save.path,
+        Assets.images.emptyRatingStar.path,
         Assets.images.user.path,
       ];
     }

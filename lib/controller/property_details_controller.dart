@@ -4,6 +4,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/bien_immo_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/propretyDetails_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/viewed_properties_service.dart';
 
 class PropertyDetailsController extends GetxController {
   // Property data
@@ -65,6 +66,14 @@ class PropertyDetailsController extends GetxController {
     final BienImmo? property = Get.arguments as BienImmo?;
     if (property != null) {
       currentProperty.value = property;
+
+      // Track this property as viewed
+      if (property.id != null) {
+        final viewedService = Get.isRegistered<ViewedPropertiesService>()
+            ? Get.find<ViewedPropertiesService>()
+            : Get.put(ViewedPropertiesService());
+        viewedService.addViewedProperty(property.id!);
+      }
     } else {
       errorMessage.value = 'Aucune propriété trouvée';
     }
@@ -93,16 +102,28 @@ class PropertyDetailsController extends GetxController {
 
   Future<void> _loadSimilarProperties() async {
     try {
+      print('🔍 Loading similar properties...');
       final properties = await BienImmoService.getAllBienImmos();
+      print('📊 Total properties loaded: ${properties.length}');
+
+      final currentId = currentProperty.value?.id;
+      print('🆔 Current property ID: $currentId');
+
       final filtered = properties
-          .where((p) => p.id != currentProperty.value?.id)
+          .where((p) => p.id != currentId)
           .take(5)
           .toList();
+
+      print('✅ Filtered similar properties: ${filtered.length}');
+
       similarProperties.value = filtered;
       isSimilarPropertyLiked.value =
           List<bool>.generate(filtered.length, (index) => false);
+
+      print('🎯 Similar properties set successfully');
     } catch (e) {
-      print('Error loading similar properties: $e');
+      print('❌ Error loading similar properties: $e');
+      print('❌ Stack trace: ${StackTrace.current}');
     }
   }
 

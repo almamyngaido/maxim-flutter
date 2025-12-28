@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart'; // For XFile
 import 'package:luxury_real_estate_flutter_ui_kit/common/common_button.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
@@ -204,9 +205,7 @@ class PhotosDescriptionView extends StatelessWidget {
       ],
     );
   }
-// Dans imgDescription_view.dart, remplacez la méthode buildImageItem par ceci :
-
-  Widget buildImageItem(File imageFile, int index) {
+  Widget buildImageItem(XFile imageFile, int index) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSize.appSize8),
@@ -251,7 +250,7 @@ class PhotosDescriptionView extends StatelessWidget {
                   )
                 : // Pour les plateformes mobiles - utiliser Image.file
                 Image.file(
-                    imageFile,
+                    File(imageFile.path),
                     width: double.infinity,
                     height: double.infinity,
                     fit: BoxFit.cover,
@@ -586,7 +585,16 @@ class PhotosDescriptionView extends StatelessWidget {
       );
 
       // Utiliser le système existant pour soumettre la propriété
-      print('🚀 Submitting property using PropertyDataManager...');
+      print('');
+      print('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
+      print('🔥 ABOUT TO CALL submitProperty()');
+      print('🔥 Image files to upload: ${imageFiles.length}');
+      for (int i = 0; i < imageFiles.length; i++) {
+        print('   🔥 Image ${i + 1}: ${imageFiles[i].path}');
+      }
+      print('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
+      print('');
+
       final success = await dataManager.submitProperty();
 
       // Fermer le dialog de chargement - avec vérification
@@ -598,6 +606,16 @@ class PhotosDescriptionView extends StatelessWidget {
 
       if (success) {
         print('✅ Property submitted successfully!');
+
+        // CLEAR ALL FORM DATA for next property
+        print('🧹 Clearing form data for next property...');
+        dataManager.clearAllData();
+
+        // Clear local controller data
+        controller.titreController.clear();
+        controller.annonceController.clear();
+        controller.selectedImages.clear();
+        print('✅ Form cleared successfully');
 
         // Attendre un peu pour que les snackbars se ferment
         await Future.delayed(const Duration(milliseconds: 500));

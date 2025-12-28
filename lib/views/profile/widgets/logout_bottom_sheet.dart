@@ -5,6 +5,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/session_service.dart';
 
 logoutBottomSheet(BuildContext context) {
   return showModalBottomSheet(
@@ -78,8 +79,9 @@ logoutBottomSheet(BuildContext context) {
                 const SizedBox(width: AppSize.appSize26),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {
-                      Get.offAllNamed(AppRoutes.loginView);
+                    onTap: () async {
+                      final sessionService = Get.find<SessionService>();
+                      await sessionService.logout();
                     },
                     child: Container(
                       height: AppSize.appSize49,

@@ -17,17 +17,15 @@ class SlideDrawerController extends GetxController {
     AppString.contactedProperties,
   ].obs;
 
-  RxList<String> searchPropertyNumberList = [
-    AppString.number35,
-    AppString.number25,
-    AppString.number3,
-    AppString.number10,
-  ].obs;
+  // Dynamic counts for activity section
+  RxInt recentActivityCount = 0.obs;
+  RxInt viewedPropertiesCount = 0.obs;
+  RxInt savedPropertiesCount = 0.obs;
+  RxInt contactedPropertiesCount = 0.obs;
 
   RxList<String> drawer3List = [
     AppString.homeScreen,
     AppString.agentsList,
-    AppString.interestingReads,
   ].obs;
 
   RxList<String> drawer4List = [
@@ -36,4 +34,17 @@ class SlideDrawerController extends GetxController {
     AppString.rateOurApp,
     AppString.logout,
   ].obs;
+
+  /// Update activity counts with real data
+  void updateActivityCounts({
+    int? recentActivity,
+    int? viewedProperties,
+    int? savedProperties,
+    int? contactedProperties,
+  }) {
+    if (recentActivity != null) recentActivityCount.value = recentActivity;
+    if (viewedProperties != null) viewedPropertiesCount.value = viewedProperties;
+    if (savedProperties != null) savedPropertiesCount.value = savedProperties;
+    if (contactedProperties != null) contactedPropertiesCount.value = contactedProperties;
+  }
 }

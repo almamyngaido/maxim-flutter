@@ -1,3 +1,5 @@
+// dart format width=80
+
 /// GENERATED CODE - DO NOT MODIFY BY HAND
 /// *****************************************************
 ///  FlutterGen
@@ -5,7 +7,7 @@
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
-// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
+// ignore_for_file: deprecated_member_use,directives_ordering,implicit_dynamic_list_literal,unnecessary_import
 
 import 'package:flutter/widgets.dart';
 
@@ -1071,8 +1073,7 @@ class $AssetsImagesGen {
       const AssetGenImage('assets/images/alexaneFranecki.png');
 
   /// File path: assets/images/appLogo.png
-  AssetGenImage get appLogo =>
-      const AssetGenImage('assets/images/maximLogo.png');
+  AssetGenImage get appLogo => const AssetGenImage('assets/images/appLogo.png');
 
   /// File path: assets/images/arrowRight.png
   AssetGenImage get arrowRight =>
@@ -1137,6 +1138,14 @@ class $AssetsImagesGen {
 
   /// File path: assets/images/call.png
   AssetGenImage get call => const AssetGenImage('assets/images/call.png');
+
+  /// File path: assets/images/cartimmo.png
+  AssetGenImage get cartimmo =>
+      const AssetGenImage('assets/images/cartimmo.png');
+
+  /// File path: assets/images/cartsaved.png
+  AssetGenImage get cartsaved =>
+      const AssetGenImage('assets/images/cartsaved.png');
 
   /// File path: assets/images/checkbox.png
   AssetGenImage get checkbox =>
@@ -1315,6 +1324,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/locationPin.png
   AssetGenImage get locationPin =>
       const AssetGenImage('assets/images/locationPin.png');
+
+  /// File path: assets/images/maximLogo.png
+  AssetGenImage get maximLogo =>
+      const AssetGenImage('assets/images/maximLogo.png');
 
   /// File path: assets/images/mm.png
   AssetGenImage get mm => const AssetGenImage('assets/images/mm.png');
@@ -1505,12 +1518,6 @@ class $AssetsImagesGen {
   AssetGenImage get response5 =>
       const AssetGenImage('assets/images/response5.png');
 
-  /// File path: assets/images/save.png
-  AssetGenImage get save => const AssetGenImage('assets/images/cartimmo.png');
-
-  /// File path: assets/images/saved.png
-  AssetGenImage get saved => const AssetGenImage('assets/images/cartsaved.png');
-
   /// File path: assets/images/savedProperty1.png
   AssetGenImage get savedProperty1 =>
       const AssetGenImage('assets/images/savedProperty1.png');
@@ -1635,6 +1642,8 @@ class $AssetsImagesGen {
         builderFloor,
         buildings,
         call,
+        cartimmo,
+        cartsaved,
         checkbox,
         checked,
         city1,
@@ -1686,6 +1695,7 @@ class $AssetsImagesGen {
         listing4,
         loader,
         locationPin,
+        maximLogo,
         mm,
         modernHouse,
         neutral,
@@ -1737,8 +1747,6 @@ class $AssetsImagesGen {
         response3,
         response4,
         response5,
-        save,
-        saved,
         savedProperty1,
         savedProperty2,
         search,
@@ -1769,18 +1777,25 @@ class $AssetsImagesGen {
 }
 
 class Assets {
-  Assets._();
+  const Assets._();
 
   static const $AssetsFlagsGen flags = $AssetsFlagsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 }
 
 class AssetGenImage {
-  const AssetGenImage(this._assetName, {this.size = null});
+  const AssetGenImage(
+    this._assetName, {
+    this.size,
+    this.flavors = const {},
+    this.animation,
+  });
 
   final String _assetName;
 
   final Size? size;
+  final Set<String> flavors;
+  final AssetGenImageAnimation? animation;
 
   Image image({
     Key? key,
@@ -1800,10 +1815,10 @@ class AssetGenImage {
     ImageRepeat repeat = ImageRepeat.noRepeat,
     Rect? centerSlice,
     bool matchTextDirection = false,
-    bool gaplessPlayback = false,
+    bool gaplessPlayback = true,
     bool isAntiAlias = false,
     String? package,
-    FilterQuality filterQuality = FilterQuality.low,
+    FilterQuality filterQuality = FilterQuality.medium,
     int? cacheWidth,
     int? cacheHeight,
   }) {
@@ -1849,4 +1864,16 @@ class AssetGenImage {
   String get path => _assetName;
 
   String get keyName => _assetName;
+}
+
+class AssetGenImageAnimation {
+  const AssetGenImageAnimation({
+    required this.isAnimation,
+    required this.duration,
+    required this.frames,
+  });
+
+  final bool isAnimation;
+  final Duration duration;
+  final int frames;
 }

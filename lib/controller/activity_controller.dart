@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 
 class ActivityController extends GetxController {
@@ -68,7 +69,7 @@ class ActivityController extends GetxController {
       }
 
       final response = await http.get(
-        Uri.parse('${AppString.apiBaseUrl}/me'),
+        Uri.parse('${ApiConfig.baseUrl}/me'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -107,7 +108,7 @@ class ActivityController extends GetxController {
       String? token = storage.read('authToken');
 
       final response = await http.get(
-        Uri.parse('${AppString.apiBaseUrl}/utilisateurs/$userId/bien-immos'),
+        Uri.parse('${ApiConfig.baseUrl}/utilisateurs/$userId/bien-immos'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -120,13 +121,33 @@ class ActivityController extends GetxController {
       if (response.statusCode == 200) {
         final List<dynamic> jsonList = jsonDecode(response.body);
 
+        // 🔍 DEBUG: Print full response to help debug image issues
+        print('=' * 80);
+        print('📦 API RESPONSE - User Properties:');
+        print('Total properties: ${jsonList.length}');
+        print('=' * 80);
+
         // Store raw JSON data instead of trying to convert to model
         userProperties.value = jsonList.cast<Map<String, dynamic>>();
+
+        // 🔍 DEBUG: Print each property's image data
+        for (int i = 0; i < userProperties.length && i < 3; i++) {
+          var property = userProperties[i];
+          print('🏠 Property ${i + 1}: ${property['typeBien'] ?? 'Unknown'}');
+          print('   ID: ${property['_id']}');
+          print('   listeImages: ${property['listeImages']}');
+          print('   Has images: ${property['listeImages'] != null && (property['listeImages'] as List?)?.isNotEmpty == true}');
+          if (i < userProperties.length - 1) print('---');
+        }
+        if (userProperties.length > 3) {
+          print('... and ${userProperties.length - 3} more properties');
+        }
+        print('=' * 80);
 
         // Initialize filtered properties
         filteredProperties.value = List.from(userProperties);
 
-        print('Fetched ${userProperties.length} properties');
+        print('✅ Fetched ${userProperties.length} properties');
         _applySorting(); // Apply default sorting
       } else {
         throw Exception('Failed to fetch properties: ${response.statusCode}');
@@ -340,15 +361,28 @@ class ActivityController extends GetxController {
 
   String _getPropertyImage(Map<String, dynamic> property) {
     try {
+      String propertyType = property['typeBien'] ?? 'Unknown';
+
       // If the property has images, return the first one
       if (property['listeImages'] != null &&
           property['listeImages'] is List &&
           (property['listeImages'] as List).isNotEmpty) {
-        return (property['listeImages'] as List).first.toString();
+        String imagePath = (property['listeImages'] as List).first.toString();
+
+        // 🔍 DEBUG: Show image processing
+        print('🖼️ Processing image for $propertyType:');
+        print('   Raw path: "$imagePath"');
+
+        // Convert to full URL if it's a relative path
+        String fullUrl = _buildImageUrl(imagePath);
+        print('   Full URL: "$fullUrl"');
+        return fullUrl;
       }
 
       // Fallback to asset images based on property type
       String type = _getPropertyType(property).toLowerCase();
+      print('⚠️ No images for $propertyType - using fallback: $type');
+
       switch (type) {
         case 'appartement':
           return Assets.images.listing1.path;
@@ -360,9 +394,29 @@ class ActivityController extends GetxController {
           return Assets.images.listing4.path;
       }
     } catch (e) {
-      print('Error getting property image: $e');
+      print('❌ Error getting property image: $e');
       return Assets.images.listing1.path;
     }
+  }
+
+  /// Build full image URL from path
+  /// Handles:
+  /// - Full URLs (http://... or https://...) - return as is
+  /// - Relative paths (uploads/...) - prepend base URL
+  /// - Filenames (image.jpg) - prepend base URL + /uploads/
+  String _buildImageUrl(String imagePath) {
+    // If already a full URL, return as is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+
+    // If it starts with /, remove it
+    if (imagePath.startsWith('/')) {
+      imagePath = imagePath.substring(1);
+    }
+
+    // If it's a relative path or filename, prepend base URL
+    return '${ApiConfig.baseUrl}/$imagePath';
   }
 
   String _getPropertyStatus(Map<String, dynamic> property) {
@@ -463,7 +517,7 @@ class ActivityController extends GetxController {
       String? token = storage.read('authToken');
 
       final response = await http.delete(
-        Uri.parse('${AppString.apiBaseUrl}/bien-immos/$propertyId'),
+        Uri.parse('${ApiConfig.baseUrl}/bien-immos/$propertyId'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

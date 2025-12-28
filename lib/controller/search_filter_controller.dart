@@ -62,7 +62,6 @@ class SearchFilterController extends GetxController {
 
   RxList<String> propertyLookingList = [
     AppString.buy,
-    AppString.rentPg,
     AppString.room,
   ].obs;
 

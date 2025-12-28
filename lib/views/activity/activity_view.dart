@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/common/cached_network_image_widget.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
@@ -456,21 +457,14 @@ class ActivityView extends StatelessWidget {
   Widget _buildPropertyImage(String imagePath, int index) {
     // Check if it's a network image or asset
     if (imagePath.startsWith('http') || imagePath.startsWith('https')) {
-      return ClipRRect(
+      return CachedNetworkImageWidget(
+        imageUrl: imagePath,
+        width: AppSize.appSize90,
+        height: AppSize.appSize90,
+        fit: BoxFit.cover,
         borderRadius: BorderRadius.circular(AppSize.appSize8),
-        child: Image.network(
-          imagePath,
-          width: AppSize.appSize90,
-          height: AppSize.appSize90,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return _buildFallbackImage();
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return _buildImagePlaceholder();
-          },
-        ),
+        placeholder: _buildImagePlaceholder(),
+        errorWidget: _buildFallbackImage(),
       );
     } else {
       return ClipRRect(

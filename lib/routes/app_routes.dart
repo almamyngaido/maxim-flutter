@@ -19,6 +19,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/views/login/login_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/notification/notification_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/onboard/onboard_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/otp/otp_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/otp/email_verification_otp_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/popular_builders/popular_builders_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/post_property/ajouter_details_technique_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/post_property/ajouter_piece_details.dart';
@@ -49,12 +50,15 @@ import 'package:luxury_real_estate_flutter_ui_kit/views/reviews/add_reviews_for_
 import 'package:luxury_real_estate_flutter_ui_kit/views/saved/saved_properties_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/search/search_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/messages/conversations_list_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/messages/chat_view.dart';
 
 class AppRoutes {
   static const String splashView = "/splash_view";
   static const String onboardView = "/onboard_view";
   static const String loginView = "/login_view";
   static const String otpView = "/otp_view";
+  static const String emailVerificationOtpView = "/email_verification_otp_view";
   static const String registerView = "/register_view";
   static const String homeView = "/home_view";
   static const String bottomBarView = "/bottom_bar_view";
@@ -101,6 +105,8 @@ class AppRoutes {
   static const String languagesView = "/languages_view";
   static const String deleteListingView = "/delete_listing_view";
   static const String activityView = "/activity_view";
+  static const String conversationsListView = "/conversations_list_view";
+  static const String chatView = "/chat_view";
 
   static String addPropertyFeaturesView = "/ajouter_caracteristiques";
   static String techniqueDetailsView = "/ajouter_details_technique";
@@ -113,6 +119,7 @@ class AppRoutes {
     GetPage(name: onboardView, page: () => OnboardView()),
     GetPage(name: loginView, page: () => LoginView()),
     GetPage(name: otpView, page: () => OtpView()),
+    GetPage(name: emailVerificationOtpView, page: () => EmailVerificationOtpView()),
     GetPage(name: registerView, page: () => RegisterView()),
     GetPage(name: homeView, page: () => HomeView()),
     GetPage(name: bottomBarView, page: () => BottomBarView()),
@@ -168,5 +175,7 @@ class AppRoutes {
     GetPage(name: priceView, page: () => PricingView()),
     GetPage(name: priceView, page: () => PricingView()),
     GetPage(name: imgdesc, page: () => PhotosDescriptionView()),
+    GetPage(name: conversationsListView, page: () => ConversationsListView()),
+    GetPage(name: chatView, page: () => const ChatView()),
   ];
 }

@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import '../model/bien_immo_model.dart';
 
 class FavorisService extends GetxService {
-  final String baseUrl = 'http://localhost:3000';
+  // Using centralized API configuration
+  String get baseUrl => ApiConfig.baseUrl;
 
   /// Récupérer l'ID de l'utilisateur actuel (temporaire - remplace par votre logique)
   String? _getCurrentUserId() {
