@@ -11,7 +11,7 @@ class ApiConfig {
   // - Environment.local: Local development on PC
   // - Environment.network: Local network (for phone testing)
 
-  static const Environment currentEnvironment = Environment.local;
+  static const Environment currentEnvironment = Environment.production;
 
   // Production URL (Railway)
   static const String productionUrl = 'https://immo-api-production.up.railway.app';
