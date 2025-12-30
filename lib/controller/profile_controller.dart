@@ -5,14 +5,15 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/user_utils.dart';
 
 class ProfileController extends GetxController {
   RxInt selectEmoji = 0.obs;
- Map<String, dynamic>? userData;
+  Map<String, dynamic>? userData;
 
-onInit() {
+  onInit() {
     super.onInit();
 
     userData = loadUserData();
     print('👤 User data in ProfileController: $userData');
   }
+
   void updateEmoji(int index) {
     selectEmoji.value = index;
   }
@@ -32,7 +33,6 @@ onInit() {
     AppString.languages,
     AppString.communicationSettings,
     AppString.shareFeedback,
-    AppString.areYouFindingUsHelpful,
     AppString.logout,
     AppString.deleteAccount,
   ].obs;

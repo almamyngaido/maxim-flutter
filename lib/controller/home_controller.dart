@@ -122,9 +122,17 @@ class HomeController extends GetxController {
 
       print('🔍 Loading properties for user: $userId');
 
-      // Use the correct endpoint with filter
+      // Use the correct endpoint with filter and include owner data
       final filter = {
-        "where": {"utilisateurId": userId}
+        "where": {"utilisateurId": userId},
+        'include': [
+          {
+            'relation': 'utilisateur',
+            'scope': {
+              'fields': ['id', 'nom', 'prenom', 'email', 'phoneNumber', 'role']
+            }
+          }
+        ]
       };
 
       final url = '${ApiConfig.baseUrl}/bien-immos?filter=${jsonEncode(filter)}';
@@ -179,8 +187,23 @@ class HomeController extends GetxController {
 
       print('🌍 Loading all properties from all users...');
 
+      // Add filter to include utilisateur relation
+      final filter = {
+        'include': [
+          {
+            'relation': 'utilisateur',
+            'scope': {
+              'fields': ['id', 'nom', 'prenom', 'email', 'phoneNumber', 'role']
+            }
+          }
+        ]
+      };
+
+      final url = '${ApiConfig.baseUrl}/bien-immos?filter=${jsonEncode(filter)}';
+      print('📡 Fetching from: $url');
+
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/bien-immos'),
+        Uri.parse(url),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -197,6 +220,7 @@ class HomeController extends GetxController {
         // Log first few properties for debugging
         if (allProperties.isNotEmpty) {
           print('📊 First property: ${allProperties.first['typeBien']} - ${allProperties.first['prix']?['hai']} €');
+          print('👤 First property owner: ${allProperties.first['utilisateur'] != null ? allProperties.first['utilisateur']['prenom'] + " " + allProperties.first['utilisateur']['nom'] : "No owner data"}');
         }
       } else {
         print('❌ Failed to load all properties: ${response.statusCode}');

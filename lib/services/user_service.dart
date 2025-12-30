@@ -305,6 +305,75 @@ class UserService {
     }
   }
 
+  // Update user profile
+  Future<Map<String, dynamic>> updateUserProfile({
+    required String userId,
+    required String token,
+    String? nom,
+    String? prenom,
+    String? email,
+    String? phoneNumber,
+    String? aboutMe,
+    String? role,
+  }) async {
+    try {
+      print('Updating user profile for: $userId');
+
+      // Build update body with only provided fields
+      final Map<String, dynamic> updateData = {};
+      if (nom != null) updateData['nom'] = nom;
+      if (prenom != null) updateData['prenom'] = prenom;
+      if (email != null) updateData['email'] = email;
+      if (phoneNumber != null) updateData['phoneNumber'] = phoneNumber;
+      if (role != null) updateData['role'] = role;
+      // Note: aboutMe is not in the backend model yet, we'll skip it for now
+
+      print('Update data: $updateData');
+
+      final response = await _client.patch(
+        Uri.parse('$baseUrl/utilisateurs/$userId'),
+        headers: {
+          ..._headers,
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(updateData),
+      );
+
+      print('Update profile response status: ${response.statusCode}');
+      print('Update profile response body: ${response.body}');
+
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        // 204 No Content is the expected response for PATCH success
+        // Fetch the updated user data
+        final updatedUser = await _client.get(
+          Uri.parse('$baseUrl/utilisateurs/$userId'),
+          headers: {
+            ..._headers,
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (updatedUser.statusCode == 200) {
+          return json.decode(updatedUser.body);
+        }
+
+        return {'message': 'Profile updated successfully'};
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['error']?.toString() ??
+            'Erreur lors de la mise à jour du profil');
+      }
+    } catch (e) {
+      print('Update profile error: $e');
+      if (e.toString().contains('SocketException') ||
+          e.toString().contains('Connection')) {
+        throw Exception(
+            'Erreur de connexion. Vérifiez votre connexion internet.');
+      }
+      throw Exception(e.toString().replaceAll('Exception: ', ''));
+    }
+  }
+
   void dispose() {
     _client.close();
   }

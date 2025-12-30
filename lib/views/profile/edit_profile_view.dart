@@ -621,16 +621,27 @@ class EditProfileView extends StatelessWidget {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: CommonButton(
-        onPressed: () {
-          Get.back();
-        },
+      child: Obx(() => CommonButton(
+        onPressed: editProfileController.isSavingProfile.value
+            ? null
+            : () {
+                editProfileController.saveProfile();
+              },
         backgroundColor: AppColor.primaryColor,
-        child: Text(
-          AppString.updateProfileButton,
-          style: AppStyle.heading5Medium(color: AppColor.whiteColor),
-        ),
-      ).paddingOnly(
+        child: editProfileController.isSavingProfile.value
+            ? SizedBox(
+                width: AppSize.appSize20,
+                height: AppSize.appSize20,
+                child: CircularProgressIndicator(
+                  color: AppColor.whiteColor,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                AppString.updateProfileButton,
+                style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+              ),
+      )).paddingOnly(
         left: AppSize.appSize16, right: AppSize.appSize16,
         bottom: AppSize.appSize26, top: AppSize.appSize10,
       ),

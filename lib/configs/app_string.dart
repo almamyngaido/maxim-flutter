@@ -389,7 +389,7 @@ class AppString {
   static const String lorraineHermannNumber = "+91 99959 58748";
   static const String yourRequestHasBeenSharedWithinBroker =
       "your request has been shared within Broker.";
-  static const String similarProperties = "Similar Properties";
+  static const String similarProperties = "Biens semblables";
   static const String gokulTulip = "Gokul Tulip Residency";
   static const String jayDhiaan = "Jay Dhiaan Hills";
   static const String connellStreet =
@@ -987,6 +987,4 @@ class AppString {
   static String roomNumber(int i) {
     return 'Room $i';
   }
-
-
 }

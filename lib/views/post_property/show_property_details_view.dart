@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/common/common_button.dart';
 
+import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_style.dart';
@@ -19,10 +20,6 @@ class ShowPropertyDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    showPropertyDetailsController.isSimilarPropertyLiked.value =
-        List<bool>.generate(
-            showPropertyDetailsController.searchImageList.length,
-            (index) => false);
     return Scaffold(
       backgroundColor: AppColor.whiteColor,
       appBar: buildAppBar(),
@@ -313,47 +310,18 @@ class ShowPropertyDetailsView extends StatelessWidget {
     final surfaces = showPropertyDetailsController.surfaces;
     double? surfaceHabitable = surfaces['habitable']?.toDouble();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
-          children: [
-            Text(
-              price,
-              style: AppStyle.heading2(color: AppColor.textColor),
-            ),
-            if (surfaceHabitable != null && surfaceHabitable > 0)
-              Text(
-                ' ${_calculatePricePerSqm(price, surfaceHabitable)}',
-                style:
-                    AppStyle.heading5Regular(color: AppColor.descriptionColor),
-              ),
-          ],
+        Text(
+          price,
+          style: AppStyle.heading2(color: AppColor.textColor),
         ),
-        SizedBox(height: AppSize.appSize12),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(AppSize.appSize12),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColor.primaryColor),
-            borderRadius: BorderRadius.circular(AppSize.appSize8),
+        if (surfaceHabitable != null && surfaceHabitable > 0)
+          Text(
+            ' ${_calculatePricePerSqm(price, surfaceHabitable)}',
+            style:
+                AppStyle.heading5Regular(color: AppColor.descriptionColor),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.calculate_outlined,
-                color: AppColor.primaryColor,
-                size: AppSize.appSize18,
-              ),
-              SizedBox(width: AppSize.appSize8),
-              Text(
-                'Calculer mes mensualités',
-                style: AppStyle.heading5Medium(color: AppColor.primaryColor),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -1419,82 +1387,197 @@ class ShowPropertyDetailsView extends StatelessWidget {
   }
 
   Widget _buildSimilarPropertiesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Biens similaires',
-          style: AppStyle.heading4SemiBold(color: AppColor.textColor),
-        ),
-        SizedBox(height: AppSize.appSize16),
-        SizedBox(
-          height: AppSize.appSize300,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: showPropertyDetailsController.searchImageList.length,
-            itemBuilder: (context, index) {
-              return Container(
-                width: AppSize.appSize250,
-                margin: EdgeInsets.only(right: AppSize.appSize16),
-                decoration: BoxDecoration(
-                  color: AppColor.secondaryColor,
-                  borderRadius: BorderRadius.circular(AppSize.appSize12),
-                  border:
-                      Border.all(color: AppColor.borderColor.withOpacity(0.3)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(AppSize.appSize12),
-                        ),
-                        child: Image.asset(
-                          showPropertyDetailsController.searchImageList[index],
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(AppSize.appSize12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            showPropertyDetailsController
-                                .searchRupeesList[index],
-                            style: AppStyle.heading5SemiBold(
-                                color: AppColor.primaryColor),
-                          ),
-                          SizedBox(height: AppSize.appSize4),
-                          Text(
-                            showPropertyDetailsController
-                                .searchTitleList[index],
-                            style: AppStyle.heading6Medium(
-                                color: AppColor.textColor),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            showPropertyDetailsController
-                                .searchAddressList[index],
-                            style: AppStyle.heading6Regular(
-                                color: AppColor.descriptionColor),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
+    return Obx(() {
+      // Show loading state
+      if (showPropertyDetailsController.isLoadingSimilarProperties.value) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Biens similaires',
+              style: AppStyle.heading4SemiBold(color: AppColor.textColor),
+            ),
+            SizedBox(height: AppSize.appSize16),
+            Center(
+              child: CircularProgressIndicator(color: AppColor.primaryColor),
+            ),
+          ],
+        );
+      }
+
+      // Show empty state if no similar properties
+      if (showPropertyDetailsController.similarProperties.isEmpty) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Biens similaires',
+              style: AppStyle.heading4SemiBold(color: AppColor.textColor),
+            ),
+            SizedBox(height: AppSize.appSize16),
+            Container(
+              padding: EdgeInsets.all(AppSize.appSize16),
+              decoration: BoxDecoration(
+                color: AppColor.secondaryColor,
+                borderRadius: BorderRadius.circular(AppSize.appSize12),
+                border: Border.all(color: AppColor.borderColor.withOpacity(0.3)),
+              ),
+              child: Text(
+                'Aucun bien similaire trouvé',
+                style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+              ),
+            ),
+          ],
+        );
+      }
+
+      // Show similar properties
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Biens similaires',
+                style: AppStyle.heading4SemiBold(color: AppColor.textColor),
+              ),
+              Text(
+                '${showPropertyDetailsController.similarProperties.length} ${showPropertyDetailsController.similarProperties.length > 1 ? 'biens' : 'bien'}',
+                style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+              ),
+            ],
           ),
-        ),
-      ],
-    );
+          SizedBox(height: AppSize.appSize16),
+          SizedBox(
+            height: AppSize.appSize300,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: showPropertyDetailsController.similarProperties.length,
+              itemBuilder: (context, index) {
+                final property = showPropertyDetailsController.similarProperties[index];
+
+                // Extract property details
+                final propertyId = property['id']?.toString() ?? '';
+                final images = property['listeImages'] as List?;
+                final imageUrl = images != null && images.isNotEmpty
+                    ? (images.first.toString().startsWith('http')
+                        ? images.first.toString()
+                        : '${ApiConfig.baseUrl}/${images.first}')
+                    : Assets.images.property3.path;
+
+                final price = property['prix']?['hai'];
+                final priceString = price != null
+                    ? (price >= 1000000
+                        ? '${(price / 1000000).toStringAsFixed(1)}M €'
+                        : price >= 1000
+                            ? '${(price / 1000).toStringAsFixed(0)}K €'
+                            : '${price.toStringAsFixed(0)} €')
+                    : 'Prix sur demande';
+
+                final typeBien = property['typeBien']?.toString() ?? 'Bien immobilier';
+                final nombrePieces = property['nombrePiecesTotal']?.toInt() ?? 0;
+                final title = nombrePieces > 0 ? '$typeBien ${nombrePieces}P' : typeBien;
+
+                final localisation = property['localisation'];
+                final ville = localisation?['ville']?.toString() ?? '';
+                final codePostal = localisation?['codePostal']?.toString() ?? '';
+                final address = ville.isNotEmpty && codePostal.isNotEmpty
+                    ? '$ville, $codePostal'
+                    : ville.isNotEmpty
+                        ? ville
+                        : codePostal.isNotEmpty
+                            ? codePostal
+                            : 'Localisation non spécifiée';
+
+                return GestureDetector(
+                  onTap: () {
+                    // Navigate to this property's details
+                    Get.toNamed(AppRoutes.showPropertyDetailsView, arguments: propertyId);
+                  },
+                  child: Container(
+                    width: AppSize.appSize250,
+                    margin: EdgeInsets.only(right: AppSize.appSize16),
+                    decoration: BoxDecoration(
+                      color: AppColor.secondaryColor,
+                      borderRadius: BorderRadius.circular(AppSize.appSize12),
+                      border: Border.all(color: AppColor.borderColor.withOpacity(0.3)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColor.textColor.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(AppSize.appSize12),
+                            ),
+                            child: imageUrl.startsWith('http')
+                                ? Image.network(
+                                    imageUrl,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: AppColor.backgroundColor,
+                                        child: Icon(
+                                          Icons.home_outlined,
+                                          size: AppSize.appSize60,
+                                          color: AppColor.descriptionColor,
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Image.asset(
+                                    imageUrl,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(AppSize.appSize12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                priceString,
+                                style: AppStyle.heading5SemiBold(
+                                    color: AppColor.primaryColor),
+                              ),
+                              SizedBox(height: AppSize.appSize4),
+                              Text(
+                                title,
+                                style: AppStyle.heading6Medium(
+                                    color: AppColor.textColor),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                address,
+                                style: AppStyle.heading6Regular(
+                                    color: AppColor.descriptionColor),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
   }
 }

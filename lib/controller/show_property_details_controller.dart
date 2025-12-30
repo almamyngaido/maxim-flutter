@@ -53,6 +53,8 @@ class ShowPropertyDetailsController extends GetxController {
 
   // Similar Properties
   RxList<bool> isSimilarPropertyLiked = <bool>[].obs;
+  RxList<Map<String, dynamic>> similarProperties = <Map<String, dynamic>>[].obs;
+  RxBool isLoadingSimilarProperties = false.obs;
 
   @override
   void onInit() {
@@ -112,8 +114,24 @@ class ShowPropertyDetailsController extends GetxController {
 
       String? token = storage.read('authToken');
 
+      // Include utilisateur relation to get owner data
+      final filter = {
+        'include': [
+          {
+            'relation': 'utilisateur',
+            'scope': {
+              'fields': ['id', 'nom', 'prenom', 'email', 'phoneNumber', 'role']
+            }
+          }
+        ]
+      };
+
+      final url = Uri.parse('${ApiConfig.baseUrl}/bien-immos/$propertyId').replace(
+        queryParameters: {'filter': jsonEncode(filter)},
+      );
+
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/bien-immos/$propertyId'),
+        url,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -135,6 +153,9 @@ class ShowPropertyDetailsController extends GetxController {
           print('  - GES: ${data['diagnosticsEnergie']['ges']}');
           print('  - Date: ${data['diagnosticsEnergie']['dateDiagnostique']}');
         }
+
+        // Load similar properties after main property is loaded
+        loadSimilarProperties();
       } else {
         throw Exception(
             'Échec du chargement de la propriété: ${response.statusCode}');
@@ -356,6 +377,91 @@ class ShowPropertyDetailsController extends GetxController {
     final String? propertyId = Get.arguments as String?;
     if (propertyId != null && propertyId.isNotEmpty) {
       await loadPropertyData(propertyId);
+    }
+  }
+
+  /// Load similar properties based on current property
+  Future<void> loadSimilarProperties() async {
+    try {
+      isLoadingSimilarProperties.value = true;
+      String? token = storage.read('authToken');
+
+      if (token == null || token.isEmpty) {
+        print('❌ No token found for loading similar properties');
+        return;
+      }
+
+      // Get current property details for filtering
+      final currentPropertyId = propertyData['id']?.toString();
+      final currentType = propertyData['typeBien']?.toString();
+      final currentPrice = propertyData['prix']?['hai']?.toDouble();
+
+      print('🔍 Loading similar properties...');
+      print('   Current property type: $currentType');
+      print('   Current property price: $currentPrice');
+
+      // Build filter for similar properties
+      // - Same property type
+      // - Different property (not the current one)
+      // - Optional: Similar price range (±30%)
+      Map<String, dynamic> whereClause = {};
+
+      // Filter by same type if available
+      if (currentType != null && currentType.isNotEmpty) {
+        whereClause['typeBien'] = currentType;
+      }
+
+      // Exclude current property
+      if (currentPropertyId != null) {
+        whereClause['id'] = {'\$ne': currentPropertyId};
+      }
+
+      final filter = {
+        'where': whereClause,
+        'limit': 10, // Limit to 10 similar properties
+        'include': [
+          {
+            'relation': 'utilisateur',
+            'scope': {
+              'fields': ['id', 'nom', 'prenom', 'email', 'phoneNumber', 'role']
+            }
+          }
+        ]
+      };
+
+      final url = '${ApiConfig.baseUrl}/bien-immos?filter=${jsonEncode(filter)}';
+      print('📡 Fetching similar properties from: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('🏠 Similar Properties API Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> properties = jsonDecode(response.body);
+        similarProperties.value = properties.cast<Map<String, dynamic>>();
+
+        // Initialize like status for similar properties
+        isSimilarPropertyLiked.value = List<bool>.filled(similarProperties.length, false);
+
+        print('✅ Loaded ${similarProperties.length} similar properties');
+
+        if (similarProperties.isNotEmpty) {
+          print('📊 First similar property: ${similarProperties.first['typeBien']} - ${similarProperties.first['prix']?['hai']} €');
+        }
+      } else {
+        print('❌ Failed to load similar properties: ${response.statusCode}');
+        print('❌ Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('❌ Error loading similar properties: $e');
+    } finally {
+      isLoadingSimilarProperties.value = false;
     }
   }
 

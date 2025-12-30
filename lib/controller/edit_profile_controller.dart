@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
@@ -9,6 +11,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/user_utils.dart';
 
 class EditProfileController extends GetxController {
   final UserService _userService = UserService();
+  final storage = GetStorage();
 
   RxBool hasFullNameFocus = true.obs;
   RxBool hasFullNameInput = true.obs;
@@ -22,10 +25,10 @@ class EditProfileController extends GetxController {
   FocusNode phoneNumberFocusNode = FocusNode();
   FocusNode phoneNumber2FocusNode = FocusNode();
   FocusNode emailFocusNode = FocusNode();
-  TextEditingController fullNameController = TextEditingController(text: AppString.francisZieme);
-  TextEditingController phoneNumberController = TextEditingController(text: AppString.francisZiemeNumber);
+  TextEditingController fullNameController = TextEditingController();
+  TextEditingController phoneNumberController = TextEditingController();
   TextEditingController phoneNumber2Controller = TextEditingController();
-  TextEditingController emailController = TextEditingController(text: AppString.francisZiemeEmail);
+  TextEditingController emailController = TextEditingController();
   TextEditingController aboutMeController = TextEditingController();
   TextEditingController whatAreYouHereController = TextEditingController();
 
@@ -40,9 +43,20 @@ class EditProfileController extends GetxController {
   RxString selectedFileName = ''.obs;
   RxString selectedFilePath = ''.obs;
 
+  // Loading state for save operation
+  RxBool isSavingProfile = false.obs;
+
+  // User data
+  String? userId;
+  Map<String, dynamic>? currentUserData;
+
   @override
   void onInit() {
     super.onInit();
+
+    // Load current user data
+    _loadUserData();
+
     focusNode.addListener(() {
       hasFullNameFocus.value = focusNode.hasFocus;
     });
@@ -67,6 +81,138 @@ class EditProfileController extends GetxController {
     emailController.addListener(() {
       hasEmailInput.value = emailController.text.isNotEmpty;
     });
+  }
+
+  /// Load current user data and populate form fields
+  void _loadUserData() {
+    try {
+      currentUserData = loadUserData();
+
+      if (currentUserData != null) {
+        userId = currentUserData!['id']?.toString();
+
+        // Populate form fields with current user data
+        final prenom = currentUserData!['prenom']?.toString() ?? '';
+        final nom = currentUserData!['nom']?.toString() ?? '';
+        fullNameController.text = '$prenom $nom'.trim();
+
+        emailController.text = currentUserData!['email']?.toString() ?? '';
+        phoneNumberController.text = currentUserData!['phoneNumber']?.toString() ?? '';
+
+        // Set the role dropdown
+        final role = currentUserData!['role']?.toString() ?? '';
+        if (role.isNotEmpty) {
+          // Map backend role to UI text
+          int roleIndex = 0;
+          if (role == 'user') roleIndex = 0; // "To buy property"
+          else if (role == 'agent') roleIndex = 2; // "I am a broker"
+
+          updateWhatAreYouHere(roleIndex);
+        }
+
+        print('✅ User data loaded: ${currentUserData!['email']}');
+      } else {
+        print('⚠️ No user data found in storage');
+      }
+    } catch (e) {
+      print('❌ Error loading user data: $e');
+      Get.snackbar(
+        'Erreur',
+        'Impossible de charger les données utilisateur',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  /// Save profile changes
+  Future<void> saveProfile() async {
+    try {
+      isSavingProfile.value = true;
+
+      // Get auth token
+      String? token = storage.read('authToken');
+      if (token == null || token.isEmpty) {
+        throw Exception('Session expirée. Veuillez vous reconnecter.');
+      }
+
+      if (userId == null || userId!.isEmpty) {
+        throw Exception('ID utilisateur manquant');
+      }
+
+      // Validate inputs
+      if (fullNameController.text.trim().isEmpty) {
+        throw Exception('Le nom complet est requis');
+      }
+
+      if (emailController.text.trim().isEmpty) {
+        throw Exception('L\'email est requis');
+      }
+
+      if (phoneNumberController.text.trim().isEmpty) {
+        throw Exception('Le numéro de téléphone est requis');
+      }
+
+      // Parse full name into prenom and nom
+      final nameParts = fullNameController.text.trim().split(' ');
+      final prenom = nameParts.length > 1 ? nameParts.first : '';
+      final nom = nameParts.length > 1
+          ? nameParts.sublist(1).join(' ')
+          : nameParts.first;
+
+      // Get selected role
+      String? role;
+      if (whatAreYouHereController.text.isNotEmpty) {
+        // Map UI text to backend role
+        if (isWhatAreYouHereSelect.value == 0) role = 'user'; // "To buy property"
+        else if (isWhatAreYouHereSelect.value == 1) role = 'user'; // "To sell property"
+        else if (isWhatAreYouHereSelect.value == 2) role = 'agent'; // "I am a broker"
+      }
+
+      print('🔄 Updating profile for user: $userId');
+
+      // Call the update API
+      final response = await _userService.updateUserProfile(
+        userId: userId!,
+        token: token,
+        nom: nom,
+        prenom: prenom,
+        email: emailController.text.trim(),
+        phoneNumber: phoneNumberController.text.trim(),
+        role: role,
+      );
+
+      print('✅ Profile updated successfully');
+
+      // Update stored user data
+      if (response.isNotEmpty) {
+        await storage.write('userData', jsonEncode(response));
+        print('✅ User data updated in storage');
+      }
+
+      Get.snackbar(
+        'Succès',
+        'Profil mis à jour avec succès',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.primaryColor.withValues(alpha: 0.2),
+        colorText: Get.theme.primaryColor,
+      );
+
+      // Go back to profile view
+      await Future.delayed(Duration(milliseconds: 500));
+      Get.back();
+
+    } catch (e) {
+      print('❌ Error saving profile: $e');
+      Get.snackbar(
+        'Erreur',
+        e.toString().replaceAll('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withValues(alpha: 0.2),
+        colorText: Colors.red,
+      );
+    } finally {
+      isSavingProfile.value = false;
+    }
   }
 
   void toggleWhatAreYouHereExpansion() {

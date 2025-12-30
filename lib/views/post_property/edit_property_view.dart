@@ -78,7 +78,14 @@ class EditPropertyView extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Get.toNamed(AppRoutes.editPropertyDetailsView);
+                          // Pass property ID and section index to details view
+                          Get.toNamed(
+                            AppRoutes.editPropertyDetailsView,
+                            arguments: {
+                              'propertyId': editPropertyController.propertyId,
+                              'sectionIndex': index,
+                            },
+                          );
                         },
                         child: Image.asset(
                           Assets.images.edit.path,

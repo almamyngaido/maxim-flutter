@@ -33,6 +33,14 @@ class LoginController extends GetxController {
   // Initialize GetStorage
   final storage = GetStorage();
 
+  // Store listener references for proper cleanup
+  late final VoidCallback _phoneFocusListener;
+  late final VoidCallback _emailFocusListener;
+  late final VoidCallback _passwordFocusListener;
+  late final VoidCallback _phoneInputListener;
+  late final VoidCallback _emailInputListener;
+  late final VoidCallback _passwordInputListener;
+
   // Get AuthService
   AuthService get authService {
     if (!Get.isRegistered<AuthService>()) {
@@ -50,36 +58,42 @@ class LoginController extends GetxController {
 
   void _setupFocusListeners() {
     // Phone focus
-    focusNode.addListener(() {
+    _phoneFocusListener = () {
       hasFocus.value = focusNode.hasFocus;
-    });
+    };
+    focusNode.addListener(_phoneFocusListener);
 
     // Email focus
-    emailFocusNode.addListener(() {
+    _emailFocusListener = () {
       hasEmailFocus.value = emailFocusNode.hasFocus;
-    });
+    };
+    emailFocusNode.addListener(_emailFocusListener);
 
     // Password focus
-    passwordFocusNode.addListener(() {
+    _passwordFocusListener = () {
       hasPasswordFocus.value = passwordFocusNode.hasFocus;
-    });
+    };
+    passwordFocusNode.addListener(_passwordFocusListener);
   }
 
   void _setupInputListeners() {
     // Phone input
-    mobileController.addListener(() {
+    _phoneInputListener = () {
       hasInput.value = mobileController.text.isNotEmpty;
-    });
+    };
+    mobileController.addListener(_phoneInputListener);
 
     // Email input
-    emailController.addListener(() {
+    _emailInputListener = () {
       hasEmailInput.value = emailController.text.isNotEmpty;
-    });
+    };
+    emailController.addListener(_emailInputListener);
 
     // Password input
-    passwordController.addListener(() {
+    _passwordInputListener = () {
       hasPasswordInput.value = passwordController.text.isNotEmpty;
-    });
+    };
+    passwordController.addListener(_passwordInputListener);
   }
 
   // Toggle login type
@@ -375,6 +389,15 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
+    // Remove all listeners before disposing to prevent "used after being disposed" errors
+    focusNode.removeListener(_phoneFocusListener);
+    emailFocusNode.removeListener(_emailFocusListener);
+    passwordFocusNode.removeListener(_passwordFocusListener);
+    mobileController.removeListener(_phoneInputListener);
+    emailController.removeListener(_emailInputListener);
+    passwordController.removeListener(_passwordInputListener);
+
+    // Now safely dispose
     focusNode.dispose();
     emailFocusNode.dispose();
     passwordFocusNode.dispose();

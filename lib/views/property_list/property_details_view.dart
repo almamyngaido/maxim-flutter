@@ -1254,75 +1254,119 @@ class PropertyDetailsView extends StatelessWidget {
   }
 
   Widget buildContactOwnerSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Contacter le propriétaire',
-          style: AppStyle.heading4Medium(color: AppColor.textColor),
-        ).paddingOnly(
-          top: AppSize.appSize36,
-          left: AppSize.appSize16,
-          right: AppSize.appSize16,
-        ),
-        Container(
-          padding: const EdgeInsets.all(AppSize.appSize10),
-          margin: const EdgeInsets.only(
-            top: AppSize.appSize16,
+    return Obx(() {
+      final owner = propertyDetailsController.currentProperty.value?.utilisateur;
+      final hasOwner = owner != null;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Contacter le propriétaire',
+            style: AppStyle.heading4Medium(color: AppColor.textColor),
+          ).paddingOnly(
+            top: AppSize.appSize36,
             left: AppSize.appSize16,
             right: AppSize.appSize16,
           ),
-          decoration: BoxDecoration(
-            color: AppColor.secondaryColor,
-            borderRadius: BorderRadius.circular(AppSize.appSize12),
-          ),
-          child: Row(
-            children: [
-              Image.asset(
-                Assets.images.response1.path,
-                width: AppSize.appSize64,
-                height: AppSize.appSize64,
-              ).paddingOnly(right: AppSize.appSize12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Agence Immobilière',
-                      style: AppStyle.heading4Medium(color: AppColor.textColor),
-                    ).paddingOnly(bottom: AppSize.appSize4),
-                    IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          Text(
-                            'Agent',
-                            style: AppStyle.heading5Medium(
-                                color: AppColor.descriptionColor),
-                          ),
-                          VerticalDivider(
-                            color: AppColor.descriptionColor
-                                .withValues(alpha: AppSize.appSizePoint4),
-                            thickness: AppSize.appSizePoint7,
-                            width: AppSize.appSize20,
-                            indent: AppSize.appSize2,
-                            endIndent: AppSize.appSize2,
-                          ),
-                          Text(
-                            '+33 1 23 45 67 89',
-                            style: AppStyle.heading5Medium(
-                                color: AppColor.descriptionColor),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+          GestureDetector(
+            onTap: () {
+              final property = propertyDetailsController.currentProperty.value;
+              if (property != null) {
+                Get.toNamed(
+                  AppRoutes.contactOwnerView,
+                  arguments: {
+                    'property': property,
+                    'similarProperties': propertyDetailsController.similarProperties,
+                  },
+                );
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.all(AppSize.appSize10),
+              margin: const EdgeInsets.only(
+                top: AppSize.appSize16,
+                left: AppSize.appSize16,
+                right: AppSize.appSize16,
               ),
-            ],
+              decoration: BoxDecoration(
+                color: AppColor.secondaryColor,
+                borderRadius: BorderRadius.circular(AppSize.appSize12),
+              ),
+              child: Row(
+                children: [
+                  if (hasOwner)
+                    CircleAvatar(
+                      radius: AppSize.appSize32,
+                      backgroundColor: AppColor.primaryColor.withValues(alpha: 0.1),
+                      child: Text(
+                        owner.fullName.isNotEmpty
+                            ? owner.fullName[0].toUpperCase()
+                            : 'P',
+                        style: AppStyle.heading3SemiBold(color: AppColor.primaryColor),
+                      ),
+                    ).paddingOnly(right: AppSize.appSize12)
+                  else
+                    Image.asset(
+                      Assets.images.response1.path,
+                      width: AppSize.appSize64,
+                      height: AppSize.appSize64,
+                    ).paddingOnly(right: AppSize.appSize12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hasOwner ? owner.fullName : 'Propriétaire',
+                          style: AppStyle.heading4Medium(color: AppColor.textColor),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ).paddingOnly(bottom: AppSize.appSize4),
+                        IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              Text(
+                                hasOwner ? (owner.role ?? 'Propriétaire') : 'Agent',
+                                style: AppStyle.heading5Medium(
+                                    color: AppColor.descriptionColor),
+                              ),
+                              if (hasOwner && owner.phoneNumber != null) ...[
+                                VerticalDivider(
+                                  color: AppColor.descriptionColor
+                                      .withValues(alpha: AppSize.appSizePoint4),
+                                  thickness: AppSize.appSizePoint7,
+                                  width: AppSize.appSize20,
+                                  indent: AppSize.appSize2,
+                                  endIndent: AppSize.appSize2,
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    owner.phoneNumber!,
+                                    style: AppStyle.heading5Medium(
+                                        color: AppColor.descriptionColor),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: AppSize.appSize16,
+                    color: AppColor.primaryColor,
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
   Widget buildContactForm(BuildContext context) {
@@ -1349,8 +1393,25 @@ class PropertyDetailsView extends StatelessWidget {
         // Terms checkbox (keeping existing)
 
         CommonButton(
-          onPressed: () => Get.toNamed(AppRoutes.contactOwnerView,
-              arguments: propertyDetailsController.currentProperty.value),
+          onPressed: () {
+            final property = propertyDetailsController.currentProperty.value;
+            if (property != null) {
+              Get.toNamed(
+                AppRoutes.contactOwnerView,
+                arguments: {
+                  'property': property,
+                  'similarProperties': propertyDetailsController.similarProperties,
+                },
+              );
+            } else {
+              Get.snackbar(
+                'Erreur',
+                'Informations de la propriété non disponibles',
+                backgroundColor: AppColor.negativeColor,
+                colorText: AppColor.whiteColor,
+              );
+            }
+          },
           backgroundColor: AppColor.primaryColor,
           child: Text(
             'Voir le numéro de téléphone',

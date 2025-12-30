@@ -68,7 +68,7 @@ class ApiService extends GetxService {
   Future<Map<String, dynamic>?> updateBienImmo(
       String id, Map<String, dynamic> data) async {
     try {
-      print('🔄 Updating BienImmo $id');
+      print('🔄 Updating BienImmo $id with data: $data');
 
       final response = await http.patch(
         Uri.parse('$baseUrl/bien-immos/$id'),
@@ -76,7 +76,17 @@ class ApiService extends GetxService {
         body: jsonEncode(data),
       );
 
+      print('📡 Update Response Status: ${response.statusCode}');
+      print('📡 Update Response Body: ${response.body}');
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        // 204 No Content returns empty body, fetch the updated property
+        if (response.statusCode == 204 || response.body.isEmpty) {
+          print('✅ BienImmo updated successfully (204 No Content)');
+          // Fetch the updated property to return
+          return await getBienImmo(id);
+        }
+
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
         print('✅ BienImmo updated successfully');
         return responseData;
@@ -97,13 +107,33 @@ class ApiService extends GetxService {
   /// Get a BienImmo by ID
   Future<Map<String, dynamic>?> getBienImmo(String id) async {
     try {
+      // Add filter to include utilisateur relation
+      final filter = {
+        'include': [
+          {
+            'relation': 'utilisateur',
+            'scope': {
+              'fields': ['id', 'nom', 'prenom', 'email', 'phoneNumber', 'role']
+            }
+          }
+        ]
+      };
+
+      final uri = Uri.parse('$baseUrl/bien-immos/$id').replace(
+        queryParameters: {
+          'filter': jsonEncode(filter),
+        },
+      );
+
       final response = await http.get(
-        Uri.parse('$baseUrl/bien-immos/$id'),
+        uri,
         headers: authHeaders,
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        print('✅ Fetched property with owner: ${data['utilisateur'] != null}');
+        return data;
       } else if (response.statusCode == 404) {
         return null;
       } else {
@@ -123,10 +153,21 @@ class ApiService extends GetxService {
     try {
       print('📋 Fetching properties for user: $userId');
 
+      // Add filter to include utilisateur relation
+      final filter = {
+        "where": {"utilisateurId": userId},
+        'include': [
+          {
+            'relation': 'utilisateur',
+            'scope': {
+              'fields': ['id', 'nom', 'prenom', 'email', 'phoneNumber', 'role']
+            }
+          }
+        ]
+      };
+
       final response = await http.get(
-        Uri.parse('$baseUrl/bien-immos?filter=${jsonEncode({
-              "where": {"utilisateurId": userId}
-            })}'),
+        Uri.parse('$baseUrl/bien-immos?filter=${jsonEncode(filter)}'),
         headers: authHeaders,
       );
 
@@ -137,6 +178,9 @@ class ApiService extends GetxService {
         final properties = responseData.cast<Map<String, dynamic>>();
 
         print('✅ Found ${properties.length} properties for user');
+        if (properties.isNotEmpty) {
+          print('✅ First property has owner: ${properties.first['utilisateur'] != null}');
+        }
         return properties;
       } else {
         print('❌ Failed to get user properties: ${response.body}');
