@@ -25,7 +25,6 @@ class ProfileController extends GetxController {
     Assets.images.profileOption4.path,
     Assets.images.profileOption5.path,
     Assets.images.profileOption6.path,
-    Assets.images.profileOption6.path,
   ].obs;
 
   RxList<String> profileOptionTitleList = [

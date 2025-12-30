@@ -100,10 +100,8 @@ class ProfileView extends StatelessWidget {
                 } else if(index == AppSize.size3) {
                   Get.toNamed(AppRoutes.feedbackView);
                 } else if(index == AppSize.size4) {
-                  findingUsHelpfulBottomSheet(context);
-                } else if(index == AppSize.size5) {
                   logoutBottomSheet(context);
-                } else if(index == AppSize.size6) {
+                } else if(index == AppSize.size5) {
                   deleteAccountBottomSheet(context);
                 }
               },
