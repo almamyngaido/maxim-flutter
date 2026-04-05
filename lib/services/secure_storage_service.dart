@@ -3,10 +3,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Stockage chiffré pour les tokens JWT et les données sensibles.
 /// Android : EncryptedSharedPreferences
 /// iOS     : Keychain
+/// Web     : IndexedDB (flutter_secure_storage_web)
 class SecureStorageService {
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+    webOptions: WebOptions(dbName: 'diwane_secure_db', publicKey: 'diwane_pk'),
   );
 
   static const _keyAccess   = 'diwane_access_token';
