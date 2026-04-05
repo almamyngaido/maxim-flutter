@@ -4,6 +4,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/agence_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/model/invitation_agence_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/utilisateur_diwane_model.dart';
 
 class AgenceView extends StatelessWidget {
@@ -129,18 +130,18 @@ class AgenceView extends StatelessWidget {
               ),
             ),
 
-            // ── Liste agents ───────────────────────────────────────────────
+            // ── Liste agents actifs ────────────────────────────────────────
             if (c.membres.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                   child: Center(
                     child: Column(
                       children: [
                         Icon(Icons.people_outline, size: 56, color: Colors.grey[300]),
                         const SizedBox(height: 8),
                         Text(
-                          'Aucun agent dans votre agence',
+                          'Aucun agent actif dans votre agence',
                           style: TextStyle(color: Colors.grey[400], fontSize: 14),
                         ),
                       ],
@@ -158,13 +159,45 @@ class AgenceView extends StatelessWidget {
                       child: _MembreCard(
                         user: membre,
                         isOwner: false,
-                        onRetirer: () => c.retirer(membre),
+                        onRetirer: () => c.retirerMembre(membre),
                       ),
                     );
                   },
                   childCount: c.membres.length,
                 ),
               ),
+
+            // ── Invitations en attente ─────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Obx(() {
+                final invs = c.invitationsEnvoyees
+                    .where((i) => i.estEnAttente && !i.estExpiree)
+                    .toList();
+                if (invs.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'INVITATIONS EN ATTENTE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: DiwaneColors.textMuted,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...invs.map((inv) => _InvitationEnvoyeeCard(
+                            inv: inv,
+                            onAnnuler: () => c.annulerInvitation(inv),
+                          )),
+                    ],
+                  ),
+                );
+              }),
+            ),
 
             // ── Bouton Ajouter ─────────────────────────────────────────────
             SliverToBoxAdapter(
@@ -209,36 +242,26 @@ class AgenceView extends StatelessWidget {
   void _showInviterModal(BuildContext context, AgenceController c) {
     final prenomCtrl = TextEditingController();
     final nomCtrl = TextEditingController();
-    final telCtrl = TextEditingController(text: '+221');
     final emailCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
     Get.dialog(
       AlertDialog(
-        title: const Text('Ajouter un agent', style: TextStyle(fontFamily: AppFont.interSemiBold)),
+        title: const Text('Inviter un agent', style: TextStyle(fontFamily: AppFont.interSemiBold)),
         content: Form(
           key: formKey,
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const Text(
+                  'Un email d\'invitation sera envoyé. L\'agent pourra rejoindre depuis l\'application ou le lien email.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                const SizedBox(height: 14),
                 _Field(controller: prenomCtrl, label: 'Prénom', hint: 'Ibrahima'),
                 const SizedBox(height: 12),
                 _Field(controller: nomCtrl, label: 'Nom', hint: 'Diallo'),
-                const SizedBox(height: 12),
-                _Field(
-                  controller: telCtrl,
-                  label: 'Téléphone',
-                  hint: '+221771234567',
-                  keyboardType: TextInputType.phone,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Requis';
-                    if (!RegExp(r'^\+221[37][0-9]{8}$').hasMatch(v)) {
-                      return 'Format +221XXXXXXXXX';
-                    }
-                    return null;
-                  },
-                ),
                 const SizedBox(height: 12),
                 _Field(
                   controller: emailCtrl,
@@ -262,11 +285,10 @@ class AgenceView extends StatelessWidget {
                     ? null
                     : () async {
                         if (!formKey.currentState!.validate()) return;
-                        Get.back(); // ferme le dialog avant l'appel
-                        await c.inviter(
+                        Get.back();
+                        await c.inviterParEmail(
                           prenom: prenomCtrl.text.trim(),
                           nom: nomCtrl.text.trim(),
-                          telephone: telCtrl.text.trim(),
                           email: emailCtrl.text.trim().toLowerCase(),
                         );
                       },
@@ -277,7 +299,7 @@ class AgenceView extends StatelessWidget {
                 ),
                 child: c.isLoading.value
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Ajouter'),
+                    : const Text('Envoyer l\'invitation'),
               )),
         ],
       ),
@@ -400,6 +422,69 @@ class _Field extends StatelessWidget {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
+    );
+  }
+}
+
+// ── Carte invitation envoyée ──────────────────────────────────────────────────
+
+class _InvitationEnvoyeeCard extends StatelessWidget {
+  final InvitationAgence inv;
+  final VoidCallback onAnnuler;
+
+  const _InvitationEnvoyeeCard({required this.inv, required this.onAnnuler});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: DiwaneColors.cardBorder),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: DiwaneColors.navyLight,
+            child: Text(
+              (inv.prenomInvite?.isNotEmpty == true ? inv.prenomInvite![0] : '?').toUpperCase(),
+              style: const TextStyle(color: DiwaneColors.navy, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${inv.prenomInvite ?? ''} ${inv.nomInvite ?? ''}'.trim().isNotEmpty
+                      ? '${inv.prenomInvite ?? ''} ${inv.nomInvite ?? ''}'.trim()
+                      : inv.emailInvite,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                ),
+                Text(inv.emailInvite, style: const TextStyle(fontSize: 11, color: DiwaneColors.textMuted)),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: const Text('En attente', style: TextStyle(fontSize: 10, color: Colors.orange)),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onAnnuler,
+            child: const Icon(Icons.close, size: 18, color: Colors.grey),
+          ),
+        ],
       ),
     );
   }

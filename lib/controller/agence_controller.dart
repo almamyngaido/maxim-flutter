@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/model/invitation_agence_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/utilisateur_diwane_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/agence_service.dart';
 
@@ -9,7 +10,13 @@ class AgenceController extends GetxController {
 
   final _service = AgenceService();
 
+  // Propriétaire agence
   final membres = <UtilisateurDiwane>[].obs;
+  final invitationsEnvoyees = <InvitationAgence>[].obs;
+
+  // Agent : invitations reçues
+  final invitationsRecues = <InvitationAgence>[].obs;
+
   final isLoading = false.obs;
 
   @override
@@ -19,75 +26,25 @@ class AgenceController extends GetxController {
   }
 
   String get _token => DiwaneAuthController.to.token.value;
+  UtilisateurDiwane? get _user => DiwaneAuthController.to.user.value;
 
   Future<void> charger() async {
     try {
       isLoading(true);
-      membres.value = await _service.listerMembres(_token);
-    } catch (e) {
-      Get.snackbar('Erreur', e.toString(),
-          backgroundColor: Colors.red.shade700, colorText: Colors.white);
-    } finally {
-      isLoading(false);
-    }
-  }
+      final user = _user;
+      if (user == null) return;
 
-  Future<void> inviter({
-    required String prenom,
-    required String nom,
-    required String telephone,
-    required String email,
-  }) async {
-    try {
-      isLoading(true);
-      final result = await _service.inviterAgent(
-        token: _token,
-        prenom: prenom,
-        nom: nom,
-        telephone: telephone,
-        email: email,
-      );
-      await charger();
-
-      // Afficher le mot de passe temporaire si nouveau compte
-      if (result.nouveauCompte && result.motDePasseTemporaire != null) {
-        Get.dialog(
-          AlertDialog(
-            title: const Text('Agent ajouté'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('${result.agent.nomComplet} a été ajouté à votre agence.'),
-                const SizedBox(height: 16),
-                const Text('Mot de passe temporaire :', style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    result.motDePasseTemporaire!,
-                    style: const TextStyle(fontSize: 18, fontFamily: 'monospace', letterSpacing: 2),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Partagez ce mot de passe avec l\'agent. Il pourra le changer dans son profil.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(onPressed: Get.back, child: const Text('OK')),
-            ],
-          ),
-        );
-      } else {
-        Get.snackbar('Succès', '${result.agent.nomComplet} a été lié à votre agence.',
-            backgroundColor: Colors.green.shade700, colorText: Colors.white);
+      if (user.isAgenceOwner) {
+        // Propriétaire : charge membres + invitations envoyées
+        final results = await Future.wait([
+          _service.listerMembres(_token),
+          _service.invitationsEnvoyees(_token),
+        ]);
+        membres.value = results[0] as List<UtilisateurDiwane>;
+        invitationsEnvoyees.value = results[1] as List<InvitationAgence>;
+      } else if (user.isCourtier) {
+        // Agent potentiel : charge invitations reçues
+        invitationsRecues.value = await _service.invitationsRecues(_token);
       }
     } catch (e) {
       Get.snackbar('Erreur', e.toString(),
@@ -97,12 +54,61 @@ class AgenceController extends GetxController {
     }
   }
 
-  Future<void> retirer(UtilisateurDiwane membre) async {
+  // ── Propriétaire : inviter par email ─────────────────────────────────────
+
+  Future<void> inviterParEmail({
+    required String prenom,
+    required String nom,
+    required String email,
+  }) async {
+    try {
+      isLoading(true);
+      final message = await _service.inviterParEmail(
+        token: _token,
+        prenom: prenom,
+        nom: nom,
+        email: email,
+      );
+      await charger();
+      Get.snackbar('Invitation envoyée', message,
+          backgroundColor: Colors.green.shade700, colorText: Colors.white,
+          duration: const Duration(seconds: 4));
+    } catch (e) {
+      Get.snackbar('Erreur', e.toString(),
+          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> annulerInvitation(InvitationAgence inv) async {
+    final confirm = await Get.dialog<bool>(AlertDialog(
+      title: const Text('Annuler l\'invitation ?'),
+      content: Text('Annuler l\'invitation envoyée à ${inv.emailInvite} ?'),
+      actions: [
+        TextButton(onPressed: () => Get.back(result: false), child: const Text('Non')),
+        TextButton(
+          onPressed: () => Get.back(result: true),
+          child: const Text('Annuler l\'invitation', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ));
+    if (confirm != true) return;
+    try {
+      await _service.annulerInvitation(_token, inv.id);
+      invitationsEnvoyees.removeWhere((i) => i.id == inv.id);
+    } catch (e) {
+      Get.snackbar('Erreur', e.toString(),
+          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+    }
+  }
+
+  Future<void> retirerMembre(UtilisateurDiwane membre) async {
     final confirm = await Get.dialog<bool>(
       AlertDialog(
         title: const Text('Retirer l\'agent ?'),
         content: Text(
-          'Voulez-vous retirer ${membre.nomComplet} de votre agence ?\nSon compte passera en plan Gratuit.',
+          'Retirer ${membre.nomComplet} de votre agence ?\nSon compte passera en plan Gratuit.',
         ),
         actions: [
           TextButton(onPressed: () => Get.back(result: false), child: const Text('Annuler')),
@@ -126,6 +132,76 @@ class AgenceController extends GetxController {
           backgroundColor: Colors.red.shade700, colorText: Colors.white);
     } finally {
       isLoading(false);
+    }
+  }
+
+  // ── Agent : accepter / refuser invitation ────────────────────────────────
+
+  Future<void> accepterInvitation(InvitationAgence inv) async {
+    final confirm = await Get.dialog<bool>(AlertDialog(
+      title: const Text('Rejoindre l\'agence ?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Rejoindre l\'agence ${inv.agenceNom} de ${inv.proprietaireNom} ?'),
+          const SizedBox(height: 8),
+          const Text(
+            'Votre compte passera au plan Pro et sera lié à cette agence.',
+            style: TextStyle(fontSize: 13, color: Colors.grey),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Get.back(result: false), child: const Text('Annuler')),
+        ElevatedButton(
+          onPressed: () => Get.back(result: true),
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1B2A4A)),
+          child: const Text('Rejoindre', style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ));
+    if (confirm != true) return;
+
+    try {
+      isLoading(true);
+      final message = await _service.accepterInvitation(_token, inv.token);
+      // Recharger le profil pour mettre à jour le plan
+      await DiwaneAuthController.to.rechargerProfil();
+      invitationsRecues.removeWhere((i) => i.id == inv.id);
+      Get.snackbar('Bienvenue !', message,
+          backgroundColor: Colors.green.shade700, colorText: Colors.white,
+          duration: const Duration(seconds: 5));
+    } catch (e) {
+      Get.snackbar('Erreur', e.toString(),
+          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> refuserInvitation(InvitationAgence inv) async {
+    final confirm = await Get.dialog<bool>(AlertDialog(
+      title: const Text('Refuser l\'invitation ?'),
+      content: Text('Refuser l\'invitation de ${inv.agenceNom} ?'),
+      actions: [
+        TextButton(onPressed: () => Get.back(result: false), child: const Text('Annuler')),
+        TextButton(
+          onPressed: () => Get.back(result: true),
+          child: const Text('Refuser', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ));
+    if (confirm != true) return;
+
+    try {
+      await _service.refuserInvitation(_token, inv.token);
+      invitationsRecues.removeWhere((i) => i.id == inv.id);
+      Get.snackbar('Invitation refusée', 'L\'invitation a été refusée.',
+          backgroundColor: Colors.grey.shade700, colorText: Colors.white);
+    } catch (e) {
+      Get.snackbar('Erreur', e.toString(),
+          backgroundColor: Colors.red.shade700, colorText: Colors.white);
     }
   }
 }

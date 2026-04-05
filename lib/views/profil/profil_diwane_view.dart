@@ -5,6 +5,8 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/utilisateur_diwane_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/controller/agence_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/model/invitation_agence_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/agence/agence_view.dart';
 
 class ProfilDiwaneView extends StatelessWidget {
@@ -12,6 +14,11 @@ class ProfilDiwaneView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Init AgenceController si pas encore chargé
+    if (!Get.isRegistered<AgenceController>()) {
+      Get.put(AgenceController());
+    }
+
     return Scaffold(
       backgroundColor: DiwaneColors.background,
       body: Obx(() {
@@ -21,6 +28,9 @@ class ProfilDiwaneView extends StatelessWidget {
             child: CircularProgressIndicator(color: DiwaneColors.navy),
           );
         }
+
+        final agenceCtrl = AgenceController.to;
+
         return CustomScrollView(
           slivers: [
             SliverToBoxAdapter(child: _ProfilHeader(user: user)),
@@ -33,6 +43,26 @@ class ProfilDiwaneView extends StatelessWidget {
                     if (user.isCourtier) ...[
                       _AbonnementCard(user: user),
                       const SizedBox(height: 12),
+                    ],
+
+                    // ── Invitations reçues (courtier sans agence) ────────
+                    if (user.isCourtier && user.agenceId == null) ...[
+                      Obx(() {
+                        final invs = agenceCtrl.invitationsRecues
+                            .where((i) => i.estEnAttente && !i.estExpiree)
+                            .toList();
+                        if (invs.isEmpty) return const SizedBox.shrink();
+                        return Column(
+                          children: [
+                            ...invs.map((inv) => _InvitationRecueCard(
+                                  inv: inv,
+                                  onAccepter: () => agenceCtrl.accepterInvitation(inv),
+                                  onRefuser: () => agenceCtrl.refuserInvitation(inv),
+                                )),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      }),
                     ],
 
                     // Mon compte
@@ -610,6 +640,103 @@ class _NavItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Card invitation reçue ─────────────────────────────────────────────────────
+
+class _InvitationRecueCard extends StatelessWidget {
+  final InvitationAgence inv;
+  final VoidCallback onAccepter;
+  final VoidCallback onRefuser;
+
+  const _InvitationRecueCard({
+    required this.inv,
+    required this.onAccepter,
+    required this.onRefuser,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F4FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: DiwaneColors.navy.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: DiwaneColors.navy,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'Invitation agence',
+                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            inv.agenceNom,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppFont.interSemiBold,
+              color: DiwaneColors.navy,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'De : ${inv.proprietaireNom}',
+            style: const TextStyle(fontSize: 13, color: DiwaneColors.textMuted),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'En acceptant, votre compte passera au plan Pro.',
+            style: TextStyle(fontSize: 12, color: DiwaneColors.textMuted),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onRefuser,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Refuser'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onAccepter,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: DiwaneColors.navy,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Rejoindre', style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
