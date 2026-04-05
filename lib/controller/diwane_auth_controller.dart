@@ -74,11 +74,14 @@ class DiwaneAuthController extends GetxController {
     }
   }
 
-  /// Tente un refresh silencieux au démarrage de l'app
+  /// Tente un refresh silencieux au démarrage de l'app.
+  /// En cas d'échec, efface la session sans naviguer (la navigation appartient au splash).
   Future<bool> _tenterRefreshSilencieux() async {
     final refreshToken = await _secureStorage.getRefreshToken();
     if (refreshToken == null) {
-      await logout();
+      await _clearStorage();
+      user.value = null;
+      token.value = '';
       return false;
     }
 
@@ -104,7 +107,10 @@ class DiwaneAuthController extends GetxController {
       }
     } catch (_) {}
 
-    await logout();
+    // Refresh échoué → effacer la session sans naviguer
+    await _clearStorage();
+    user.value = null;
+    token.value = '';
     return false;
   }
 
@@ -205,6 +211,7 @@ class DiwaneAuthController extends GetxController {
         colorText: Colors.white,
         duration: const Duration(seconds: 4),
       );
+      Get.offAllNamed(AppRoutes.loginDiwaneView);
     }
     return ok;
   }
