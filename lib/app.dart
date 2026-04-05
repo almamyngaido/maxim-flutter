@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/configs/app_string.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/controller/biens_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/controller/search_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/core/theme/diwane_theme.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/bien_diwane_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/diwane_auth_service.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_immo_service.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/post_bien_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/diwane_favoris_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/payment_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/verification_service.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/favoris_service.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_view.dart'; // ADD THIS IMPORT
+import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_diwane_view.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -14,11 +22,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: AppString.appName,
+      title: 'Diwane',
       defaultTransition: Transition.fadeIn,
       debugShowCheckedModeBanner: false,
-      home: SplashView(),
+      home: const SplashDiwaneView(),
       getPages: AppRoutes.pages,
+      theme: DiwaneTheme.theme,
 
       // Connect the InitialBinding to register services
       initialBinding: InitialBinding(),
@@ -43,22 +52,20 @@ class MyApp extends StatelessWidget {
 class InitialBinding extends Bindings {
   @override
   void dependencies() {
-    // This will be called when the app starts
-    print('🏠 Registering PropertyDataManager service...');
-
-    // Register PropertyDataManager as a service (singleton)
     Get.put<PropertyDataManager>(PropertyDataManager(), permanent: true);
-
-    print('✅ PropertyDataManager registered successfully');
-
-    // ADD THIS: Register ApiService as a service (singleton)
-    print('📡 Registering ApiService...');
     Get.put<ApiService>(ApiService(), permanent: true);
-    print('✅ ApiService registered successfully');
-
-    // Register FavorisService as a service (singleton)
-    print('❤️ Registering FavorisService...');
     Get.put<FavorisService>(FavorisService(), permanent: true);
-    print('✅ FavorisService registered successfully');
+
+    // ── Services Diwane ──────────────────────────────────────
+    Get.put<DiwaneAuthService>(DiwaneAuthService(), permanent: true);
+    Get.put<BienDiwaneService>(BienDiwaneService(), permanent: true);
+    Get.put<DiwaneFavorisService>(DiwaneFavorisService(), permanent: true);
+    Get.put<PaymentService>(PaymentService(), permanent: true);
+    Get.put<VerificationService>(VerificationService(), permanent: true);
+
+    // ── Contrôleurs Diwane ───────────────────────────────────
+    Get.put<DiwaneAuthController>(DiwaneAuthController(), permanent: true);
+    Get.lazyPut<BiensController>(() => BiensController(), fenix: true);
+    Get.lazyPut<DiwaneSearchController>(() => DiwaneSearchController(), fenix: true);
   }
 }
