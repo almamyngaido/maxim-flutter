@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -69,15 +70,26 @@ class BienDetailView extends StatelessWidget {
                   controller: c.pageController,
                   itemCount: bien.photos.length,
                   onPageChanged: (i) => c.currentPage.value = i,
-                  itemBuilder: (ctx, i) => CachedNetworkImage(
-                    imageUrl: bien.photos[i],
-                    fit: BoxFit.cover,
-                    placeholder: (_, __) => Container(color: DiwaneColors.navyLight),
-                    errorWidget: (_, __, ___) => Container(
-                      color: DiwaneColors.navyLight,
-                      child: const Icon(Icons.image_not_supported, color: DiwaneColors.navy),
-                    ),
-                  ),
+                  itemBuilder: (ctx, i) => kIsWeb
+                      ? Image.network(
+                          bien.photos[i],
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: DiwaneColors.navyLight,
+                            child: const Icon(Icons.image_not_supported, color: DiwaneColors.navy),
+                          ),
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: bien.photos[i],
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Container(color: DiwaneColors.navyLight),
+                          errorWidget: (_, __, ___) => Container(
+                            color: DiwaneColors.navyLight,
+                            child: const Icon(Icons.image_not_supported, color: DiwaneColors.navy),
+                          ),
+                        ),
                 ),
           // Bouton retour
           Positioned(
