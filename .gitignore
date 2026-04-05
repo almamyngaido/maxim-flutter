@@ -2,7 +2,8 @@
 .dart_tool/
 .packages
 .pub/
-build/
+build/*
+!build/web
 .flutter-plugins
 .flutter-plugins-dependencies
 .melos_tool/
