@@ -42,7 +42,7 @@ class UtilisateurDiwane {
   bool get isAdmin => role == 'admin';
   bool get isPremium => plan == 'premium' || plan == 'pro';
   bool get isPro => plan == 'pro';
-  bool get isAgenceOwner => isPro && agenceId == null; // propriétaire Pro sans agence_id
+  bool get isAgenceOwner => isPro && agenceId == null;
 
   String get nomComplet => '$prenom $nom';
   String get initiales {
