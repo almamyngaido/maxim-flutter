@@ -197,7 +197,7 @@ class DiwaneAuthController extends GetxController {
     await _clearStorage();
     user.value = null;
     token.value = '';
-    Get.offAllNamed(AppRoutes.loginDiwaneView);
+    Get.offAllNamed(AppRoutes.homeDiwaneView);
   }
 
   /// Intercepteur : appel 401 → tenter refresh → relancer ou déconnecter
