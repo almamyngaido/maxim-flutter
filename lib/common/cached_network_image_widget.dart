@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
@@ -43,16 +44,24 @@ class CachedNetworkImageWidget extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
-      child: CachedNetworkImage(
-        imageUrl: imageUrl!,
-        width: width,
-        height: height,
-        fit: fit,
-        placeholder: (context, url) => _buildPlaceholder(),
-        errorWidget: (context, url, error) => _buildErrorWidget(),
-        fadeInDuration: const Duration(milliseconds: 300),
-        fadeOutDuration: const Duration(milliseconds: 100),
-      ),
+      child: kIsWeb
+          ? Image.network(
+              imageUrl!,
+              width: width,
+              height: height,
+              fit: fit,
+              errorBuilder: (_, __, ___) => _buildErrorWidget(),
+            )
+          : CachedNetworkImage(
+              imageUrl: imageUrl!,
+              width: width,
+              height: height,
+              fit: fit,
+              placeholder: (context, url) => _buildPlaceholder(),
+              errorWidget: (context, url, error) => _buildErrorWidget(),
+              fadeInDuration: const Duration(milliseconds: 300),
+              fadeOutDuration: const Duration(milliseconds: 100),
+            ),
     );
   }
 

@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/bien_detail_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/bien_diwane_model.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/calculateur_entree_widget.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/disponibilite_badge.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/widgets/price_display.dart';
 
 class BienDetailView extends StatelessWidget {
@@ -35,7 +37,12 @@ class BienDetailView extends StatelessWidget {
                   SliverToBoxAdapter(child: _headerInfos(bien)),
                   SliverToBoxAdapter(child: _caracteristiques(bien)),
                   if (bien.typeTransaction == 'location')
-                    SliverToBoxAdapter(child: _conditionsFinancieres(bien)),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: CalculateurEntreeWidget(bien: bien),
+                      ),
+                    ),
                   SliverToBoxAdapter(child: _equipements(bien)),
                   if (bien.description.isNotEmpty)
                     SliverToBoxAdapter(child: _description(bien, c)),
@@ -182,6 +189,8 @@ class BienDetailView extends StatelessWidget {
               color: DiwaneColors.textPrimary,
             ),
           ),
+          const SizedBox(height: 8),
+          DisponibiliteBadge(disponibilite: bien.disponibilite),
           const SizedBox(height: 10),
           // Prix
           PriceDisplay(

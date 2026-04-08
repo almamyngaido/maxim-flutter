@@ -1,5 +1,20 @@
 import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/activity/activity_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/auth/login_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/auth/register_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/bien/bien_detail_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/search/search_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/favoris/favoris_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/admin/diwane_moderation_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/profil/profil_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/agence/agence_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/courtier/abonnement_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/courtier/verification_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/courtier/courtier_dashboard_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/courtier/publier_bien/publier_bien_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/home/home_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/onboard/onboard_diwane_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_diwane_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/bottom_bar/bottom_bar_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/drawer/agents_list/agents_details_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/drawer/agents_list/agents_list_view.dart';
@@ -52,6 +67,8 @@ import 'package:luxury_real_estate_flutter_ui_kit/views/search/search_view.dart'
 import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/messages/conversations_list_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/messages/chat_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/alertes/creer_alerte_view.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/alertes/mes_alertes_view.dart';
 
 class AppRoutes {
   static const String splashView = "/splash_view";
@@ -108,6 +125,25 @@ class AppRoutes {
   static const String conversationsListView = "/conversations_list_view";
   static const String chatView = "/chat_view";
 
+  // ── Routes Diwane ──────────────────────────────────────────
+  static const String splashDiwaneView        = "/diwane/splash";
+  static const String onboardDiwaneView       = "/diwane/onboard";
+  static const String loginDiwaneView         = "/diwane/login";
+  static const String registerDiwaneView      = "/diwane/register";
+  static const String homeDiwaneView          = "/diwane/home";
+  static const String courtierDashboardView   = "/diwane/courtier/dashboard";
+  static const String bienDiwaneDetailView    = "/diwane/bien/:id";
+  static const String searchDiwaneView        = "/diwane/search";
+  static const String publierBienView         = "/diwane/courtier/publier";
+  static const String favorisDiwaneView       = "/diwane/favoris";
+  static const String diwaneModerationView    = "/diwane/admin/moderation";
+  static const String profilDiwaneView        = "/diwane/profil";
+  static const String abonnementDiwaneView    = "/diwane/courtier/abonnement";
+  static const String verificationDiwaneView  = "/diwane/courtier/verification";
+  static const String agenceProView           = "/diwane/courtier/agence";
+  static const String creerAlerteView        = "/diwane/alertes/creer";
+  static const String mesAlertesView         = "/diwane/alertes";
+
   static String addPropertyFeaturesView = "/ajouter_caracteristiques";
   static String techniqueDetailsView = "/ajouter_details_technique";
   static String energieDiagView = "/energie_details";
@@ -122,7 +158,7 @@ class AppRoutes {
     GetPage(name: emailVerificationOtpView, page: () => EmailVerificationOtpView()),
     GetPage(name: registerView, page: () => RegisterView()),
     GetPage(name: homeView, page: () => HomeView()),
-    GetPage(name: bottomBarView, page: () => BottomBarView()),
+    GetPage(name: bottomBarView, page: () => const BottomBarView()),
     GetPage(name: notificationView, page: () => NotificationView()),
     GetPage(name: searchView, page: () => SearchView()),
     GetPage(name: propertyListView, page: () => PropertyListView()),
@@ -177,5 +213,24 @@ class AppRoutes {
     GetPage(name: imgdesc, page: () => PhotosDescriptionView()),
     GetPage(name: conversationsListView, page: () => ConversationsListView()),
     GetPage(name: chatView, page: () => const ChatView()),
+
+    // ── Pages Diwane ──────────────────────────────────────────
+    GetPage(name: splashDiwaneView,      page: () => const SplashDiwaneView()),
+    GetPage(name: onboardDiwaneView,     page: () => const OnboardDiwaneView()),
+    GetPage(name: loginDiwaneView,       page: () => const LoginDiwaneView()),
+    GetPage(name: registerDiwaneView,    page: () => const RegisterDiwaneView()),
+    GetPage(name: homeDiwaneView,        page: () => const HomeDiwaneView()),
+    GetPage(name: courtierDashboardView, page: () => const CourtierDashboardView(), transition: Transition.fadeIn),
+    GetPage(name: bienDiwaneDetailView,  page: () => const BienDetailView(), transition: Transition.rightToLeft),
+    GetPage(name: searchDiwaneView,      page: () => const SearchDiwaneView(), transition: Transition.rightToLeft),
+    GetPage(name: publierBienView,       page: () => const PublierBienView(), transition: Transition.rightToLeft),
+    GetPage(name: favorisDiwaneView,     page: () => const FavorisDiwaneView(), transition: Transition.rightToLeft),
+    GetPage(name: diwaneModerationView,  page: () => const DiwaneModerationView(), transition: Transition.fadeIn),
+    GetPage(name: profilDiwaneView,      page: () => const ProfilDiwaneView(), transition: Transition.fadeIn),
+    GetPage(name: abonnementDiwaneView,  page: () => const AbonnementDiwaneView(), transition: Transition.rightToLeft),
+    GetPage(name: verificationDiwaneView, page: () => const VerificationDiwaneView(), transition: Transition.rightToLeft),
+    GetPage(name: agenceProView,          page: () => const AgenceView(),             transition: Transition.rightToLeft),
+    GetPage(name: creerAlerteView,        page: () => const CreerAlerteView(),        transition: Transition.rightToLeft),
+    GetPage(name: mesAlertesView,         page: () => const MesAlertesView(),         transition: Transition.rightToLeft),
   ];
 }

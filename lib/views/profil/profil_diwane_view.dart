@@ -7,7 +7,6 @@ import 'package:luxury_real_estate_flutter_ui_kit/model/utilisateur_diwane_model
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/agence_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/invitation_agence_model.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/views/agence/agence_view.dart';
 
 class ProfilDiwaneView extends StatelessWidget {
   const ProfilDiwaneView({super.key});
@@ -117,7 +116,7 @@ class ProfilDiwaneView extends StatelessWidget {
                             icon: Icons.people_outline,
                             label: 'Gérer mes agents',
                             badge: null,
-                            onTap: () => Get.to(() => const AgenceView()),
+                            onTap: () => Get.toNamed(AppRoutes.agenceProView),
                           ),
                         ],
                       ),

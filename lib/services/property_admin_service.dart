@@ -18,7 +18,7 @@ class PropertyAdminService {
       print('Fetching all properties from: $baseUrl/properties');
 
       final response = await _client.get(
-        Uri.parse('$baseUrl/properties'),
+        Uri.parse('$baseUrl/bien-immos'),
         headers: _headers,
       );
 
@@ -51,7 +51,7 @@ class PropertyAdminService {
       print('Updating property availability: $propertyId to $isAvailable');
 
       final response = await _client.put(
-        Uri.parse('$baseUrl/properties/$propertyId/availability'),
+        Uri.parse('$baseUrl/bien-immos/$propertyId/availability'),
         headers: _headers,
         body: json.encode({'isAvailable': isAvailable}),
       );
@@ -84,7 +84,7 @@ class PropertyAdminService {
       print('Marking property as sold: $propertyId by $soldBy');
 
       final response = await _client.put(
-        Uri.parse('$baseUrl/properties/$propertyId/sold'),
+        Uri.parse('$baseUrl/bien-immos/$propertyId/sold'),
         headers: _headers,
         body: json.encode({
           'isSold': true,
@@ -120,7 +120,7 @@ class PropertyAdminService {
       print('Deleting property: $propertyId');
 
       final response = await _client.delete(
-        Uri.parse('$baseUrl/properties/$propertyId'),
+        Uri.parse('$baseUrl/bien-immos/$propertyId'),
         headers: _headers,
       );
 

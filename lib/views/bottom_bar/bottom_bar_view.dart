@@ -76,13 +76,14 @@ class _BottomBarViewState extends State<BottomBarView> {
       return Container(
         height: AppSize.appSize72,
         width: MediaQuery.of(context).size.width,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColor.whiteColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black12,
-              spreadRadius: AppSize.appSize1,
-              blurRadius: AppSize.appSize3,
+              color: AppColor.blackColor.withValues(alpha: 0.08),
+              spreadRadius: AppSize.appSize0,
+              blurRadius: AppSize.appSize8,
+              offset: const Offset(0, -2),
             ),
           ],
         ),

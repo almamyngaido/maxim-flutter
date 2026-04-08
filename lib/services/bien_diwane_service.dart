@@ -140,6 +140,28 @@ class BienDiwaneService extends GetxService {
     return list.map((e) => BienDiwane.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  /// PATCH /api/biens/:id/disponibilite — Mettre à jour la disponibilité
+  Future<void> mettreAJourDisponibilite(
+      String bienId, String disponibilite, String token) async {
+    final response = await _client.patch(
+      Uri.parse('$_base/biens/$bienId/disponibilite'),
+      headers: _headers(token: token),
+      body: jsonEncode({'disponibilite': disponibilite}),
+    );
+    _handle(response);
+  }
+
+  /// Toutes les annonces de l'agence (Pro — propriétaire ou membre)
+  Future<List<BienDiwane>> annoncesAgence(String token) async {
+    final response = await _client.get(
+      Uri.parse('$_base/biens/agence'),
+      headers: _headers(token: token),
+    );
+    final data = _handle(response);
+    final list = data is List ? data : (data['biens'] as List? ?? []);
+    return list.map((e) => BienDiwane.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
   /// Mes annonces (courtier)
   Future<List<BienDiwane>> mesAnnonces(String token) async {
     final response = await _client.get(
