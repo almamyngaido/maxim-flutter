@@ -43,20 +43,24 @@ class Step6Photos extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Bouton ajouter
-          Obx(() => maxPhotos == null || c.photos.length < maxPhotos
-              ? _AddButton(onTap: () { _ajouterPhotos(c, maxPhotos); })
-              : Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: DiwaneColors.orangeLight,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: DiwaneColors.orange.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    'Limite atteinte ($maxPhotos photos). Passez en Premium pour ajouter plus de photos.',
-                    style: const TextStyle(color: DiwaneColors.orange, fontSize: 13),
-                  ),
-                )),
+          Obx(() {
+            final nbPhotos = c.photos.length; // force le tracking même si maxPhotos == null
+            final peutAjouter = maxPhotos == null || nbPhotos < maxPhotos;
+            return peutAjouter
+                ? _AddButton(onTap: () { _ajouterPhotos(c, maxPhotos); })
+                : Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: DiwaneColors.orangeLight,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: DiwaneColors.orange.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      'Limite atteinte ($maxPhotos photos). Passez en Premium pour ajouter plus de photos.',
+                      style: const TextStyle(color: DiwaneColors.orange, fontSize: 13),
+                    ),
+                  );
+          }),
           const SizedBox(height: 16),
 
           // Grille photos

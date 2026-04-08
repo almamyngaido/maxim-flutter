@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/model/bien_diwane_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/invitation_agence_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/utilisateur_diwane_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/agence_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/services/bien_diwane_service.dart';
 
 class AgenceController extends GetxController {
   static AgenceController get to => Get.find();
 
   final _service = AgenceService();
+  final _bienService = Get.find<BienDiwaneService>();
 
   // Propriétaire agence
   final membres = <UtilisateurDiwane>[].obs;
@@ -16,6 +19,9 @@ class AgenceController extends GetxController {
 
   // Agent : invitations reçues
   final invitationsRecues = <InvitationAgence>[].obs;
+
+  // Annonces de l'agence (Pro — propriétaire et membres)
+  final annoncesAgence = <BienDiwane>[].obs;
 
   final isLoading = false.obs;
 
@@ -28,6 +34,20 @@ class AgenceController extends GetxController {
   String get _token => DiwaneAuthController.to.token.value;
   UtilisateurDiwane? get _user => DiwaneAuthController.to.user.value;
 
+  // ── Stats consolidées agence (propriétaire + agents) ─────────────────────
+
+  int get totalAnnoncesAgence =>
+      (_user?.nbAnnoncesActives ?? 0) +
+      membres.fold(0, (s, m) => s + m.nbAnnoncesActives);
+
+  int get totalVuesAgence =>
+      (_user?.nbVuesTotal ?? 0) +
+      membres.fold(0, (s, m) => s + m.nbVuesTotal);
+
+  int get totalContactsAgence =>
+      (_user?.nbContactsRecus ?? 0) +
+      membres.fold(0, (s, m) => s + m.nbContactsRecus);
+
   Future<void> charger() async {
     try {
       isLoading(true);
@@ -35,15 +55,23 @@ class AgenceController extends GetxController {
       if (user == null) return;
 
       if (user.isAgenceOwner) {
-        // Propriétaire : charge membres + invitations envoyées
+        // Rafraîchir le profil pour avoir les stats à jour du propriétaire
+        await DiwaneAuthController.to.rafraichirProfil();
+
+        // Propriétaire : charge membres + invitations + annonces agence en parallèle
         final results = await Future.wait([
           _service.listerMembres(_token),
           _service.invitationsEnvoyees(_token),
+          _bienService.annoncesAgence(_token),
         ]);
         membres.value = results[0] as List<UtilisateurDiwane>;
         invitationsEnvoyees.value = results[1] as List<InvitationAgence>;
+        annoncesAgence.value = results[2] as List<BienDiwane>;
+      } else if (user.isCourtier && user.agenceId != null) {
+        // Membre d'une agence : charge les annonces de l'agence
+        annoncesAgence.value = await _bienService.annoncesAgence(_token);
       } else if (user.isCourtier) {
-        // Agent potentiel : charge invitations reçues
+        // Courtier sans agence : charge invitations reçues
         invitationsRecues.value = await _service.invitationsRecues(_token);
       }
     } catch (e) {

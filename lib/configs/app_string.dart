@@ -1,6 +1,6 @@
 class AppString {
   static const String appName = "MaxiiM";
-  static const String appLogoName = "PORTAIL IMMOBILIER";
+  static const String appLogoName = "MaxiiM";
   static const String nom = "Nom";
   static const String prenom = "Prénom";
   static const String motDePasse = "Créer un Mot de Passe ";

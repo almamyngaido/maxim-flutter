@@ -46,13 +46,26 @@ class CommonTextField extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSize.appSize12),
+        color: AppColor.whiteColor,
         border: border ??
             Border.all(
-              color: hasFocus || hasInput
+              width: hasFocus ? 2.0 : 1.0,
+              color: hasFocus
                   ? AppColor.primaryColor
-                  : AppColor.descriptionColor
-                      .withValues(alpha: AppSize.appSizePoint7),
+                  : hasInput
+                      ? AppColor.borderColor
+                      : AppColor.descriptionColor
+                          .withValues(alpha: AppSize.appSizePoint7),
             ),
+        boxShadow: hasFocus
+            ? [
+                BoxShadow(
+                  color: AppColor.primaryColor.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

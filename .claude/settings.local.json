@@ -4,7 +4,11 @@
       "Bash(flutter pub:*)",
       "Bash(flutter analyze:*)",
       "Bash(flutter run:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(grep -v \"test\\\\\\\\widget_test\")"
     ],
     "deny": [],
     "ask": []

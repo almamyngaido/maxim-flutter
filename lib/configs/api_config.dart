@@ -21,7 +21,7 @@ class ApiConfig {
   static const String _port = '3000';
   // localhost  → fonctionne sur Flutter Web et iOS Simulator
   // 10.0.2.2  → fonctionne sur émulateur Android (redirige vers le PC hôte)
-  static const String localhostUrl = 'http://localhost:3000';
+  static const String localhostUrl = 'http://127.0.0.1:3000';
   static const String networkUrl = 'http://$_localIP:$_port';
 
   /// Base API URL - automatically switches based on environment

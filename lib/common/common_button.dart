@@ -38,11 +38,31 @@ class CommonButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ButtonStyle(
-          elevation: WidgetStatePropertyAll(elevation),
+          elevation: WidgetStateProperty.resolveWith<double>(
+            (Set<WidgetState> states) {
+              if (elevation != null) return elevation!;
+              if (states.contains(WidgetState.pressed)) return 1;
+              if (states.contains(WidgetState.hovered)) return 4;
+              return 2; // Default elevation for modern look
+            },
+          ),
+          shadowColor: const WidgetStatePropertyAll(Colors.black26),
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSize.appSize12))),
-          backgroundColor: WidgetStatePropertyAll(
-              backgroundColor ?? AppColor.primaryColor),
+          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+            (Set<WidgetState> states) {
+              final color = backgroundColor ?? AppColor.primaryColor;
+              if (states.contains(WidgetState.disabled)) {
+                return color.withValues(alpha: 0.5);
+              }
+              if (states.contains(WidgetState.pressed)) {
+                return color == AppColor.primaryColor
+                    ? AppColor.primaryDark
+                    : color;
+              }
+              return color;
+            },
+          ),
         ),
         child: child,
       ),

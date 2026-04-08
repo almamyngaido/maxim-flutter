@@ -57,16 +57,16 @@ class SessionService extends GetxService {
       print('🗑️ Clearing GetStorage...');
       await storage.erase();
 
-      // Step 3: Delete all controller instances
-      print('🗑️ Deleting all controllers...');
-      Get.deleteAll(force: true);
-
-      // Extra: Explicitly delete LoginController to ensure no cached instance
-      try {
+      // Step 3: Delete controllers (but NOT core services like SessionService, ApiService, PropertyDataManager)
+      print('🗑️ Deleting controllers...');
+      if (Get.isRegistered<BottomBarController>()) {
+        Get.delete<BottomBarController>(force: true);
+      }
+      if (Get.isRegistered<HomeController>()) {
+        Get.delete<HomeController>(force: true);
+      }
+      if (Get.isRegistered<LoginController>()) {
         Get.delete<LoginController>(force: true);
-        print('🗑️ LoginController explicitly deleted');
-      } catch (e) {
-        print('⚠️ LoginController already deleted or not found');
       }
 
       print('✅ SessionService: Logout complete');
@@ -84,9 +84,11 @@ class SessionService extends GetxService {
         await storage.erase();
       } catch (_) {}
 
-      // Force delete all controllers
+      // Force delete controllers (not services)
       try {
-        Get.deleteAll(force: true);
+        if (Get.isRegistered<BottomBarController>()) Get.delete<BottomBarController>(force: true);
+        if (Get.isRegistered<HomeController>()) Get.delete<HomeController>(force: true);
+        if (Get.isRegistered<LoginController>()) Get.delete<LoginController>(force: true);
       } catch (_) {}
 
       // Navigate to login
