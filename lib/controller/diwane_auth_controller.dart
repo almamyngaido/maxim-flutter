@@ -94,7 +94,8 @@ class DiwaneAuthController extends GetxController {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final newAccess  = data['accessToken']?.toString() ?? data['token']?.toString() ?? '';
+        final rawAccess  = data['accessToken']?.toString() ?? data['token']?.toString() ?? '';
+        final newAccess  = rawAccess.startsWith('Bearer ') ? rawAccess.substring(7) : rawAccess;
         final newRefresh = data['refreshToken']?.toString() ?? '';
         if (newAccess.isNotEmpty) {
           token.value = newAccess;
@@ -236,7 +237,9 @@ class DiwaneAuthController extends GetxController {
   // ── Helpers ────────────────────────────────────────────────
 
   Future<void> _saveSession(Map<String, dynamic> result) async {
-    final accessToken  = result['accessToken']?.toString() ?? result['token']?.toString() ?? '';
+    final raw          = result['accessToken']?.toString() ?? result['token']?.toString() ?? '';
+    // Enlever le préfixe Bearer s'il est accidentellement inclus dans la réponse
+    final accessToken  = raw.startsWith('Bearer ') ? raw.substring(7) : raw;
     final refreshToken = result['refreshToken']?.toString() ?? '';
     final userData     = result['user'] ?? result;
 

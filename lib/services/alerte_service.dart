@@ -14,11 +14,15 @@ class AlerteService extends GetxService {
 
   final _client = http.Client();
 
-  Map<String, String> _headers(String token) => {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
+  Map<String, String> _headers(String token) {
+    // Nettoyer le token au cas où il contiendrait déjà le préfixe Bearer
+    final clean = token.startsWith('Bearer ') ? token.substring(7) : token;
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $clean',
+    };
+  }
 
   Map<String, dynamic> _handle(http.Response res) {
     final body = jsonDecode(res.body);

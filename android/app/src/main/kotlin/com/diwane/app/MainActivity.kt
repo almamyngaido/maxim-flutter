@@ -1,4 +1,4 @@
-package com.example.luxury_real_estate_flutter_ui_kit
+package com.diwane.app
 
 import io.flutter.embedding.android.FlutterActivity
 
