@@ -114,7 +114,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView> {
         DiwaneSnackbar.error('Erreur', msg.toString());
       }
     } catch (e) {
-      DiwaneSnackbar.error('Erreur', e.toString());
+      await DiwaneSnackbar.apiError(e);
     } finally {
       setState(() => _isResending = false);
     }

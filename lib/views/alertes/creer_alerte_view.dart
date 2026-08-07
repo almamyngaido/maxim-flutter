@@ -97,7 +97,7 @@ class _CreerAlerteSheetState extends State<_CreerAlerteSheet> {
         'Vous serez notifié des nouveaux biens correspondants',
       );
     } catch (e) {
-      DiwaneSnackbar.error('Erreur', e.toString());
+      await DiwaneSnackbar.apiError(e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
