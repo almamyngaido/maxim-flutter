@@ -16,7 +16,7 @@ class AboutPropertyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       appBar: buildAppBar(),
       body: buildAboutProperty(),
       bottomNavigationBar: buildButton(),
@@ -25,7 +25,7 @@ class AboutPropertyView extends StatelessWidget {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -41,7 +41,7 @@ class AboutPropertyView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Text(
         AppString.aboutProperty,
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
+        style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
       ),
     );
   }
@@ -57,7 +57,7 @@ class AboutPropertyView extends StatelessWidget {
             padding: const EdgeInsets.all(AppSize.appSize10),
             decoration: BoxDecoration(
               border: Border.all(
-                color: AppColor.descriptionColor
+                color: DiwaneColors.textMuted
                     .withValues(alpha: AppSize.appSizePoint50),
               ),
               borderRadius: BorderRadius.circular(AppSize.appSize12),
@@ -67,7 +67,7 @@ class AboutPropertyView extends StatelessWidget {
               children: [
                 Text(
                   AppString.semiModernHouse,
-                  style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+                  style: AppStyle.heading5SemiBold(color: DiwaneColors.textPrimary),
                 ).paddingOnly(bottom: AppSize.appSize8),
                 Row(
                   children: [
@@ -79,7 +79,7 @@ class AboutPropertyView extends StatelessWidget {
                       child: Text(
                         AppString.address6,
                         style: AppStyle.heading5Regular(
-                            color: AppColor.descriptionColor),
+                            color: DiwaneColors.textMuted),
                       ),
                     ),
                   ],
@@ -89,7 +89,7 @@ class AboutPropertyView extends StatelessWidget {
           ),
           Divider(
             color:
-            AppColor.descriptionColor.withValues(alpha: AppSize.appSizePoint4),
+            DiwaneColors.textMuted.withValues(alpha: AppSize.appSizePoint4),
             thickness: AppSize.appSizePoint7,
             height: AppSize.appSize0,
           ).paddingOnly(
@@ -98,11 +98,11 @@ class AboutPropertyView extends StatelessWidget {
           ),
           Text(
             AppString.aboutPropertyString1,
-            style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+            style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
           ),
           Text(
             AppString.aboutPropertyString2,
-            style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+            style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
           ).paddingOnly(top: AppSize.appSize20),
         ],
       ).paddingOnly(
@@ -117,10 +117,10 @@ class AboutPropertyView extends StatelessWidget {
       onPressed: () {
         aboutPropertyController.launchDialer();
       },
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: DiwaneColors.navy,
       child: Text(
         AppString.callOwnerButton,
-        style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+        style: AppStyle.heading5Medium(color: Colors.white),
       ),
     ).paddingOnly(
         left: AppSize.appSize16, right: AppSize.appSize16,

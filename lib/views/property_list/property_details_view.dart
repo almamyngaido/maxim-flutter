@@ -14,6 +14,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/gen/assets.gen.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/text_segment_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_snackbar.dart';
 
 class PropertyDetailsView extends StatelessWidget {
   PropertyDetailsView({super.key});
@@ -30,22 +31,22 @@ class PropertyDetailsView extends StatelessWidget {
 
       if (property == null) {
         return Scaffold(
-          backgroundColor: AppColor.whiteColor,
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: AppColor.whiteColor,
+            backgroundColor: Colors.white,
             leading: IconButton(
               onPressed: () => Get.back(),
               icon: const Icon(Icons.arrow_back),
             ),
           ),
           body: const Center(
-            child: CircularProgressIndicator(color: AppColor.primaryColor),
+            child: CircularProgressIndicator(color: DiwaneColors.navy),
           ),
         );
       }
 
       return Scaffold(
-        backgroundColor: AppColor.whiteColor,
+        backgroundColor: Colors.white,
         appBar: buildAppBar(),
         body: buildPropertyDetails(context),
         bottomNavigationBar: buildButton(),
@@ -55,7 +56,7 @@ class PropertyDetailsView extends StatelessWidget {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -67,7 +68,7 @@ class PropertyDetailsView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Obx(() => Text(
             propertyDetailsController.propertyTitle,
-            style: AppStyle.heading5Medium(color: AppColor.textColor),
+            style: AppStyle.heading5Medium(color: DiwaneColors.textPrimary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           )),
@@ -75,11 +76,11 @@ class PropertyDetailsView extends StatelessWidget {
         Row(
           children: [
             GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.searchView),
+              onTap: () => Get.toNamed(AppRoutes.searchDiwaneView),
               child: Image.asset(
                 Assets.images.search.path,
                 width: AppSize.appSize24,
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ).paddingOnly(right: AppSize.appSize26),
             ),
             GestureDetector(
@@ -89,7 +90,7 @@ class PropertyDetailsView extends StatelessWidget {
               child: Image.asset(
                 Assets.images.emptyRatingStar.path,
                 width: AppSize.appSize24,
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ).paddingOnly(right: AppSize.appSize26),
             ),
             GestureDetector(
@@ -136,8 +137,8 @@ class PropertyDetailsView extends StatelessWidget {
                                 color: propertyDetailsController
                                             .selectProperty.value ==
                                         index
-                                    ? AppColor.primaryColor
-                                    : AppColor.borderColor,
+                                    ? DiwaneColors.navy
+                                    : DiwaneColors.cardBorder,
                                 width: AppSize.appSize2,
                               ),
                               right: BorderSide(
@@ -146,7 +147,7 @@ class PropertyDetailsView extends StatelessWidget {
                                                 .propertyList.length -
                                             1
                                     ? Colors.transparent
-                                    : AppColor.borderColor,
+                                    : DiwaneColors.cardBorder,
                                 width: AppSize.appSize1,
                               ),
                             ),
@@ -158,8 +159,8 @@ class PropertyDetailsView extends StatelessWidget {
                                 color: propertyDetailsController
                                             .selectProperty.value ==
                                         index
-                                    ? AppColor.primaryColor
-                                    : AppColor.textColor,
+                                    ? DiwaneColors.navy
+                                    : DiwaneColors.textPrimary,
                               ),
                             ),
                           ),
@@ -276,14 +277,14 @@ class PropertyDetailsView extends StatelessWidget {
         return Container(
           height: AppSize.appSize200,
           width: double.infinity,
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
                       loadingProgress.expectedTotalBytes!
                   : null,
-              color: AppColor.primaryColor,
+              color: DiwaneColors.navy,
             ),
           ),
         );
@@ -292,11 +293,11 @@ class PropertyDetailsView extends StatelessWidget {
         return Container(
           height: AppSize.appSize200,
           width: double.infinity,
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Icon(
             Icons.home_outlined,
             size: AppSize.appSize50,
-            color: AppColor.descriptionColor,
+            color: DiwaneColors.textMuted,
           ),
         );
       },
@@ -310,7 +311,7 @@ class PropertyDetailsView extends StatelessWidget {
         // Price
         Text(
           propertyDetailsController.propertyPrice,
-          style: AppStyle.heading4Medium(color: AppColor.primaryColor),
+          style: AppStyle.heading4Medium(color: DiwaneColors.navy),
         ).paddingOnly(
           top: AppSize.appSize16,
           left: AppSize.appSize16,
@@ -324,10 +325,10 @@ class PropertyDetailsView extends StatelessWidget {
               Text(
                 propertyDetailsController.propertyStatus,
                 style:
-                    AppStyle.heading6Regular(color: AppColor.descriptionColor),
+                    AppStyle.heading6Regular(color: DiwaneColors.textMuted),
               ),
               VerticalDivider(
-                color: AppColor.descriptionColor
+                color: DiwaneColors.textMuted
                     .withValues(alpha: AppSize.appSizePoint4),
                 thickness: AppSize.appSizePoint7,
                 width: AppSize.appSize22,
@@ -337,7 +338,7 @@ class PropertyDetailsView extends StatelessWidget {
               Text(
                 propertyDetailsController.propertyType,
                 style:
-                    AppStyle.heading6Regular(color: AppColor.descriptionColor),
+                    AppStyle.heading6Regular(color: DiwaneColors.textMuted),
               ),
             ],
           ),
@@ -350,7 +351,7 @@ class PropertyDetailsView extends StatelessWidget {
         // Title and Address
         Text(
           propertyDetailsController.propertyTitle,
-          style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+          style: AppStyle.heading5SemiBold(color: DiwaneColors.textPrimary),
         ).paddingOnly(
           top: AppSize.appSize8,
           left: AppSize.appSize16,
@@ -359,7 +360,7 @@ class PropertyDetailsView extends StatelessWidget {
 
         Text(
           propertyDetailsController.propertyAddress,
-          style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+          style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
         ).paddingOnly(
           top: AppSize.appSize4,
           left: AppSize.appSize16,
@@ -367,7 +368,7 @@ class PropertyDetailsView extends StatelessWidget {
         ),
 
         Divider(
-          color: AppColor.descriptionColor
+          color: DiwaneColors.textMuted
               .withValues(alpha: AppSize.appSizePoint4),
           thickness: AppSize.appSizePoint7,
           height: AppSize.appSize0,
@@ -397,7 +398,7 @@ class PropertyDetailsView extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(AppSize.appSize16),
         decoration: BoxDecoration(
-          color: AppColor.secondaryColor,
+          color: DiwaneColors.surface,
           borderRadius: BorderRadius.circular(AppSize.appSize12),
         ),
         child: Column(
@@ -406,7 +407,7 @@ class PropertyDetailsView extends StatelessWidget {
             Text(
               propertyDetailsController
                   .propertyList[propertyDetailsController.selectProperty.value],
-              style: AppStyle.heading4Medium(color: AppColor.textColor),
+              style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
             ),
             const SizedBox(height: AppSize.appSize16),
             ...tabDetails.entries.map((entry) {
@@ -421,7 +422,7 @@ class PropertyDetailsView extends StatelessWidget {
                         child: Text(
                           entry.key,
                           style: AppStyle.heading5Regular(
-                              color: AppColor.descriptionColor),
+                              color: DiwaneColors.textMuted),
                         ),
                       ),
                       const SizedBox(width: AppSize.appSize10),
@@ -430,7 +431,7 @@ class PropertyDetailsView extends StatelessWidget {
                         child: Text(
                           entry.value.toString(),
                           style: AppStyle.heading5Regular(
-                              color: AppColor.textColor),
+                              color: DiwaneColors.textPrimary),
                         ),
                       ),
                     ],
@@ -438,7 +439,7 @@ class PropertyDetailsView extends StatelessWidget {
                   if (!isLast) ...[
                     const SizedBox(height: AppSize.appSize12),
                     Divider(
-                      color: AppColor.descriptionColor
+                      color: DiwaneColors.textMuted
                           .withValues(alpha: AppSize.appSizePoint4),
                       thickness: AppSize.appSizePoint7,
                       height: AppSize.appSize0,
@@ -498,7 +499,7 @@ class PropertyDetailsView extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSize.appSize12),
         border: Border.all(
-          color: AppColor.primaryColor,
+          color: DiwaneColors.navy,
           width: AppSize.appSizePoint50,
         ),
       ),
@@ -512,7 +513,7 @@ class PropertyDetailsView extends StatelessWidget {
           ).paddingOnly(right: AppSize.appSize6),
           Text(
             text,
-            style: AppStyle.heading5Medium(color: AppColor.textColor),
+            style: AppStyle.heading5Medium(color: DiwaneColors.textPrimary),
           ),
         ],
       ),
@@ -534,7 +535,7 @@ class PropertyDetailsView extends StatelessWidget {
           right: AppSize.appSize16,
         ),
         decoration: BoxDecoration(
-          color: AppColor.primaryColor,
+          color: DiwaneColors.navy,
           borderRadius: BorderRadius.circular(AppSize.appSize12),
         ),
         child: Column(
@@ -542,7 +543,7 @@ class PropertyDetailsView extends StatelessWidget {
           children: [
             Text(
               'Points forts',
-              style: AppStyle.heading4SemiBold(color: AppColor.whiteColor),
+              style: AppStyle.heading4SemiBold(color: Colors.white),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -554,7 +555,7 @@ class PropertyDetailsView extends StatelessWidget {
                       height: AppSize.appSize5,
                       margin: const EdgeInsets.only(left: AppSize.appSize10),
                       decoration: const BoxDecoration(
-                        color: AppColor.whiteColor,
+                        color: Colors.white,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -562,7 +563,7 @@ class PropertyDetailsView extends StatelessWidget {
                       child: Text(
                         highlight,
                         style: AppStyle.heading5Regular(
-                            color: AppColor.whiteColor),
+                            color: Colors.white),
                       ).paddingOnly(left: AppSize.appSize10),
                     ),
                   ],
@@ -589,14 +590,14 @@ class PropertyDetailsView extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSize.appSize12),
-          color: AppColor.secondaryColor,
+          color: DiwaneColors.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Détails complets de la propriété',
-              style: AppStyle.heading4Medium(color: AppColor.textColor),
+              style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
             ),
             Column(
               children: details.take(10).map((detail) {
@@ -612,21 +613,21 @@ class PropertyDetailsView extends StatelessWidget {
                           child: Text(
                             detail['title']!,
                             style: AppStyle.heading5Regular(
-                                color: AppColor.descriptionColor),
+                                color: DiwaneColors.textMuted),
                           ).paddingOnly(right: AppSize.appSize10),
                         ),
                         Expanded(
                           child: Text(
                             detail['value']!,
                             style: AppStyle.heading5Regular(
-                                color: AppColor.textColor),
+                                color: DiwaneColors.textPrimary),
                           ),
                         ),
                       ],
                     ),
                     if (!isLast) ...[
                       Divider(
-                        color: AppColor.descriptionColor
+                        color: DiwaneColors.textMuted
                             .withValues(alpha: AppSize.appSizePoint4),
                         thickness: AppSize.appSizePoint7,
                         height: AppSize.appSize0,
@@ -644,7 +645,7 @@ class PropertyDetailsView extends StatelessWidget {
                 },
                 child: Text(
                   'Voir tous les détails (${details.length - 10} de plus)',
-                  style: AppStyle.heading5Medium(color: AppColor.primaryColor),
+                  style: AppStyle.heading5Medium(color: DiwaneColors.navy),
                 ),
               ),
           ],
@@ -664,7 +665,7 @@ class PropertyDetailsView extends StatelessWidget {
       children: [
         Text(
           'Galerie de la propriété',
-          style: AppStyle.heading4SemiBold(color: AppColor.textColor),
+          style: AppStyle.heading4SemiBold(color: DiwaneColors.textPrimary),
         ).paddingOnly(
           top: AppSize.appSize36,
           left: AppSize.appSize16,
@@ -777,14 +778,14 @@ class PropertyDetailsView extends StatelessWidget {
         return Container(
           height: AppSize.appSize150,
           width: double.infinity,
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
                       loadingProgress.expectedTotalBytes!
                   : null,
-              color: AppColor.primaryColor,
+              color: DiwaneColors.navy,
             ),
           ),
         );
@@ -793,11 +794,11 @@ class PropertyDetailsView extends StatelessWidget {
         return Container(
           height: AppSize.appSize150,
           width: double.infinity,
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Icon(
             Icons.image_not_supported,
             size: AppSize.appSize40,
-            color: AppColor.descriptionColor,
+            color: DiwaneColors.textMuted,
           ),
         );
       },
@@ -825,7 +826,7 @@ class PropertyDetailsView extends StatelessWidget {
           alignment: Alignment.bottomLeft,
           child: Text(
             text,
-            style: AppStyle.heading3Medium(color: AppColor.whiteColor),
+            style: AppStyle.heading3Medium(color: Colors.white),
           ),
         ).paddingOnly(left: AppSize.appSize16, bottom: AppSize.appSize16),
       ),
@@ -843,7 +844,7 @@ class PropertyDetailsView extends StatelessWidget {
         children: [
           Text(
             'Installations et équipements',
-            style: AppStyle.heading4Medium(color: AppColor.textColor),
+            style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
           ).paddingOnly(
             top: AppSize.appSize36,
             left: AppSize.appSize16,
@@ -862,7 +863,7 @@ class PropertyDetailsView extends StatelessWidget {
                   margin: const EdgeInsets.only(right: AppSize.appSize16),
                   padding: const EdgeInsets.all(AppSize.appSize16),
                   decoration: BoxDecoration(
-                    color: AppColor.secondaryColor,
+                    color: DiwaneColors.surface,
                     borderRadius: BorderRadius.circular(AppSize.appSize12),
                   ),
                   child: Column(
@@ -875,7 +876,7 @@ class PropertyDetailsView extends StatelessWidget {
                       Text(
                         facility['title'],
                         style:
-                            AppStyle.heading5Regular(color: AppColor.textColor),
+                            AppStyle.heading5Regular(color: DiwaneColors.textPrimary),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -898,14 +899,14 @@ class PropertyDetailsView extends StatelessWidget {
           children: [
             Text(
               'Équipements de la propriété',
-              style: AppStyle.heading4Medium(color: AppColor.textColor),
+              style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
             ),
             GestureDetector(
               onTap: () => Get.toNamed(AppRoutes.furnishingDetailsView),
               child: Text(
                 'Voir tout',
                 style:
-                    AppStyle.heading5Medium(color: AppColor.descriptionColor),
+                    AppStyle.heading5Medium(color: DiwaneColors.textMuted),
               ),
             ),
           ],
@@ -925,7 +926,7 @@ class PropertyDetailsView extends StatelessWidget {
           if (allEquipment.isEmpty) {
             return Text(
               'Aucun équipement spécifique renseigné',
-              style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+              style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
             ).paddingOnly(
               top: AppSize.appSize16,
               left: AppSize.appSize16,
@@ -946,7 +947,7 @@ class PropertyDetailsView extends StatelessWidget {
                   margin: const EdgeInsets.only(right: AppSize.appSize16),
                   padding: const EdgeInsets.all(AppSize.appSize16),
                   decoration: BoxDecoration(
-                    color: AppColor.secondaryColor,
+                    color: DiwaneColors.surface,
                     borderRadius: BorderRadius.circular(AppSize.appSize12),
                   ),
                   child: Column(
@@ -959,7 +960,7 @@ class PropertyDetailsView extends StatelessWidget {
                       Text(
                         equipment['title'],
                         style:
-                            AppStyle.heading5Regular(color: AppColor.textColor),
+                            AppStyle.heading5Regular(color: DiwaneColors.textPrimary),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -979,7 +980,7 @@ class PropertyDetailsView extends StatelessWidget {
       children: [
         Text(
           'À propos de la propriété',
-          style: AppStyle.heading4Medium(color: AppColor.textColor),
+          style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
         ).paddingOnly(
           top: AppSize.appSize36,
           left: AppSize.appSize16,
@@ -994,7 +995,7 @@ class PropertyDetailsView extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             border: Border.all(
-              color: AppColor.descriptionColor
+              color: DiwaneColors.textMuted
                   .withValues(alpha: AppSize.appSizePoint50),
             ),
             borderRadius: BorderRadius.circular(AppSize.appSize12),
@@ -1004,7 +1005,7 @@ class PropertyDetailsView extends StatelessWidget {
             children: [
               Text(
                 propertyDetailsController.propertyTitle,
-                style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+                style: AppStyle.heading5SemiBold(color: DiwaneColors.textPrimary),
               ).paddingOnly(bottom: AppSize.appSize8),
               Row(
                 children: [
@@ -1016,7 +1017,7 @@ class PropertyDetailsView extends StatelessWidget {
                     child: Text(
                       propertyDetailsController.propertyAddress,
                       style: AppStyle.heading5Regular(
-                          color: AppColor.descriptionColor),
+                          color: DiwaneColors.textMuted),
                     ),
                   ),
                 ],
@@ -1025,7 +1026,7 @@ class PropertyDetailsView extends StatelessWidget {
           ),
         ),
         Divider(
-          color: AppColor.descriptionColor
+          color: DiwaneColors.textMuted
               .withValues(alpha: AppSize.appSizePoint4),
           thickness: AppSize.appSizePoint7,
           height: AppSize.appSize0,
@@ -1041,14 +1042,14 @@ class PropertyDetailsView extends StatelessWidget {
               text: propertyDetailsController.propertyDescription.length > 200
                   ? '${propertyDetailsController.propertyDescription.substring(0, 200)}...'
                   : propertyDetailsController.propertyDescription,
-              style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+              style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
             ),
             if (propertyDetailsController.propertyDescription.length > 200)
               TextSegment(
                 text: ' Lire plus',
                 onTap: () => Get.toNamed(AppRoutes.aboutPropertyView,
                     arguments: propertyDetailsController.currentProperty.value),
-                style: AppStyle.heading5Regular(color: AppColor.primaryColor),
+                style: AppStyle.heading5Regular(color: DiwaneColors.navy),
               ),
           ],
         ).paddingOnly(
@@ -1068,7 +1069,7 @@ class PropertyDetailsView extends StatelessWidget {
         children: [
           Text(
             'Toutes les photos (${images.length})',
-            style: AppStyle.heading4Medium(color: AppColor.textColor),
+            style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
           ).paddingOnly(
             top: AppSize.appSize20,
             left: AppSize.appSize16,
@@ -1122,25 +1123,25 @@ class PropertyDetailsView extends StatelessWidget {
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
                       loadingProgress.expectedTotalBytes!
                   : null,
-              color: AppColor.primaryColor,
+              color: DiwaneColors.navy,
             ),
           ),
         );
       },
       errorBuilder: (context, error, stackTrace) {
         return Container(
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Icon(
             Icons.broken_image,
             size: AppSize.appSize40,
-            color: AppColor.descriptionColor,
+            color: DiwaneColors.textMuted,
           ),
         );
       },
@@ -1155,11 +1156,11 @@ class PropertyDetailsView extends StatelessWidget {
           children: [
             Text(
               'Heures de visite',
-              style: AppStyle.heading4Medium(color: AppColor.textColor),
+              style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
             ),
             Text(
               'Ouvert maintenant',
-              style: AppStyle.heading5Medium(color: AppColor.positiveColor),
+              style: AppStyle.heading5Medium(color: DiwaneColors.success),
             ),
           ],
         ).paddingOnly(
@@ -1178,7 +1179,7 @@ class PropertyDetailsView extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColor.descriptionColor
+                    color: DiwaneColors.textMuted
                         .withValues(alpha: AppSize.appSizePoint50),
                   ),
                   borderRadius: BorderRadius.circular(AppSize.appSize12),
@@ -1189,7 +1190,7 @@ class PropertyDetailsView extends StatelessWidget {
                     Text(
                       'Lundi',
                       style: AppStyle.heading4Regular(
-                          color: AppColor.descriptionColor),
+                          color: DiwaneColors.textMuted),
                     ),
                     Image.asset(
                       propertyDetailsController.isVisitExpanded.value
@@ -1217,7 +1218,7 @@ class PropertyDetailsView extends StatelessWidget {
                       padding: const EdgeInsets.all(AppSize.appSize16),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(AppSize.appSize12),
-                        color: AppColor.whiteColor,
+                        color: Colors.white,
                         boxShadow: const [
                           BoxShadow(
                             color: Colors.black12,
@@ -1235,12 +1236,12 @@ class PropertyDetailsView extends StatelessWidget {
                               Text(
                                 propertyDetailsController.dayList[index],
                                 style: AppStyle.heading5Regular(
-                                    color: AppColor.descriptionColor),
+                                    color: DiwaneColors.textMuted),
                               ),
                               Text(
                                 propertyDetailsController.timingList[index],
                                 style: AppStyle.heading5Regular(
-                                    color: AppColor.textColor),
+                                    color: DiwaneColors.textPrimary),
                               ),
                             ],
                           ).paddingOnly(bottom: AppSize.appSize10),
@@ -1263,7 +1264,7 @@ class PropertyDetailsView extends StatelessWidget {
         children: [
           Text(
             'Contacter le propriétaire',
-            style: AppStyle.heading4Medium(color: AppColor.textColor),
+            style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
           ).paddingOnly(
             top: AppSize.appSize36,
             left: AppSize.appSize16,
@@ -1290,7 +1291,7 @@ class PropertyDetailsView extends StatelessWidget {
                 right: AppSize.appSize16,
               ),
               decoration: BoxDecoration(
-                color: AppColor.secondaryColor,
+                color: DiwaneColors.surface,
                 borderRadius: BorderRadius.circular(AppSize.appSize12),
               ),
               child: Row(
@@ -1298,12 +1299,12 @@ class PropertyDetailsView extends StatelessWidget {
                   if (hasOwner)
                     CircleAvatar(
                       radius: AppSize.appSize32,
-                      backgroundColor: AppColor.primaryColor.withValues(alpha: 0.1),
+                      backgroundColor: DiwaneColors.navy.withValues(alpha: 0.1),
                       child: Text(
                         owner.fullName.isNotEmpty
                             ? owner.fullName[0].toUpperCase()
                             : 'P',
-                        style: AppStyle.heading3SemiBold(color: AppColor.primaryColor),
+                        style: AppStyle.heading3SemiBold(color: DiwaneColors.navy),
                       ),
                     ).paddingOnly(right: AppSize.appSize12)
                   else
@@ -1318,7 +1319,7 @@ class PropertyDetailsView extends StatelessWidget {
                       children: [
                         Text(
                           hasOwner ? owner.fullName : 'Propriétaire',
-                          style: AppStyle.heading4Medium(color: AppColor.textColor),
+                          style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ).paddingOnly(bottom: AppSize.appSize4),
@@ -1328,11 +1329,11 @@ class PropertyDetailsView extends StatelessWidget {
                               Text(
                                 hasOwner ? (owner.role ?? 'Propriétaire') : 'Agent',
                                 style: AppStyle.heading5Medium(
-                                    color: AppColor.descriptionColor),
+                                    color: DiwaneColors.textMuted),
                               ),
                               if (hasOwner && owner.phoneNumber != null) ...[
                                 VerticalDivider(
-                                  color: AppColor.descriptionColor
+                                  color: DiwaneColors.textMuted
                                       .withValues(alpha: AppSize.appSizePoint4),
                                   thickness: AppSize.appSizePoint7,
                                   width: AppSize.appSize20,
@@ -1343,7 +1344,7 @@ class PropertyDetailsView extends StatelessWidget {
                                   child: Text(
                                     owner.phoneNumber!,
                                     style: AppStyle.heading5Medium(
-                                        color: AppColor.descriptionColor),
+                                        color: DiwaneColors.textMuted),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -1358,7 +1359,7 @@ class PropertyDetailsView extends StatelessWidget {
                   Icon(
                     Icons.arrow_forward_ios,
                     size: AppSize.appSize16,
-                    color: AppColor.primaryColor,
+                    color: DiwaneColors.navy,
                   ),
                 ],
               ),
@@ -1404,18 +1405,16 @@ class PropertyDetailsView extends StatelessWidget {
                 },
               );
             } else {
-              Get.snackbar(
+              DiwaneSnackbar.error(
                 'Erreur',
                 'Informations de la propriété non disponibles',
-                backgroundColor: AppColor.negativeColor,
-                colorText: AppColor.whiteColor,
               );
             }
           },
-          backgroundColor: AppColor.primaryColor,
+          backgroundColor: DiwaneColors.navy,
           child: Text(
             'Voir le numéro de téléphone',
-            style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+            style: AppStyle.heading5Medium(color: Colors.white),
           ),
         ).paddingOnly(
           left: AppSize.appSize16,
@@ -1432,7 +1431,7 @@ class PropertyDetailsView extends StatelessWidget {
       children: [
         Text(
           'Localisation',
-          style: AppStyle.heading4Medium(color: AppColor.textColor),
+          style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
         ).paddingOnly(
           top: AppSize.appSize36,
           left: AppSize.appSize16,
@@ -1452,10 +1451,10 @@ class PropertyDetailsView extends StatelessWidget {
               right: AppSize.appSize16,
             ),
             decoration: BoxDecoration(
-              color: AppColor.secondaryColor,
+              color: DiwaneColors.surface,
               borderRadius: BorderRadius.circular(AppSize.appSize12),
               border: Border.all(
-                color: AppColor.primaryColor.withValues(alpha: 0.3),
+                color: DiwaneColors.navy.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -1466,7 +1465,7 @@ class PropertyDetailsView extends StatelessWidget {
                   width: double.infinity,
                   height: AppSize.appSize150,
                   decoration: BoxDecoration(
-                    color: AppColor.backgroundColor,
+                    color: DiwaneColors.background,
                     borderRadius: BorderRadius.circular(AppSize.appSize8),
                   ),
                   child: Column(
@@ -1475,19 +1474,19 @@ class PropertyDetailsView extends StatelessWidget {
                       Icon(
                         Icons.location_on,
                         size: AppSize.appSize64,
-                        color: AppColor.primaryColor,
+                        color: DiwaneColors.navy,
                       ),
                       SizedBox(height: AppSize.appSize12),
                       Text(
                         'Carte interactive',
                         style: AppStyle.heading5Medium(
-                            color: AppColor.descriptionColor),
+                            color: DiwaneColors.textMuted),
                       ),
                       SizedBox(height: AppSize.appSize4),
                       Text(
                         'Bientôt disponible',
                         style: AppStyle.heading6Regular(
-                            color: AppColor.descriptionColor),
+                            color: DiwaneColors.textMuted),
                       ),
                     ],
                   ),
@@ -1500,7 +1499,7 @@ class PropertyDetailsView extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.place,
-                      color: AppColor.primaryColor,
+                      color: DiwaneColors.navy,
                       size: AppSize.appSize20,
                     ),
                     SizedBox(width: AppSize.appSize8),
@@ -1511,13 +1510,13 @@ class PropertyDetailsView extends StatelessWidget {
                           Text(
                             'Adresse',
                             style: AppStyle.heading6Regular(
-                                color: AppColor.descriptionColor),
+                                color: DiwaneColors.textMuted),
                           ),
                           SizedBox(height: AppSize.appSize4),
                           Text(
                             propertyDetailsController.propertyAddress,
                             style: AppStyle.heading5Medium(
-                                color: AppColor.textColor),
+                                color: DiwaneColors.textPrimary),
                           ),
                         ],
                       ),
@@ -1529,7 +1528,7 @@ class PropertyDetailsView extends StatelessWidget {
                 if (property != null) ...[
                   SizedBox(height: AppSize.appSize12),
                   Divider(
-                    color: AppColor.descriptionColor.withValues(alpha: 0.3),
+                    color: DiwaneColors.textMuted.withValues(alpha: 0.3),
                   ),
                   SizedBox(height: AppSize.appSize12),
 
@@ -1542,13 +1541,13 @@ class PropertyDetailsView extends StatelessWidget {
                             Text(
                               'Ville',
                               style: AppStyle.heading6Regular(
-                                  color: AppColor.descriptionColor),
+                                  color: DiwaneColors.textMuted),
                             ),
                             SizedBox(height: AppSize.appSize4),
                             Text(
                               property.ville,
                               style: AppStyle.heading6Medium(
-                                  color: AppColor.textColor),
+                                  color: DiwaneColors.textPrimary),
                             ),
                           ],
                         ),
@@ -1561,13 +1560,13 @@ class PropertyDetailsView extends StatelessWidget {
                             Text(
                               'Code postal',
                               style: AppStyle.heading6Regular(
-                                  color: AppColor.descriptionColor),
+                                  color: DiwaneColors.textMuted),
                             ),
                             SizedBox(height: AppSize.appSize4),
                             Text(
                               property.codePostal,
                               style: AppStyle.heading6Medium(
-                                  color: AppColor.textColor),
+                                  color: DiwaneColors.textPrimary),
                             ),
                           ],
                         ),
@@ -1583,13 +1582,13 @@ class PropertyDetailsView extends StatelessWidget {
                         Text(
                           'Département',
                           style: AppStyle.heading6Regular(
-                              color: AppColor.descriptionColor),
+                              color: DiwaneColors.textMuted),
                         ),
                         SizedBox(height: AppSize.appSize4),
                         Text(
                           property.departement,
                           style: AppStyle.heading6Medium(
-                              color: AppColor.textColor),
+                              color: DiwaneColors.textPrimary),
                         ),
                       ],
                     ),
@@ -1614,13 +1613,13 @@ class PropertyDetailsView extends StatelessWidget {
           children: [
             Text(
               'Avis',
-              style: AppStyle.heading3SemiBold(color: AppColor.textColor),
+              style: AppStyle.heading3SemiBold(color: DiwaneColors.textPrimary),
             ),
             GestureDetector(
               onTap: () => Get.toNamed(AppRoutes.addReviewsForPropertyView),
               child: Text(
                 'Ajouter un avis',
-                style: AppStyle.heading5Regular(color: AppColor.primaryColor),
+                style: AppStyle.heading5Regular(color: DiwaneColors.navy),
               ),
             ),
           ],
@@ -1640,7 +1639,7 @@ class PropertyDetailsView extends StatelessWidget {
               padding: const EdgeInsets.all(AppSize.appSize16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppSize.appSize16),
-                border: Border.all(color: AppColor.descriptionColor),
+                border: Border.all(color: DiwaneColors.textMuted),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1651,7 +1650,7 @@ class PropertyDetailsView extends StatelessWidget {
                       Text(
                         review['date'],
                         style: AppStyle.heading6Regular(
-                            color: AppColor.descriptionColor),
+                            color: DiwaneColors.textMuted),
                       ),
                       Image.asset(
                         review['rating'],
@@ -1669,19 +1668,19 @@ class PropertyDetailsView extends StatelessWidget {
                       Text(
                         review['name'],
                         style: AppStyle.heading5Medium(
-                            color: AppColor.textColor),
+                            color: DiwaneColors.textPrimary),
                       ).paddingOnly(left: AppSize.appSize6),
                     ],
                   ).paddingOnly(top: AppSize.appSize10),
                   Text(
                     review['type'],
                     style: AppStyle.heading5Medium(
-                        color: AppColor.descriptionColor),
+                        color: DiwaneColors.textMuted),
                   ).paddingOnly(top: AppSize.appSize10),
                   Text(
                     review['description'],
                     style:
-                        AppStyle.heading5Regular(color: AppColor.textColor),
+                        AppStyle.heading5Regular(color: DiwaneColors.textPrimary),
                   ).paddingOnly(top: AppSize.appSize10),
                 ],
               ),
@@ -1712,7 +1711,7 @@ class PropertyDetailsView extends StatelessWidget {
         children: [
           Text(
             'Propriétés similaires',
-            style: AppStyle.heading4Medium(color: AppColor.textColor),
+            style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
           ).paddingOnly(
             top: AppSize.appSize20,
             left: AppSize.appSize16,
@@ -1736,7 +1735,7 @@ class PropertyDetailsView extends StatelessWidget {
                     padding: const EdgeInsets.all(AppSize.appSize10),
                     margin: const EdgeInsets.only(right: AppSize.appSize16),
                     decoration: BoxDecoration(
-                      color: AppColor.secondaryColor,
+                      color: DiwaneColors.surface,
                       borderRadius: BorderRadius.circular(AppSize.appSize12),
                     ),
                     child: Column(
@@ -1760,7 +1759,7 @@ class PropertyDetailsView extends StatelessWidget {
                                   width: AppSize.appSize32,
                                   height: AppSize.appSize32,
                                   decoration: BoxDecoration(
-                                    color: AppColor.whiteColor.withValues(
+                                    color: Colors.white.withValues(
                                         alpha: AppSize.appSizePoint50),
                                     borderRadius:
                                         BorderRadius.circular(AppSize.appSize6),
@@ -1785,14 +1784,14 @@ class PropertyDetailsView extends StatelessWidget {
                             Text(
                               similarProperty.displayTitle,
                               style: AppStyle.heading5SemiBold(
-                                  color: AppColor.textColor),
+                                  color: DiwaneColors.textPrimary),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               similarProperty.displayAddress,
                               style: AppStyle.heading5Regular(
-                                  color: AppColor.descriptionColor),
+                                  color: DiwaneColors.textMuted),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ).paddingOnly(top: AppSize.appSize6),
@@ -1804,7 +1803,7 @@ class PropertyDetailsView extends StatelessWidget {
                             Text(
                               similarProperty.formattedPrice,
                               style: AppStyle.heading5Medium(
-                                  color: AppColor.primaryColor),
+                                  color: DiwaneColors.navy),
                             ),
                             Row(
                               children: [
@@ -1812,7 +1811,7 @@ class PropertyDetailsView extends StatelessWidget {
                                   similarProperty.calculatedRating
                                       .toStringAsFixed(1),
                                   style: AppStyle.heading5Medium(
-                                      color: AppColor.primaryColor),
+                                      color: DiwaneColors.navy),
                                 ).paddingOnly(right: AppSize.appSize6),
                                 Image.asset(
                                   Assets.images.star.path,
@@ -1823,7 +1822,7 @@ class PropertyDetailsView extends StatelessWidget {
                           ],
                         ).paddingOnly(top: AppSize.appSize6),
                         Divider(
-                            color: AppColor.descriptionColor
+                            color: DiwaneColors.textMuted
                                 .withValues(alpha: AppSize.appSizePoint3)),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1855,11 +1854,9 @@ class PropertyDetailsView extends StatelessWidget {
       onPressed: () async {
         final property = propertyDetailsController.currentProperty.value;
         if (property?.id == null) {
-          Get.snackbar(
+          DiwaneSnackbar.error(
             'Erreur',
             'Impossible de créer la conversation',
-            backgroundColor: AppColor.negativeColor,
-            colorText: AppColor.whiteColor,
           );
           return;
         }
@@ -1884,10 +1881,10 @@ class PropertyDetailsView extends StatelessWidget {
           );
         }
       },
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: DiwaneColors.navy,
       child: Text(
         'Contacter le propriétaire',
-        style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+        style: AppStyle.heading5Medium(color: Colors.white),
       ),
     ).paddingOnly(
       left: AppSize.appSize16,
@@ -1905,11 +1902,11 @@ class PropertyDetailsView extends StatelessWidget {
       return Container(
         height: AppSize.appSize200,
         width: double.infinity,
-        color: AppColor.backgroundColor,
+        color: DiwaneColors.background,
         child: Icon(
           Icons.home_outlined,
           size: AppSize.appSize50,
-          color: AppColor.descriptionColor,
+          color: DiwaneColors.textMuted,
         ),
       );
     }
@@ -1930,14 +1927,14 @@ class PropertyDetailsView extends StatelessWidget {
           return Container(
             height: AppSize.appSize200,
             width: double.infinity,
-            color: AppColor.backgroundColor,
+            color: DiwaneColors.background,
             child: Center(
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
                         loadingProgress.expectedTotalBytes!
                     : null,
-                color: AppColor.primaryColor,
+                color: DiwaneColors.navy,
               ),
             ),
           );
@@ -1948,11 +1945,11 @@ class PropertyDetailsView extends StatelessWidget {
           return Container(
             height: AppSize.appSize200,
             width: double.infinity,
-            color: AppColor.backgroundColor,
+            color: DiwaneColors.background,
             child: Icon(
               Icons.home_outlined,
               size: AppSize.appSize50,
-              color: AppColor.descriptionColor,
+              color: DiwaneColors.textMuted,
             ),
           );
         },
@@ -1973,14 +1970,14 @@ class PropertyDetailsView extends StatelessWidget {
         return Container(
           height: AppSize.appSize200,
           width: double.infinity,
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Center(
             child: CircularProgressIndicator(
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
                       loadingProgress.expectedTotalBytes!
                   : null,
-              color: AppColor.primaryColor,
+              color: DiwaneColors.navy,
             ),
           ),
         );
@@ -1991,11 +1988,11 @@ class PropertyDetailsView extends StatelessWidget {
         return Container(
           height: AppSize.appSize200,
           width: double.infinity,
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           child: Icon(
             Icons.home_outlined,
             size: AppSize.appSize50,
-            color: AppColor.descriptionColor,
+            color: DiwaneColors.textMuted,
           ),
         );
       },

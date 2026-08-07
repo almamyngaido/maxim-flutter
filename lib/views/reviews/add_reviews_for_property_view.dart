@@ -17,7 +17,7 @@ class AddReviewsForPropertyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       appBar: buildAppBar(),
       body: buildAddReviewsForPropertyFields(),
       bottomNavigationBar: buildButton(context),
@@ -26,7 +26,7 @@ class AddReviewsForPropertyView extends StatelessWidget {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -42,7 +42,7 @@ class AddReviewsForPropertyView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Text(
         AppString.addReview,
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
+        style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
       ),
     );
   }
@@ -55,13 +55,13 @@ class AddReviewsForPropertyView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(AppSize.appSize16),
           decoration: BoxDecoration(
-            color: AppColor.backgroundColor,
+            color: DiwaneColors.background,
             borderRadius: BorderRadius.circular(AppSize.appSize16),
           ),
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: AppColor.backgroundColor,
+                backgroundColor: DiwaneColors.background,
                 backgroundImage: AssetImage(Assets.images.searchProperty1.path),
                 radius: AppSize.appSize22,
               ).paddingOnly(right: AppSize.appSize8),
@@ -71,11 +71,11 @@ class AddReviewsForPropertyView extends StatelessWidget {
                   children: [
                     Text(
                       AppString.semiModernHouse,
-                      style: AppStyle.heading4Medium(color: AppColor.textColor),
+                      style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
                     ),
                     Text(
                       AppString.address6,
-                      style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+                      style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
                     ).paddingOnly(top: AppSize.appSize4),
                   ],
                 ),
@@ -102,28 +102,28 @@ class AddReviewsForPropertyView extends StatelessWidget {
         ).paddingOnly(top: AppSize.appSize26),
         TextFormField(
           controller: addReviewsForPropertyController.writeAReviewController,
-          cursorColor: AppColor.primaryColor,
-          style: AppStyle.heading4Regular(color: AppColor.textColor),
+          cursorColor: DiwaneColors.navy,
+          style: AppStyle.heading4Regular(color: DiwaneColors.textPrimary),
           maxLines: AppSize.size3,
           decoration: InputDecoration(
             hintText: AppString.writeAReviews,
-            hintStyle: AppStyle.heading4Regular(color: AppColor.descriptionColor),
+            hintStyle: AppStyle.heading4Regular(color: DiwaneColors.textMuted),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSize.appSize12),
               borderSide: BorderSide(
-                color: AppColor.descriptionColor.withValues(alpha:AppSize.appSizePoint7),
+                color: DiwaneColors.textMuted.withValues(alpha:AppSize.appSizePoint7),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSize.appSize12),
               borderSide: BorderSide(
-                color: AppColor.descriptionColor.withValues(alpha:AppSize.appSizePoint7),
+                color: DiwaneColors.textMuted.withValues(alpha:AppSize.appSizePoint7),
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSize.appSize12),
               borderSide: const BorderSide(
-                color: AppColor.primaryColor,
+                color: DiwaneColors.navy,
               ),
             ),
           ),
@@ -146,10 +146,10 @@ class AddReviewsForPropertyView extends StatelessWidget {
         onPressed: () {
           Get.back();
         },
-        backgroundColor: AppColor.primaryColor,
+        backgroundColor: DiwaneColors.navy,
         child: Text(
           AppString.submitButton,
-          style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+          style: AppStyle.heading5Medium(color: Colors.white),
         ),
       ).paddingOnly(
         left: AppSize.appSize16, right: AppSize.appSize16,

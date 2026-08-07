@@ -39,7 +39,7 @@ class GalleryView extends StatelessWidget {
           },
           child: Icon(
             Icons.close,
-            color: AppColor.whiteColor,
+            color: Colors.white,
             size: AppSize.appSize24,
           ),
         ),
@@ -47,7 +47,7 @@ class GalleryView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Obx(() => Text(
             '${currentImageIndex.value + 1} / $totalImages',
-            style: AppStyle.heading4Medium(color: AppColor.whiteColor),
+            style: AppStyle.heading4Medium(color: Colors.white),
           )),
       centerTitle: true,
     );
@@ -62,12 +62,12 @@ class GalleryView extends StatelessWidget {
             Icon(
               Icons.image_not_supported_outlined,
               size: AppSize.appSize80,
-              color: AppColor.descriptionColor,
+              color: DiwaneColors.textMuted,
             ),
             SizedBox(height: AppSize.appSize16),
             Text(
               'Aucune image disponible',
-              style: AppStyle.heading4Medium(color: AppColor.whiteColor),
+              style: AppStyle.heading4Medium(color: Colors.white),
             ),
           ],
         ),
@@ -107,7 +107,7 @@ class GalleryView extends StatelessWidget {
           if (loadingProgress == null) return child;
           return Center(
             child: CircularProgressIndicator(
-              color: AppColor.primaryColor,
+              color: DiwaneColors.navy,
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded /
                       loadingProgress.expectedTotalBytes!
@@ -122,12 +122,12 @@ class GalleryView extends StatelessWidget {
               Icon(
                 Icons.broken_image_outlined,
                 size: AppSize.appSize60,
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ),
               SizedBox(height: AppSize.appSize12),
               Text(
                 'Erreur de chargement',
-                style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+                style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
               ),
             ],
           );
@@ -145,12 +145,12 @@ class GalleryView extends StatelessWidget {
               Icon(
                 Icons.broken_image_outlined,
                 size: AppSize.appSize60,
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ),
               SizedBox(height: AppSize.appSize12),
               Text(
                 'Image non trouvée',
-                style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+                style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
               ),
             ],
           );

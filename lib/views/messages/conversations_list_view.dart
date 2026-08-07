@@ -25,7 +25,7 @@ class ConversationsListView extends StatelessWidget {
     messagingController.loadConversations();
 
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       appBar: buildAppBar(),
       body: buildConversationsList(),
     );
@@ -33,7 +33,7 @@ class ConversationsListView extends StatelessWidget {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -45,7 +45,7 @@ class ConversationsListView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Text(
         'Messages',
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
+        style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
       ),
       actions: [
         Obx(() {
@@ -59,12 +59,12 @@ class ConversationsListView extends StatelessWidget {
                     vertical: AppSize.appSize6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColor.primaryColor,
+                    color: DiwaneColors.navy,
                     borderRadius: BorderRadius.circular(AppSize.appSize12),
                   ),
                   child: Text(
                     '${messagingController.totalUnreadCount.value}',
-                    style: AppStyle.heading6Medium(color: AppColor.whiteColor),
+                    style: AppStyle.heading6Medium(color: Colors.white),
                   ),
                 ),
               ),
@@ -83,7 +83,7 @@ class ConversationsListView extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(AppSize.appSize50),
             child: CircularProgressIndicator(
-              color: AppColor.primaryColor,
+              color: DiwaneColors.navy,
             ),
           ),
         );
@@ -99,13 +99,13 @@ class ConversationsListView extends StatelessWidget {
                 Icon(
                   Icons.chat_bubble_outline,
                   size: AppSize.appSize64,
-                  color: AppColor.descriptionColor,
+                  color: DiwaneColors.textMuted,
                 ),
                 const SizedBox(height: AppSize.appSize16),
                 Text(
                   'Aucune conversation',
                   style: AppStyle.heading5Regular(
-                    color: AppColor.descriptionColor,
+                    color: DiwaneColors.textMuted,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -113,7 +113,7 @@ class ConversationsListView extends StatelessWidget {
                 Text(
                   'Contactez un propriétaire pour démarrer une conversation',
                   style: AppStyle.heading6Regular(
-                    color: AppColor.descriptionColor,
+                    color: DiwaneColors.textMuted,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -125,7 +125,7 @@ class ConversationsListView extends StatelessWidget {
 
       return RefreshIndicator(
         onRefresh: () => messagingController.loadConversations(),
-        color: AppColor.primaryColor,
+        color: DiwaneColors.navy,
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(
             vertical: AppSize.appSize16,
@@ -133,7 +133,7 @@ class ConversationsListView extends StatelessWidget {
           itemCount: messagingController.conversations.length,
           separatorBuilder: (context, index) => const Divider(
             height: AppSize.appSize1,
-            color: AppColor.borderColor,
+            color: DiwaneColors.cardBorder,
           ),
           itemBuilder: (context, index) {
             final conversation = messagingController.conversations[index];
@@ -185,7 +185,7 @@ class ConversationsListView extends StatelessWidget {
           horizontal: AppSize.appSize16,
           vertical: AppSize.appSize12,
         ),
-        color: hasUnread ? AppColor.primaryColor.withValues(alpha: 0.05) : null,
+        color: hasUnread ? DiwaneColors.navy.withValues(alpha: 0.05) : null,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -210,8 +210,8 @@ class ConversationsListView extends StatelessWidget {
                   Text(
                     propertyTitle,
                     style: hasUnread
-                        ? AppStyle.heading5Medium(color: AppColor.textColor)
-                        : AppStyle.heading5Regular(color: AppColor.textColor),
+                        ? AppStyle.heading5Medium(color: DiwaneColors.textPrimary)
+                        : AppStyle.heading5Regular(color: DiwaneColors.textPrimary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -223,9 +223,9 @@ class ConversationsListView extends StatelessWidget {
                       conversation.lastMessagePreview!,
                       style: hasUnread
                           ? AppStyle.heading6Medium(
-                              color: AppColor.descriptionColor)
+                              color: DiwaneColors.textMuted)
                           : AppStyle.heading6Regular(
-                              color: AppColor.descriptionColor),
+                              color: DiwaneColors.textMuted),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -242,7 +242,7 @@ class ConversationsListView extends StatelessWidget {
                 Text(
                   timeAgo,
                   style: AppStyle.heading6Regular(
-                    color: AppColor.descriptionColor,
+                    color: DiwaneColors.textMuted,
                   ),
                 ),
                 if (hasUnread) ...[
@@ -254,13 +254,13 @@ class ConversationsListView extends StatelessWidget {
                       vertical: AppSize.appSize4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColor.primaryColor,
+                      color: DiwaneColors.navy,
                       borderRadius: BorderRadius.circular(AppSize.appSize10),
                     ),
                     child: Text(
                       '$unreadCount',
                       style: AppStyle.heading6Medium(
-                        color: AppColor.whiteColor,
+                        color: Colors.white,
                       ),
                     ),
                   ),

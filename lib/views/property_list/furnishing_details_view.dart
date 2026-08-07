@@ -16,7 +16,7 @@ class FurnishingDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       appBar: buildAppBar(),
       body: buildFurnishingDetails(),
       bottomNavigationBar: buildButton(),
@@ -25,7 +25,7 @@ class FurnishingDetailsView extends StatelessWidget {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -41,7 +41,7 @@ class FurnishingDetailsView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Text(
         AppString.furnishingDetails,
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
+        style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
       ),
     );
   }
@@ -65,7 +65,7 @@ class FurnishingDetailsView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSize.appSize14),
               decoration: BoxDecoration(
-                color: AppColor.backgroundColor,
+                color: DiwaneColors.background,
                 borderRadius: BorderRadius.circular(AppSize.appSize12),
               ),
               child: Row(
@@ -77,7 +77,7 @@ class FurnishingDetailsView extends StatelessWidget {
                   ).paddingOnly(right: AppSize.appSize6),
                   Text(
                     AppString.stove,
-                    style: AppStyle.heading6Regular(color: AppColor.textColor),
+                    style: AppStyle.heading6Regular(color: DiwaneColors.textPrimary),
                   ),
                 ],
               ),
@@ -110,10 +110,10 @@ class FurnishingDetailsView extends StatelessWidget {
       onPressed: () {
         furnishingDetailsController.launchDialer();
       },
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: DiwaneColors.navy,
       child: Text(
         AppString.callOwnerButton,
-        style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+        style: AppStyle.heading5Medium(color: Colors.white),
       ),
     ).paddingOnly(
       left: AppSize.appSize16, right: AppSize.appSize16,
@@ -126,7 +126,7 @@ class FurnishingDetailsView extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSize.appSize14),
         decoration: BoxDecoration(
-          color: AppColor.backgroundColor,
+          color: DiwaneColors.background,
           borderRadius: BorderRadius.circular(AppSize.appSize12),
         ),
         child: Row(
@@ -138,7 +138,7 @@ class FurnishingDetailsView extends StatelessWidget {
             ).paddingOnly(right: AppSize.appSize6),
             Text(
               text,
-              style: AppStyle.heading6Regular(color: AppColor.textColor),
+              style: AppStyle.heading6Regular(color: DiwaneColors.textPrimary),
             ),
           ],
         ),

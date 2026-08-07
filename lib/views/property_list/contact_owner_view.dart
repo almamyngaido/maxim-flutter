@@ -25,7 +25,7 @@ class ContactOwnerView extends StatelessWidget {
     contactOwnerController.isSimilarPropertyLiked.value = List<bool>.generate(
         contactOwnerController.searchImageList.length, (index) => false);
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       appBar: buildAppBar(),
       body: buildContactOwner(),
       bottomNavigationBar: buildButton(),
@@ -34,7 +34,7 @@ class ContactOwnerView extends StatelessWidget {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -50,7 +50,7 @@ class ContactOwnerView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Text(
         AppString.contactOwner,
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
+        style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
       ),
       actions: [
         Row(
@@ -62,7 +62,7 @@ class ContactOwnerView extends StatelessWidget {
               child: Image.asset(
                 Assets.images.search.path,
                 width: AppSize.appSize24,
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ).paddingOnly(right: AppSize.appSize26),
             ),
             GestureDetector(
@@ -79,7 +79,7 @@ class ContactOwnerView extends StatelessWidget {
               child: Image.asset(
                 Assets.images.emptyRatingStar.path,
                 width: AppSize.appSize24,
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ).paddingOnly(right: AppSize.appSize26),
             ),
             GestureDetector(
@@ -113,7 +113,7 @@ class ContactOwnerView extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(AppSize.appSize12),
               border: Border.all(
-                color: AppColor.descriptionColor.withValues(alpha:AppSize.appSizePoint4),
+                color: DiwaneColors.textMuted.withValues(alpha:AppSize.appSizePoint4),
                 width: AppSize.appSizePoint7,
               ),
             ),
@@ -122,19 +122,19 @@ class ContactOwnerView extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSize.appSize10),
                   decoration: BoxDecoration(
-                    color: AppColor.secondaryColor,
+                    color: DiwaneColors.surface,
                     borderRadius: BorderRadius.circular(AppSize.appSize12),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: AppSize.appSize32,
-                        backgroundColor: AppColor.primaryColor.withValues(alpha: 0.1),
+                        backgroundColor: DiwaneColors.navy.withValues(alpha: 0.1),
                         child: Text(
                           contactOwnerController.ownerFullName.isNotEmpty
                               ? contactOwnerController.ownerFullName[0].toUpperCase()
                               : 'P',
-                          style: AppStyle.heading3SemiBold(color: AppColor.primaryColor),
+                          style: AppStyle.heading3SemiBold(color: DiwaneColors.navy),
                         ),
                       ).paddingOnly(right: AppSize.appSize12),
                       Expanded(
@@ -143,13 +143,13 @@ class ContactOwnerView extends StatelessWidget {
                           children: [
                             Text(
                               contactOwnerController.ownerFullName,
-                              style: AppStyle.heading4Medium(color: AppColor.textColor),
+                              style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               contactOwnerController.ownerRole,
-                              style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+                              style: AppStyle.heading6Regular(color: DiwaneColors.textMuted),
                             ),
                           ],
                         ),
@@ -164,18 +164,18 @@ class ContactOwnerView extends StatelessWidget {
                       Image.asset(
                         Assets.images.call.path,
                         width: AppSize.appSize20,
-                        color: AppColor.primaryColor,
+                        color: DiwaneColors.navy,
                       ),
                       Expanded(
                         child: Text(
                           contactOwnerController.ownerPhone,
-                          style: AppStyle.heading5Regular(color: AppColor.primaryColor),
+                          style: AppStyle.heading5Regular(color: DiwaneColors.navy),
                         ).paddingOnly(left: AppSize.appSize10),
                       ),
                       Icon(
                         Icons.arrow_forward_ios,
                         size: AppSize.appSize16,
-                        color: AppColor.primaryColor,
+                        color: DiwaneColors.navy,
                       ),
                     ],
                   ).paddingOnly(top: AppSize.appSize12),
@@ -187,12 +187,12 @@ class ContactOwnerView extends StatelessWidget {
                       Image.asset(
                         Assets.images.email.path,
                         width: AppSize.appSize20,
-                        color: AppColor.primaryColor,
+                        color: DiwaneColors.navy,
                       ),
                       Expanded(
                         child: Text(
                           contactOwnerController.ownerEmail,
-                          style: AppStyle.heading5Regular(color: AppColor.primaryColor),
+                          style: AppStyle.heading5Regular(color: DiwaneColors.navy),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ).paddingOnly(left: AppSize.appSize10),
@@ -200,7 +200,7 @@ class ContactOwnerView extends StatelessWidget {
                       Icon(
                         Icons.arrow_forward_ios,
                         size: AppSize.appSize16,
-                        color: AppColor.primaryColor,
+                        color: DiwaneColors.navy,
                       ),
                     ],
                   ).paddingOnly(top: AppSize.appSize16),
@@ -216,7 +216,7 @@ class ContactOwnerView extends StatelessWidget {
               ),
               Text(
                 AppString.yourRequestHasBeenSharedWithinBroker,
-                style: AppStyle.heading5Regular(color: AppColor.primaryColor),
+                style: AppStyle.heading5Regular(color: DiwaneColors.navy),
               ).paddingOnly(left: AppSize.appSize6),
             ],
           ).paddingOnly(
@@ -225,7 +225,7 @@ class ContactOwnerView extends StatelessWidget {
           ),
           Text(
             AppString.similarProperties,
-            style: AppStyle.heading3SemiBold(color: AppColor.textColor),
+            style: AppStyle.heading3SemiBold(color: DiwaneColors.textPrimary),
           ).paddingOnly(
             top: AppSize.appSize36,
             left: AppSize.appSize16, right: AppSize.appSize16,
@@ -278,10 +278,10 @@ class ContactOwnerView extends StatelessWidget {
       onPressed: () {
         contactOwnerController.launchDialer();
       },
-      backgroundColor: AppColor.primaryColor,
+      backgroundColor: DiwaneColors.navy,
       child: Text(
         AppString.callOwnerButton,
-        style: AppStyle.heading5Medium(color: AppColor.whiteColor),
+        style: AppStyle.heading5Medium(color: Colors.white),
       ),
     ).paddingOnly(
         left: AppSize.appSize16, right: AppSize.appSize16,
@@ -295,7 +295,7 @@ class ContactOwnerView extends StatelessWidget {
       padding: const EdgeInsets.all(AppSize.appSize10),
       margin: const EdgeInsets.only(right: AppSize.appSize16),
       decoration: BoxDecoration(
-        color: AppColor.secondaryColor,
+        color: DiwaneColors.surface,
         borderRadius: BorderRadius.circular(AppSize.appSize12),
       ),
       child: Column(
@@ -317,7 +317,7 @@ class ContactOwnerView extends StatelessWidget {
                     width: AppSize.appSize32,
                     height: AppSize.appSize32,
                     decoration: BoxDecoration(
-                      color: AppColor.whiteColor.withValues(alpha: AppSize.appSizePoint50),
+                      color: Colors.white.withValues(alpha: AppSize.appSizePoint50),
                       borderRadius: BorderRadius.circular(AppSize.appSize6),
                     ),
                     child: Center(
@@ -338,13 +338,13 @@ class ContactOwnerView extends StatelessWidget {
             children: [
               Text(
                 property.displayTitle,
-                style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+                style: AppStyle.heading5SemiBold(color: DiwaneColors.textPrimary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 property.displayAddress,
-                style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+                style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ).paddingOnly(top: AppSize.appSize6),
@@ -355,13 +355,13 @@ class ContactOwnerView extends StatelessWidget {
             children: [
               Text(
                 property.formattedPrice,
-                style: AppStyle.heading5Medium(color: AppColor.primaryColor),
+                style: AppStyle.heading5Medium(color: DiwaneColors.navy),
               ),
               Row(
                 children: [
                   Text(
                     property.calculatedRating.toStringAsFixed(1),
-                    style: AppStyle.heading5Medium(color: AppColor.primaryColor),
+                    style: AppStyle.heading5Medium(color: DiwaneColors.navy),
                   ).paddingOnly(right: AppSize.appSize6),
                   Image.asset(
                     Assets.images.star.path,
@@ -372,7 +372,7 @@ class ContactOwnerView extends StatelessWidget {
             ],
           ).paddingOnly(top: AppSize.appSize6),
           Divider(
-            color: AppColor.descriptionColor.withValues(alpha: AppSize.appSizePoint3),
+            color: DiwaneColors.textMuted.withValues(alpha: AppSize.appSizePoint3),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -395,7 +395,7 @@ class ContactOwnerView extends StatelessWidget {
       padding: const EdgeInsets.all(AppSize.appSize10),
       margin: const EdgeInsets.only(right: AppSize.appSize16),
       decoration: BoxDecoration(
-        color: AppColor.secondaryColor,
+        color: DiwaneColors.surface,
         borderRadius: BorderRadius.circular(AppSize.appSize12),
       ),
       child: Column(
@@ -417,7 +417,7 @@ class ContactOwnerView extends StatelessWidget {
                     width: AppSize.appSize32,
                     height: AppSize.appSize32,
                     decoration: BoxDecoration(
-                      color: AppColor.whiteColor.withValues(alpha: AppSize.appSizePoint50),
+                      color: Colors.white.withValues(alpha: AppSize.appSizePoint50),
                       borderRadius: BorderRadius.circular(AppSize.appSize6),
                     ),
                     child: Center(
@@ -438,11 +438,11 @@ class ContactOwnerView extends StatelessWidget {
             children: [
               Text(
                 contactOwnerController.searchTitleList[index],
-                style: AppStyle.heading5SemiBold(color: AppColor.textColor),
+                style: AppStyle.heading5SemiBold(color: DiwaneColors.textPrimary),
               ),
               Text(
                 contactOwnerController.searchAddressList[index],
-                style: AppStyle.heading5Regular(color: AppColor.descriptionColor),
+                style: AppStyle.heading5Regular(color: DiwaneColors.textMuted),
               ).paddingOnly(top: AppSize.appSize6),
             ],
           ).paddingOnly(top: AppSize.appSize8),
@@ -451,13 +451,13 @@ class ContactOwnerView extends StatelessWidget {
             children: [
               Text(
                 AppString.rupees58Lakh,
-                style: AppStyle.heading5Medium(color: AppColor.primaryColor),
+                style: AppStyle.heading5Medium(color: DiwaneColors.navy),
               ),
               Row(
                 children: [
                   Text(
                     AppString.rating4Point5,
-                    style: AppStyle.heading5Medium(color: AppColor.primaryColor),
+                    style: AppStyle.heading5Medium(color: DiwaneColors.navy),
                   ).paddingOnly(right: AppSize.appSize6),
                   Image.asset(
                     Assets.images.star.path,
@@ -468,7 +468,7 @@ class ContactOwnerView extends StatelessWidget {
             ],
           ).paddingOnly(top: AppSize.appSize6),
           Divider(
-            color: AppColor.descriptionColor.withValues(alpha: AppSize.appSizePoint3),
+            color: DiwaneColors.textMuted.withValues(alpha: AppSize.appSizePoint3),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -481,7 +481,7 @@ class ContactOwnerView extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppSize.appSize12),
                   border: Border.all(
-                    color: AppColor.primaryColor,
+                    color: DiwaneColors.navy,
                     width: AppSize.appSizePoint50,
                   ),
                 ),
@@ -494,7 +494,7 @@ class ContactOwnerView extends StatelessWidget {
                     ).paddingOnly(right: AppSize.appSize6),
                     Text(
                       contactOwnerController.similarPropertyTitleList[featureIndex],
-                      style: AppStyle.heading5Medium(color: AppColor.textColor),
+                      style: AppStyle.heading5Medium(color: DiwaneColors.textPrimary),
                     ),
                   ],
                 ),
@@ -511,11 +511,11 @@ class ContactOwnerView extends StatelessWidget {
       return Container(
         height: AppSize.appSize200,
         width: double.infinity,
-        color: AppColor.backgroundColor,
+        color: DiwaneColors.background,
         child: Icon(
           Icons.home_outlined,
           size: AppSize.appSize50,
-          color: AppColor.descriptionColor,
+          color: DiwaneColors.textMuted,
         ),
       );
     }
@@ -544,17 +544,17 @@ class ContactOwnerView extends StatelessWidget {
       width: double.infinity,
       fit: BoxFit.cover,
       placeholder: (context, url) => Container(
-        color: AppColor.backgroundColor,
+        color: DiwaneColors.background,
         child: const Center(
-          child: CircularProgressIndicator(color: AppColor.primaryColor),
+          child: CircularProgressIndicator(color: DiwaneColors.navy),
         ),
       ),
       errorWidget: (context, url, error) => Container(
-        color: AppColor.backgroundColor,
+        color: DiwaneColors.background,
         child: Icon(
           Icons.home_outlined,
           size: AppSize.appSize50,
-          color: AppColor.descriptionColor,
+          color: DiwaneColors.textMuted,
         ),
       ),
     );
@@ -569,7 +569,7 @@ class ContactOwnerView extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSize.appSize12),
         border: Border.all(
-          color: AppColor.primaryColor,
+          color: DiwaneColors.navy,
           width: AppSize.appSizePoint50,
         ),
       ),
@@ -583,7 +583,7 @@ class ContactOwnerView extends StatelessWidget {
           ).paddingOnly(right: AppSize.appSize6),
           Text(
             text,
-            style: AppStyle.heading5Medium(color: AppColor.textColor),
+            style: AppStyle.heading5Medium(color: DiwaneColors.textPrimary),
           ),
         ],
       ),

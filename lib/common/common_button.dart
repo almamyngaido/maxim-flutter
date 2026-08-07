@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_size.dart';
 
+// Design Diwane : plat, sans ombre, coins à 10px — cohérent avec DiwaneButton
+
 class CommonButton extends StatelessWidget {
   const CommonButton(
       {super.key,
@@ -39,26 +41,18 @@ class CommonButton extends StatelessWidget {
         onPressed: onPressed,
         style: ButtonStyle(
           elevation: WidgetStateProperty.resolveWith<double>(
-            (Set<WidgetState> states) {
-              if (elevation != null) return elevation!;
-              if (states.contains(WidgetState.pressed)) return 1;
-              if (states.contains(WidgetState.hovered)) return 4;
-              return 2; // Default elevation for modern look
-            },
+            (Set<WidgetState> states) => elevation ?? 0,
           ),
-          shadowColor: const WidgetStatePropertyAll(Colors.black26),
-          shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSize.appSize12))),
+          shape: const WidgetStatePropertyAll(RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)))),
           backgroundColor: WidgetStateProperty.resolveWith<Color>(
             (Set<WidgetState> states) {
-              final color = backgroundColor ?? AppColor.primaryColor;
+              final color = backgroundColor ?? DiwaneColors.navy;
               if (states.contains(WidgetState.disabled)) {
                 return color.withValues(alpha: 0.5);
               }
               if (states.contains(WidgetState.pressed)) {
-                return color == AppColor.primaryColor
-                    ? AppColor.primaryDark
-                    : color;
+                return color.withValues(alpha: 0.85);
               }
               return color;
             },

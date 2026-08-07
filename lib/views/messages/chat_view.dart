@@ -83,7 +83,7 @@ class _ChatViewState extends State<ChatView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       appBar: buildAppBar(),
       body: Column(
         children: [
@@ -96,7 +96,7 @@ class _ChatViewState extends State<ChatView> {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -111,13 +111,13 @@ class _ChatViewState extends State<ChatView> {
         children: [
           Text(
             propertyTitle,
-            style: AppStyle.heading5Medium(color: AppColor.textColor),
+            style: AppStyle.heading5Medium(color: DiwaneColors.textPrimary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           Text(
             'Conversation',
-            style: AppStyle.heading6Regular(color: AppColor.descriptionColor),
+            style: AppStyle.heading6Regular(color: DiwaneColors.textMuted),
           ),
         ],
       ),
@@ -129,7 +129,7 @@ class _ChatViewState extends State<ChatView> {
       if (messagingController.isLoadingMessages.value) {
         return const Center(
           child: CircularProgressIndicator(
-            color: AppColor.primaryColor,
+            color: DiwaneColors.navy,
           ),
         );
       }
@@ -144,13 +144,13 @@ class _ChatViewState extends State<ChatView> {
                 Icon(
                   Icons.chat_bubble_outline,
                   size: AppSize.appSize64,
-                  color: AppColor.descriptionColor,
+                  color: DiwaneColors.textMuted,
                 ),
                 const SizedBox(height: AppSize.appSize16),
                 Text(
                   'Aucun message',
                   style: AppStyle.heading5Regular(
-                    color: AppColor.descriptionColor,
+                    color: DiwaneColors.textMuted,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -158,7 +158,7 @@ class _ChatViewState extends State<ChatView> {
                 Text(
                   'Envoyez un message pour démarrer la conversation',
                   style: AppStyle.heading6Regular(
-                    color: AppColor.descriptionColor,
+                    color: DiwaneColors.textMuted,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -203,7 +203,7 @@ class _ChatViewState extends State<ChatView> {
               child: Text(
                 message.sender!.fullName,
                 style: AppStyle.heading6Regular(
-                  color: AppColor.descriptionColor,
+                  color: DiwaneColors.textMuted,
                 ),
               ),
             ),
@@ -219,8 +219,8 @@ class _ChatViewState extends State<ChatView> {
             ),
             decoration: BoxDecoration(
               color: isCurrentUser
-                  ? AppColor.primaryColor
-                  : AppColor.borderColor.withValues(alpha: 0.3),
+                  ? DiwaneColors.navy
+                  : DiwaneColors.cardBorder.withValues(alpha: 0.3),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(AppSize.appSize16),
                 topRight: const Radius.circular(AppSize.appSize16),
@@ -236,8 +236,8 @@ class _ChatViewState extends State<ChatView> {
               message.content,
               style: AppStyle.heading6Regular(
                 color: isCurrentUser
-                    ? AppColor.whiteColor
-                    : AppColor.textColor,
+                    ? Colors.white
+                    : DiwaneColors.textPrimary,
               ),
             ),
           ),
@@ -252,7 +252,7 @@ class _ChatViewState extends State<ChatView> {
             child: Text(
               timeAgo,
               style: AppStyle.heading6Regular(
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ),
             ),
           ),
@@ -268,10 +268,10 @@ class _ChatViewState extends State<ChatView> {
         vertical: AppSize.appSize12,
       ),
       decoration: BoxDecoration(
-        color: AppColor.whiteColor,
+        color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: AppColor.borderColor,
+            color: DiwaneColors.cardBorder,
             width: AppSize.appSize1,
           ),
         ),
@@ -286,7 +286,7 @@ class _ChatViewState extends State<ChatView> {
                   horizontal: AppSize.appSize16,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColor.borderColor.withValues(alpha: 0.2),
+                  color: DiwaneColors.cardBorder.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppSize.appSize24),
                 ),
                 child: TextField(
@@ -294,12 +294,12 @@ class _ChatViewState extends State<ChatView> {
                   decoration: InputDecoration(
                     hintText: 'Écrivez votre message...',
                     hintStyle: AppStyle.heading6Regular(
-                      color: AppColor.descriptionColor,
+                      color: DiwaneColors.textMuted,
                     ),
                     border: InputBorder.none,
                   ),
                   style: AppStyle.heading6Regular(
-                    color: AppColor.textColor,
+                    color: DiwaneColors.textPrimary,
                   ),
                   maxLines: null,
                   textInputAction: TextInputAction.send,
@@ -316,12 +316,12 @@ class _ChatViewState extends State<ChatView> {
                 width: AppSize.appSize44,
                 height: AppSize.appSize44,
                 decoration: const BoxDecoration(
-                  color: AppColor.primaryColor,
+                  color: DiwaneColors.navy,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.send,
-                  color: AppColor.whiteColor,
+                  color: Colors.white,
                   size: AppSize.appSize20,
                 ),
               ),

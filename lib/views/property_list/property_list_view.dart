@@ -23,7 +23,7 @@ class PropertyListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       appBar: buildAppBar(),
       body: buildPropertyList(context),
     );
@@ -31,7 +31,7 @@ class PropertyListView extends StatelessWidget {
 
   AppBar buildAppBar() {
     return AppBar(
-      backgroundColor: AppColor.whiteColor,
+      backgroundColor: Colors.white,
       scrolledUnderElevation: AppSize.appSize0,
       leading: Padding(
         padding: const EdgeInsets.only(left: AppSize.appSize16),
@@ -47,7 +47,7 @@ class PropertyListView extends StatelessWidget {
       leadingWidth: AppSize.appSize40,
       title: Text(
         'Propriétés',
-        style: AppStyle.heading4Medium(color: AppColor.textColor),
+        style: AppStyle.heading4Medium(color: DiwaneColors.textPrimary),
       ),
       actions: [
         Row(
@@ -69,7 +69,7 @@ class PropertyListView extends StatelessWidget {
               child: Image.asset(
                 Assets.images.star.path,
                 width: AppSize.appSize24,
-                color: AppColor.descriptionColor,
+                color: DiwaneColors.textMuted,
               ).paddingOnly(right: AppSize.appSize26),
             ),
             GestureDetector(
@@ -104,7 +104,7 @@ class PropertyListView extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppSize.appSize12),
-                color: AppColor.whiteColor,
+                color: Colors.white,
                 boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
@@ -115,8 +115,8 @@ class PropertyListView extends StatelessWidget {
               ),
               child: TextFormField(
                 controller: propertyListController.searchController,
-                cursorColor: AppColor.primaryColor,
-                style: AppStyle.heading4Regular(color: AppColor.textColor),
+                cursorColor: DiwaneColors.navy,
+                style: AppStyle.heading4Regular(color: DiwaneColors.textPrimary),
                 onChanged: propertyListController.searchProperties,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.only(
@@ -125,7 +125,7 @@ class PropertyListView extends StatelessWidget {
                   ),
                   hintText: 'Rechercher une propriété...',
                   hintStyle: AppStyle.heading4Regular(
-                      color: AppColor.descriptionColor),
+                      color: DiwaneColors.textMuted),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppSize.appSize12),
                     borderSide: BorderSide.none,
@@ -178,7 +178,7 @@ class PropertyListView extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.all(AppSize.appSize50),
                     child: CircularProgressIndicator(
-                      color: AppColor.primaryColor,
+                      color: DiwaneColors.navy,
                     ),
                   ),
                 );
@@ -193,13 +193,13 @@ class PropertyListView extends StatelessWidget {
                         Icon(
                           Icons.error_outline,
                           size: AppSize.appSize50,
-                          color: AppColor.descriptionColor,
+                          color: DiwaneColors.textMuted,
                         ),
                         const SizedBox(height: AppSize.appSize16),
                         Text(
                           propertyListController.errorMessage.value,
                           style: AppStyle.heading5Regular(
-                            color: AppColor.descriptionColor,
+                            color: DiwaneColors.textMuted,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -207,12 +207,12 @@ class PropertyListView extends StatelessWidget {
                         ElevatedButton(
                           onPressed: propertyListController.refreshProperties,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColor.primaryColor,
+                            backgroundColor: DiwaneColors.navy,
                           ),
                           child: Text(
                             'Réessayer',
                             style: AppStyle.heading5Medium(
-                              color: AppColor.whiteColor,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -231,13 +231,13 @@ class PropertyListView extends StatelessWidget {
                         Icon(
                           Icons.home_outlined,
                           size: AppSize.appSize50,
-                          color: AppColor.descriptionColor,
+                          color: DiwaneColors.textMuted,
                         ),
                         const SizedBox(height: AppSize.appSize16),
                         Text(
                           'Aucune propriété trouvée',
                           style: AppStyle.heading5Regular(
-                            color: AppColor.descriptionColor,
+                            color: DiwaneColors.textMuted,
                           ),
                         ),
                       ],
@@ -268,7 +268,7 @@ class PropertyListView extends StatelessWidget {
                       padding: const EdgeInsets.all(AppSize.appSize10),
                       margin: const EdgeInsets.only(bottom: AppSize.appSize16),
                       decoration: BoxDecoration(
-                        color: AppColor.secondaryColor,
+                        color: DiwaneColors.surface,
                         borderRadius: BorderRadius.circular(AppSize.appSize12),
                         boxShadow: [
                           BoxShadow(
@@ -300,10 +300,10 @@ class PropertyListView extends StatelessWidget {
                                           return Container(
                                             width: double.infinity,
                                             height: AppSize.appSize200,
-                                            color: AppColor.backgroundColor,
+                                            color: DiwaneColors.background,
                                             child: Center(
                                               child: CircularProgressIndicator(
-                                                color: AppColor.primaryColor,
+                                                color: DiwaneColors.navy,
                                                 value: loadingProgress.expectedTotalBytes != null
                                                     ? loadingProgress.cumulativeBytesLoaded /
                                                         loadingProgress.expectedTotalBytes!
@@ -334,7 +334,7 @@ class PropertyListView extends StatelessWidget {
                                             width: double.infinity,
                                             height: AppSize.appSize200,
                                             decoration: BoxDecoration(
-                                              color: AppColor.backgroundColor,
+                                              color: DiwaneColors.background,
                                               borderRadius: BorderRadius.circular(
                                                   AppSize.appSize8),
                                             ),
@@ -345,14 +345,14 @@ class PropertyListView extends StatelessWidget {
                                                 Icon(
                                                   Icons.home,
                                                   size: AppSize.appSize50,
-                                                  color: AppColor.descriptionColor,
+                                                  color: DiwaneColors.textMuted,
                                                 ),
                                                 Text(
                                                   propertyListController
                                                       .getFormattedPropertyType(
                                                           property),
                                                   style: AppStyle.heading6Regular(
-                                                    color: AppColor.descriptionColor,
+                                                    color: DiwaneColors.textMuted,
                                                   ),
                                                 ),
                                               ],
@@ -373,7 +373,7 @@ class PropertyListView extends StatelessWidget {
                                     width: AppSize.appSize32,
                                     height: AppSize.appSize32,
                                     decoration: BoxDecoration(
-                                      color: AppColor.whiteColor.withValues(
+                                      color: Colors.white.withValues(
                                           alpha: AppSize.appSizePoint50),
                                       borderRadius: BorderRadius.circular(
                                           AppSize.appSize16),
@@ -424,7 +424,7 @@ class PropertyListView extends StatelessWidget {
                                       vertical: AppSize.appSize4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColor.primaryColor
+                                      color: DiwaneColors.navy
                                           .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(
                                           AppSize.appSize4),
@@ -433,7 +433,7 @@ class PropertyListView extends StatelessWidget {
                                       propertyListController
                                           .getFormattedPropertyType(property),
                                       style: AppStyle.heading6Regular(
-                                          color: AppColor.primaryColor),
+                                          color: DiwaneColors.navy),
                                     ),
                                   ),
                                 ],
@@ -443,7 +443,7 @@ class PropertyListView extends StatelessWidget {
                               Text(
                                 property.displayTitle,
                                 style: AppStyle.heading5SemiBold(
-                                    color: AppColor.textColor),
+                                    color: DiwaneColors.textPrimary),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ).paddingOnly(top: AppSize.appSize8),
@@ -452,7 +452,7 @@ class PropertyListView extends StatelessWidget {
                               Text(
                                 property.displayAddress,
                                 style: AppStyle.heading5Regular(
-                                    color: AppColor.descriptionColor),
+                                    color: DiwaneColors.textMuted),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ).paddingOnly(top: AppSize.appSize4),
@@ -467,14 +467,14 @@ class PropertyListView extends StatelessWidget {
                                 propertyListController
                                     .getFormattedPrice(property),
                                 style: AppStyle.heading4Medium(
-                                    color: AppColor.primaryColor),
+                                    color: DiwaneColors.navy),
                               ),
                               Row(
                                 children: [
                                   Text(
                                     propertyListController.getRating(property),
                                     style: AppStyle.heading5Medium(
-                                        color: AppColor.primaryColor),
+                                        color: DiwaneColors.navy),
                                   ).paddingOnly(right: AppSize.appSize6),
                                   Image.asset(
                                     Assets.images.star.path,
@@ -487,7 +487,7 @@ class PropertyListView extends StatelessWidget {
 
                           // Divider
                           Divider(
-                            color: AppColor.descriptionColor
+                            color: DiwaneColors.textMuted
                                 .withValues(alpha: AppSize.appSizePoint3),
                             height: AppSize.appSize0,
                           ).paddingOnly(
@@ -508,7 +508,7 @@ class PropertyListView extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(
                                         AppSize.appSize12),
                                     border: Border.all(
-                                      color: AppColor.primaryColor,
+                                      color: DiwaneColors.navy,
                                       width: AppSize.appSizePoint50,
                                     ),
                                   ),
@@ -523,7 +523,7 @@ class PropertyListView extends StatelessWidget {
                                       Text(
                                         feature['text'],
                                         style: AppStyle.heading5Medium(
-                                            color: AppColor.textColor),
+                                            color: DiwaneColors.textPrimary),
                                       ),
                                     ],
                                   ),
@@ -539,7 +539,7 @@ class PropertyListView extends StatelessWidget {
                                   for (int i = 0; i < surfaces.length; i++) ...[
                                     if (i > 0) ...[
                                       const VerticalDivider(
-                                        color: AppColor.descriptionColor,
+                                        color: DiwaneColors.textMuted,
                                         width: AppSize.appSize0,
                                         indent: AppSize.appSize2,
                                         endIndent: AppSize.appSize2,
@@ -552,12 +552,12 @@ class PropertyListView extends StatelessWidget {
                                         TextSegment(
                                           text: surfaces[i]['value']!,
                                           style: AppStyle.heading5Regular(
-                                              color: AppColor.textColor),
+                                              color: DiwaneColors.textPrimary),
                                         ),
                                         TextSegment(
                                           text: surfaces[i]['label']!,
                                           style: AppStyle.heading7Regular(
-                                              color: AppColor.descriptionColor),
+                                              color: DiwaneColors.textMuted),
                                         ),
                                       ],
                                     ),
@@ -582,7 +582,7 @@ class PropertyListView extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(
                                         AppSize.appSize12),
                                     side: const BorderSide(
-                                        color: AppColor.primaryColor,
+                                        color: DiwaneColors.navy,
                                         width: AppSize.appSizePoint7),
                                   ),
                                 ),
@@ -591,7 +591,7 @@ class PropertyListView extends StatelessWidget {
                               child: Text(
                                 'Contacter',
                                 style: AppStyle.heading6Regular(
-                                    color: AppColor.primaryColor),
+                                    color: DiwaneColors.navy),
                               ),
                             ),
                           ).paddingOnly(top: AppSize.appSize20),
