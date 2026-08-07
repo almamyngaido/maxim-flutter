@@ -46,7 +46,7 @@ class _MesAlertesViewState extends State<MesAlertesView> {
       );
       await _charger();
     } catch (e) {
-      DiwaneSnackbar.error('Erreur', e.toString());
+      await DiwaneSnackbar.apiError(e);
     }
   }
 
@@ -73,7 +73,7 @@ class _MesAlertesViewState extends State<MesAlertesView> {
       await service.supprimer(token: token, alerteId: alerte.id);
       await _charger();
     } catch (e) {
-      DiwaneSnackbar.error('Erreur', e.toString());
+      await DiwaneSnackbar.apiError(e);
     }
   }
 

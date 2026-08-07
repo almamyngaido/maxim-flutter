@@ -68,9 +68,10 @@ class DiwaneAuthService extends GetxService {
           message;
     } catch (_) {}
 
-    if (response.statusCode == 401) throw Exception('Identifiants incorrects');
+    // Le message du serveur est déjà extrait ci-dessus (ex: "Email non vérifié",
+    // "Identifiants incorrects") — on l'affiche tel quel plutôt que de l'écraser
+    // avec un message générique qui masquerait la vraie raison de l'échec.
     if (response.statusCode == 409) throw Exception('Email déjà utilisé');
-    if (response.statusCode == 422) throw Exception(message);
     throw Exception(message);
   }
 
