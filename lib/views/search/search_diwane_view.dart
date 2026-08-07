@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/search_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/views/alertes/creer_alerte_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/widgets/bien_card.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_button.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/widgets/ville_dropdown.dart';
 
 class SearchDiwaneView extends StatelessWidget {
@@ -42,10 +44,7 @@ class SearchDiwaneView extends StatelessWidget {
             return IconButton(
               icon: const Icon(Icons.notifications_none, color: Colors.white),
               tooltip: 'Créer une alerte',
-              onPressed: () => Get.toNamed(
-                AppRoutes.creerAlerteView,
-                arguments: {'criteres': criteres},
-              ),
+              onPressed: () => showCreerAlerteBottomSheet(context, criteres: criteres),
             );
           }),
           IconButton(
@@ -162,10 +161,10 @@ class SearchDiwaneView extends StatelessWidget {
                 return _emptyState(
                   icon: Icons.error_outline,
                   message: c.error.value,
-                  action: ElevatedButton(
+                  action: DiwaneButton(
+                    label: 'Réessayer',
                     onPressed: c.fetchBiens,
-                    style: ElevatedButton.styleFrom(backgroundColor: DiwaneColors.navy, foregroundColor: Colors.white),
-                    child: const Text('Réessayer'),
+                    width: 160,
                   ),
                 );
               }

@@ -67,7 +67,6 @@ import 'package:luxury_real_estate_flutter_ui_kit/views/search/search_view.dart'
 import 'package:luxury_real_estate_flutter_ui_kit/views/splash/splash_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/messages/conversations_list_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/messages/chat_view.dart';
-import 'package:luxury_real_estate_flutter_ui_kit/views/alertes/creer_alerte_view.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/views/alertes/mes_alertes_view.dart';
 
 class AppRoutes {
@@ -141,7 +140,6 @@ class AppRoutes {
   static const String abonnementDiwaneView    = "/diwane/courtier/abonnement";
   static const String verificationDiwaneView  = "/diwane/courtier/verification";
   static const String agenceProView           = "/diwane/courtier/agence";
-  static const String creerAlerteView        = "/diwane/alertes/creer";
   static const String mesAlertesView         = "/diwane/alertes";
 
   static String addPropertyFeaturesView = "/ajouter_caracteristiques";
@@ -230,7 +228,6 @@ class AppRoutes {
     GetPage(name: abonnementDiwaneView,  page: () => const AbonnementDiwaneView(), transition: Transition.rightToLeft),
     GetPage(name: verificationDiwaneView, page: () => const VerificationDiwaneView(), transition: Transition.rightToLeft),
     GetPage(name: agenceProView,          page: () => const AgenceView(),             transition: Transition.rightToLeft),
-    GetPage(name: creerAlerteView,        page: () => const CreerAlerteView(),        transition: Transition.rightToLeft),
     GetPage(name: mesAlertesView,         page: () => const MesAlertesView(),         transition: Transition.rightToLeft),
   ];
 }
