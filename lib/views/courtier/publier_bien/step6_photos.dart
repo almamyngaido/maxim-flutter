@@ -10,6 +10,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/publier_bien_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_snackbar.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/core/constants/plans.dart';
 
 class Step6Photos extends StatelessWidget {
@@ -182,17 +183,14 @@ class Step6Photos extends StatelessWidget {
           if (url != null && url.isNotEmpty) {
             c.photos.add(url);
           } else {
-            Get.snackbar('Erreur', 'URL manquante dans la réponse du serveur',
-                backgroundColor: Colors.red, colorText: Colors.white);
+            DiwaneSnackbar.error('Erreur', 'URL manquante dans la réponse du serveur');
           }
         } else {
-          Get.snackbar('Erreur upload', 'Erreur serveur (${response.statusCode})',
-              backgroundColor: Colors.red, colorText: Colors.white);
+          DiwaneSnackbar.error('Erreur upload', 'Erreur serveur (${response.statusCode})');
         }
       }
     } catch (e) {
-      Get.snackbar('Erreur upload', e.toString(),
-          backgroundColor: Colors.red, colorText: Colors.white);
+      DiwaneSnackbar.error('Erreur upload', e.toString());
     } finally {
       Get.back(); // ferme le dialog
     }

@@ -6,6 +6,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_control
 import 'package:luxury_real_estate_flutter_ui_kit/model/bien_diwane_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/diwane_favoris_service.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/widgets/bien_card.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_button.dart';
 
 class FavorisDiwaneView extends StatefulWidget {
   const FavorisDiwaneView({super.key});
@@ -100,9 +101,10 @@ class _FavorisDiwaneViewState extends State<FavorisDiwaneView> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
+                    DiwaneButton(
+                      label: 'Réessayer',
                       onPressed: _charger,
-                      child: const Text('Réessayer'),
+                      width: 160,
                     ),
                   ],
                 ),

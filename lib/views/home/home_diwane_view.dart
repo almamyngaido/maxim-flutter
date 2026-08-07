@@ -6,6 +6,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/controller/biens_controller.da
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/widgets/bien_card.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_button.dart';
 
 class HomeDiwaneView extends StatelessWidget {
   const HomeDiwaneView({super.key});
@@ -371,9 +372,10 @@ class _ErrorState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
+            DiwaneButton(
+              label: 'Réessayer',
               onPressed: onRetry,
-              child: const Text('Réessayer'),
+              width: 160,
             ),
           ],
         ),

@@ -5,6 +5,8 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/bien_diwane_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/bien_diwane_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_button.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_snackbar.dart';
 
 class DiwaneModerationView extends StatefulWidget {
   const DiwaneModerationView({super.key});
@@ -49,22 +51,15 @@ class _DiwaneModerationViewState extends State<DiwaneModerationView> {
     try {
       await _service.changerStatut(bien.id!, statut, _auth.token.value);
       _biens.removeWhere((b) => b.id == bien.id);
-      Get.snackbar(
-        statut == 'publie' ? 'Approuvé' : 'Rejeté',
-        '« ${bien.titre} » est maintenant ${statut == 'publie' ? 'publié' : 'rejeté'}.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: statut == 'publie' ? Colors.green : Colors.red,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
+      final titre = statut == 'publie' ? 'Approuvé' : 'Rejeté';
+      final message = '« ${bien.titre} » est maintenant ${statut == 'publie' ? 'publié' : 'rejeté'}.';
+      if (statut == 'publie') {
+        DiwaneSnackbar.success(titre, message);
+      } else {
+        DiwaneSnackbar.warning(titre, message);
+      }
     } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        e.toString().replaceAll('Exception: ', ''),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      DiwaneSnackbar.error('Erreur', e.toString().replaceAll('Exception: ', ''));
     }
   }
 
@@ -126,8 +121,7 @@ class _DiwaneModerationViewState extends State<DiwaneModerationView> {
                       style: const TextStyle(
                           color: DiwaneColors.textMuted, fontSize: 14)),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                      onPressed: _charger, child: const Text('Réessayer')),
+                  DiwaneButton(label: 'Réessayer', onPressed: _charger, width: 160),
                 ],
               ),
             ),

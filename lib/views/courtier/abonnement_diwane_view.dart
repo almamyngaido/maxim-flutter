@@ -1,11 +1,15 @@
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/core/constants/plans.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/payment_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_snackbar.dart';
 
 class AbonnementDiwaneView extends StatefulWidget {
   const AbonnementDiwaneView({super.key});
@@ -17,12 +21,11 @@ class AbonnementDiwaneView extends StatefulWidget {
 class _AbonnementDiwaneViewState extends State<AbonnementDiwaneView> {
   bool _isLoading = false;
   String? _planEnCours;
+  bool _isRefreshing = false;
 
+  // ── Android only ────────────────────────────────────────────────────────────
   Future<void> _souscrire(String plan) async {
-    setState(() {
-      _isLoading = true;
-      _planEnCours = plan;
-    });
+    setState(() { _isLoading = true; _planEnCours = plan; });
     try {
       final paymentService = Get.find<PaymentService>();
       final session = await paymentService.initierAbonnement(plan);
@@ -30,13 +33,7 @@ class _AbonnementDiwaneViewState extends State<AbonnementDiwaneView> {
       if (!mounted) return;
       _afficherDialogAttente(session.transactionId, plan);
     } catch (e) {
-      Get.snackbar(
-        'Erreur',
-        e.toString().replaceAll('Exception: ', ''),
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: DiwaneColors.error.withValues(alpha: 0.9),
-        colorText: Colors.white,
-      );
+      DiwaneSnackbar.error('Erreur', e.toString().replaceAll('Exception: ', ''));
     } finally {
       if (mounted) setState(() { _isLoading = false; _planEnCours = null; });
     }
@@ -51,23 +48,16 @@ class _AbonnementDiwaneViewState extends State<AbonnementDiwaneView> {
           Get.back();
           DiwaneAuthController.to.rafraichirProfil();
           Get.offAllNamed(AppRoutes.courtierDashboardView);
-          Get.snackbar(
+          DiwaneSnackbar.success(
             'Abonnement activé !',
             'Bienvenue en ${plan[0].toUpperCase()}${plan.substring(1)} !',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: const Color(0xFF2E7D32),
-            colorText: Colors.white,
-            duration: const Duration(seconds: 4),
           );
         },
         onEchec: () {
           Get.back();
-          Get.snackbar(
+          DiwaneSnackbar.error(
             'Paiement non confirmé',
             'Le paiement n\'a pas été reçu. Réessayez.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
           );
         },
       ),
@@ -75,8 +65,23 @@ class _AbonnementDiwaneViewState extends State<AbonnementDiwaneView> {
     );
   }
 
+  // ── iOS only ─────────────────────────────────────────────────────────────────
+  Future<void> _ouvrirUpgrade() async {
+    final uri = Uri.parse(kUpgradeUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _rafraichirPlan() async {
+    setState(() => _isRefreshing = true);
+    await DiwaneAuthController.to.rafraichirProfil();
+    if (mounted) setState(() => _isRefreshing = false);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
     final currentPlan = DiwaneAuthController.to.user.value?.plan ?? 'gratuit';
 
     return Scaffold(
@@ -99,6 +104,7 @@ class _AbonnementDiwaneViewState extends State<AbonnementDiwaneView> {
               prixFcfa: 0,
               features: const ['5 annonces actives', '10 photos / annonce', 'Contact WhatsApp'],
               isCurrent: currentPlan == 'gratuit',
+              showPrix: !isIOS,
               onSouscrire: null,
             ),
             const SizedBox(height: 12),
@@ -117,8 +123,11 @@ class _AbonnementDiwaneViewState extends State<AbonnementDiwaneView> {
                 'Support prioritaire',
               ],
               isCurrent: currentPlan == 'premium',
-              isLoading: _isLoading && _planEnCours == 'premium',
-              onSouscrire: currentPlan == 'premium' ? null : () => _souscrire('premium'),
+              showPrix: !isIOS,
+              isLoading: !isIOS && _isLoading && _planEnCours == 'premium',
+              onSouscrire: isIOS || currentPlan == 'premium'
+                  ? null
+                  : () => _souscrire('premium'),
             ),
             const SizedBox(height: 12),
             _PlanCard(
@@ -135,21 +144,66 @@ class _AbonnementDiwaneViewState extends State<AbonnementDiwaneView> {
                 'Account manager',
               ],
               isCurrent: currentPlan == 'pro',
-              isLoading: _isLoading && _planEnCours == 'pro',
-              onSouscrire: currentPlan == 'pro' ? null : () => _souscrire('pro'),
+              showPrix: !isIOS,
+              isLoading: !isIOS && _isLoading && _planEnCours == 'pro',
+              onSouscrire: isIOS || currentPlan == 'pro'
+                  ? null
+                  : () => _souscrire('pro'),
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.lock_outline, size: 14, color: DiwaneColors.textMuted),
-                const SizedBox(width: 6),
-                const Text(
-                  'Paiement sécurisé via Wave',
-                  style: TextStyle(fontSize: 12, color: DiwaneColors.textMuted),
+
+            // iOS CTA — external browser
+            if (isIOS) ...[
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _ouvrirUpgrade,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: DiwaneColors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Gérer mon abonnement',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                        fontFamily: AppFont.interSemiBold),
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              TextButton.icon(
+                onPressed: _isRefreshing ? null : _rafraichirPlan,
+                icon: _isRefreshing
+                    ? const SizedBox(
+                        width: 14, height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: DiwaneColors.navy))
+                    : const Icon(Icons.refresh_rounded, size: 16, color: DiwaneColors.navy),
+                label: const Text(
+                  'Actualiser mon plan',
+                  style: TextStyle(fontSize: 13, color: DiwaneColors.navy,
+                      fontFamily: AppFont.interRegular),
+                ),
+              ),
+            ],
+
+            // Android footer
+            if (!isIOS) ...[
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.lock_outline, size: 14, color: DiwaneColors.textMuted),
+                  SizedBox(width: 6),
+                  Text(
+                    'Paiement sécurisé via Wave',
+                    style: TextStyle(fontSize: 12, color: DiwaneColors.textMuted),
+                  ),
+                ],
+              ),
+            ],
+
             const SizedBox(height: 32),
           ],
         ),
@@ -168,6 +222,7 @@ class _PlanCard extends StatelessWidget {
   final bool isCurrent;
   final bool isRecommande;
   final bool isLoading;
+  final bool showPrix;
   final VoidCallback? onSouscrire;
 
   const _PlanCard({
@@ -178,6 +233,7 @@ class _PlanCard extends StatelessWidget {
     this.isCurrent = false,
     this.isRecommande = false,
     this.isLoading = false,
+    this.showPrix = true,
     this.onSouscrire,
   });
 
@@ -264,18 +320,20 @@ class _PlanCard extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 6),
-            Text(
-              prixFcfa == 0
-                  ? 'Gratuit'
-                  : '${NumberFormat('#,###', 'fr_FR').format(prixFcfa)} FCFA / mois',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                fontFamily: AppFont.interBold,
-                color: isOrange ? DiwaneColors.orange : DiwaneColors.textPrimary,
+            if (showPrix) ...[
+              const SizedBox(height: 6),
+              Text(
+                prixFcfa == 0
+                    ? 'Gratuit'
+                    : '${NumberFormat('#,###', 'fr_FR').format(prixFcfa)} FCFA / mois',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: AppFont.interBold,
+                  color: isOrange ? DiwaneColors.orange : DiwaneColors.textPrimary,
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 12),
             ...features.map(
               (f) => Padding(
@@ -290,6 +348,7 @@ class _PlanCard extends StatelessWidget {
                 ),
               ),
             ),
+            // Android-only per-card subscribe button
             if (onSouscrire != null) ...[
               const SizedBox(height: 14),
               SizedBox(
@@ -360,18 +419,18 @@ class _DialogAttenteConfirmationState extends State<_DialogAttenteConfirmation> 
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      content: Column(
+      content: const Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(color: DiwaneColors.navy),
-          const SizedBox(height: 20),
-          const Text(
+          CircularProgressIndicator(color: DiwaneColors.navy),
+          SizedBox(height: 20),
+          Text(
             'En attente de confirmation Wave…',
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, fontFamily: AppFont.interSemiBold),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'Complétez le paiement dans l\'app Wave.\nCette fenêtre se fermera automatiquement.',
             style: TextStyle(fontSize: 12, color: DiwaneColors.textMuted),
             textAlign: TextAlign.center,

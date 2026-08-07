@@ -1,9 +1,12 @@
 import 'dart:math' show Random;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/core/constants/plans.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/utilisateur_diwane_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/bien_diwane_service.dart';
@@ -186,9 +189,10 @@ class _CourtierDashboardViewState extends State<CourtierDashboardView> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          ElevatedButton(
+                          DiwaneButton(
+                            label: 'Réessayer',
                             onPressed: _chargerAnnonces,
-                            child: const Text('Réessayer'),
+                            width: 160,
                           ),
                         ],
                       ),
@@ -391,7 +395,16 @@ class _CourtierHeader extends StatelessWidget {
                 if (!user!.isPremium) ...[
                   const Spacer(),
                   GestureDetector(
-                    onTap: () {}, // TODO: upgrade
+                    onTap: () async {
+                      if (defaultTargetPlatform == TargetPlatform.iOS) {
+                        final uri = Uri.parse(kUpgradeUrl);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      } else {
+                        Get.toNamed(AppRoutes.abonnementDiwaneView);
+                      }
+                    },
                     child: const Text(
                       'Passer Premium →',
                       style: TextStyle(

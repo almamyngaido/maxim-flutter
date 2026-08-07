@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/api_config.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_snackbar.dart';
 
 class EmailVerificationView extends StatefulWidget {
   const EmailVerificationView({super.key});
@@ -71,12 +71,9 @@ class _EmailVerificationViewState extends State<EmailVerificationView> {
       await _verifierSilencieux();
       final user = DiwaneAuthController.to.user.value;
       if (user != null && !user.emailVerifie) {
-        Get.snackbar(
+        DiwaneSnackbar.warning(
           'Email non encore vérifié',
           'Vérifiez votre boîte mail et cliquez sur le lien.',
-          backgroundColor: Colors.orange.shade700,
-          colorText: Colors.white,
-          duration: const Duration(seconds: 3),
         );
       }
     } finally {
@@ -99,11 +96,9 @@ class _EmailVerificationViewState extends State<EmailVerificationView> {
       );
 
       if (response.statusCode == 200) {
-        Get.snackbar(
+        DiwaneSnackbar.success(
           'Email envoyé',
           'Un nouveau lien de vérification a été envoyé à $_email.',
-          backgroundColor: Colors.green.shade700,
-          colorText: Colors.white,
         );
         // Cooldown 60 secondes
         setState(() => _resendCooldown = 60);
@@ -116,12 +111,10 @@ class _EmailVerificationViewState extends State<EmailVerificationView> {
       } else {
         final body = jsonDecode(response.body);
         final msg = body['error']?['message'] ?? body['message'] ?? 'Erreur';
-        Get.snackbar('Erreur', msg.toString(),
-            backgroundColor: Colors.red.shade700, colorText: Colors.white);
+        DiwaneSnackbar.error('Erreur', msg.toString());
       }
     } catch (e) {
-      Get.snackbar('Erreur', e.toString(),
-          backgroundColor: Colors.red.shade700, colorText: Colors.white);
+      DiwaneSnackbar.error('Erreur', e.toString());
     } finally {
       setState(() => _isResending = false);
     }

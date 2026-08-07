@@ -7,6 +7,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/verification_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_snackbar.dart';
 
 class VerificationDiwaneView extends StatefulWidget {
   const VerificationDiwaneView({super.key});
@@ -79,10 +80,7 @@ class _VerificationDiwaneViewState extends State<VerificationDiwaneView> {
 
   Future<void> _soumettre() async {
     if (_cniRecto == null || _cniVerso == null) {
-      Get.snackbar('Champs manquants', 'CNI recto et verso sont obligatoires.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: DiwaneColors.error,
-          colorText: Colors.white);
+      DiwaneSnackbar.error('Champs manquants', 'CNI recto et verso sont obligatoires.');
       return;
     }
     setState(() => _loading = true);
@@ -102,20 +100,13 @@ class _VerificationDiwaneViewState extends State<VerificationDiwaneView> {
       );
       Get.back(); // ferme le dialog
       setState(() => _statut = 'en_attente');
-      Get.snackbar(
+      DiwaneSnackbar.success(
         'Documents envoyés !',
         'Vérification sous 24–48h. Vous serez notifié.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: const Color(0xFF2E7D32),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 4),
       );
     } catch (e) {
       Get.back(); // ferme le dialog
-      Get.snackbar('Erreur', e.toString().replaceAll('Exception: ', ''),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: DiwaneColors.error,
-          colorText: Colors.white);
+      DiwaneSnackbar.error('Erreur', e.toString().replaceAll('Exception: ', ''));
     } finally {
       setState(() => _loading = false);
     }

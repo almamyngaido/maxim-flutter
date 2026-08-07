@@ -4,6 +4,7 @@ import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/model/alerte_recherche_model.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/alerte_service.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/widgets/diwane_snackbar.dart';
 
 class MesAlertesView extends StatefulWidget {
   const MesAlertesView({super.key});
@@ -45,8 +46,7 @@ class _MesAlertesViewState extends State<MesAlertesView> {
       );
       await _charger();
     } catch (e) {
-      Get.snackbar('Erreur', e.toString(),
-          backgroundColor: DiwaneColors.error, colorText: Colors.white);
+      DiwaneSnackbar.error('Erreur', e.toString());
     }
   }
 
@@ -73,8 +73,7 @@ class _MesAlertesViewState extends State<MesAlertesView> {
       await service.supprimer(token: token, alerteId: alerte.id);
       await _charger();
     } catch (e) {
-      Get.snackbar('Erreur', e.toString(),
-          backgroundColor: DiwaneColors.error, colorText: Colors.white);
+      DiwaneSnackbar.error('Erreur', e.toString());
     }
   }
 
