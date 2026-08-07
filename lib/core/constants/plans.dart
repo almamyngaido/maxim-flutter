@@ -1,5 +1,8 @@
 import 'package:intl/intl.dart';
 
+const kUpgradeUrl = 'https://diwane.sn/upgrade';
+const kBoostUrl   = 'https://diwane.sn/boost';
+
 class DiwanePlans {
   static const gratuit = PlanConfig(
     id: 'gratuit',

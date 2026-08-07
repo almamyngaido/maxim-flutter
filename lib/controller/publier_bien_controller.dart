@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_color.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/configs/app_font.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/controller/diwane_auth_controller.dart';
+import 'package:luxury_real_estate_flutter_ui_kit/core/constants/plans.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/routes/app_routes.dart';
 import 'package:luxury_real_estate_flutter_ui_kit/services/bien_diwane_service.dart';
 
@@ -360,30 +363,21 @@ class PublierBienController extends GetxController {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            RichText(
-              text: TextSpan(
-                style: const TextStyle(
-                    color: DiwaneColors.textPrimary, fontSize: 13),
-                children: [
-                  const TextSpan(text: 'À partir de '),
-                  TextSpan(
-                    text: '10 000 FCFA',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: DiwaneColors.orange,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const TextSpan(text: ' / mois'),
-                ],
-              ),
-            ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Get.back(), // TODO: → écran upgrade quand disponible
+                onPressed: () async {
+                  Get.back();
+                  if (defaultTargetPlatform == TargetPlatform.iOS) {
+                    final uri = Uri.parse(kUpgradeUrl);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  } else {
+                    Get.toNamed(AppRoutes.abonnementDiwaneView);
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: DiwaneColors.orange,
                   foregroundColor: Colors.white,

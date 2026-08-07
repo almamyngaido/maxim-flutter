@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +22,9 @@ class BoostBienWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Boost (in-app purchase) is not available on iOS per App Store guideline 3.1.1
+    if (defaultTargetPlatform == TargetPlatform.iOS) return const SizedBox.shrink();
+
     if (boostActif && boostDateFin != null) {
       final jours = boostDateFin!.difference(DateTime.now()).inDays.clamp(0, 9999);
       return Container(
