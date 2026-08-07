@@ -47,11 +47,6 @@ class SearchDiwaneView extends StatelessWidget {
               onPressed: () => showCreerAlerteBottomSheet(context, criteres: criteres),
             );
           }),
-          IconButton(
-            icon: const Icon(Icons.notifications_active_outlined, color: Colors.white70, size: 20),
-            tooltip: 'Mes alertes',
-            onPressed: () => Get.toNamed(AppRoutes.mesAlertesView),
-          ),
         ],
       ),
       body: Column(

@@ -123,7 +123,7 @@ class ProfilDiwaneView extends StatelessWidget {
                       const SizedBox(height: 12),
                     ],
 
-                    // Mes favoris (acheteur)
+                    // Mes favoris / alertes (acheteur)
                     if (!user.isCourtier) ...[
                       _SectionCard(
                         titre: 'Mes activités',
@@ -132,6 +132,11 @@ class ProfilDiwaneView extends StatelessWidget {
                             icon: Icons.favorite_outline,
                             label: 'Mes favoris',
                             onTap: () => Get.toNamed(AppRoutes.favorisDiwaneView),
+                          ),
+                          _MenuItem(
+                            icon: Icons.notifications_outlined,
+                            label: 'Mes alertes',
+                            onTap: () => Get.toNamed(AppRoutes.mesAlertesView),
                           ),
                         ],
                       ),
